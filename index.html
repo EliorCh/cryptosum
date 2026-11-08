@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>קריפטוגרפיה שימושית — אתר למידה</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code','svg'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --bg:#f6f4ef; --paper:#fffdf8; --ink:#1d2433; --muted:#5b6475; --line:#e3ded2;
+  --side:#14213d; --side-ink:#d9e1f2; --accent:#0f766e; --accent2:#b45309;
+  --theory:#2563eb; --theory-bg:#eef4ff;
+  --formula:#7c3aed; --formula-bg:#f4efff;
+  --example:#15803d; --example-bg:#edf8f0;
+  --warn:#b45309; --warn-bg:#fff6e6;
+  --exercise:#be185d; --exercise-bg:#fdf0f6;
+  --summary:#0f766e; --summary-bg:#e9f7f5;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Heebo,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.75;font-size:17px}
+.layout{display:flex;min-height:100vh}
+/* ---------- sidebar ---------- */
+nav.side{position:sticky;top:0;height:100vh;overflow-y:auto;width:290px;flex:0 0 290px;background:var(--side);color:var(--side-ink);padding:22px 14px 40px}
+nav.side .brand{font-weight:800;font-size:20px;color:#fff;margin:0 8px 4px}
+nav.side .brand small{display:block;font-weight:400;font-size:13px;color:#9fb0d0}
+nav.side h4{margin:22px 8px 6px;font-size:13px;letter-spacing:.04em;color:#f2b84b;font-weight:700}
+nav.side a{display:block;color:var(--side-ink);text-decoration:none;padding:5px 10px;border-radius:8px;font-size:14.5px;line-height:1.45}
+nav.side a:hover{background:rgba(255,255,255,.08)}
+nav.side a.active{background:#f2b84b;color:#14213d;font-weight:700}
+nav.side a.sub{padding-inline-start:22px;font-size:13.5px;color:#b8c4dc}
+nav.side a.sub.active{color:#14213d}
+.progress{height:4px;background:rgba(255,255,255,.12);border-radius:4px;margin:12px 8px 0;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:#f2b84b;transition:width .2s}
+/* ---------- main ---------- */
+main{flex:1;min-width:0;padding:34px clamp(16px,4vw,64px) 120px;max-width:1080px}
+main p, .box-body p, .box-body li, main li{direction:rtl;unicode-bidi:isolate;text-align:right}
+main strong{margin-inline-end:.15em}
+h1{font-size:34px;line-height:1.25;margin:0 0 8px}
+h2.chapter{font-size:30px;margin:70px 0 6px;padding-top:12px;border-top:3px solid var(--ink)}
+h2.chapter .num{display:inline-block;background:var(--ink);color:#fff;border-radius:10px;padding:0 12px;margin-inline-end:10px;font-size:22px;vertical-align:middle}
+h3{font-size:23px;margin:46px 0 10px;color:#14213d}
+h3 .sec{color:var(--accent);font-family:var(--mono);font-size:17px;margin-inline-end:8px}
+h4{font-size:18px;margin:22px 0 6px}
+.hook{font-size:18px;color:var(--muted);border-inline-start:4px solid #f2b84b;padding:4px 14px;margin:8px 0 22px;background:#fff8e7;border-radius:0 8px 8px 0}
+.lead{color:var(--muted);font-size:18px}
+a{color:var(--accent)}
+.term,.ltr{direction:ltr;unicode-bidi:isolate}
+.term{font-weight:600}
+.ltr{font-family:var(--mono);font-size:.93em;background:#efece3;padding:1px 6px;border-radius:5px;white-space:nowrap}
+code{font-family:var(--mono);font-size:.92em;background:#efece3;padding:1px 6px;border-radius:5px;direction:ltr;unicode-bidi:isolate}
+pre{direction:ltr;text-align:left;font-family:var(--mono);font-size:14px;background:#1e2433;color:#e6edf7;padding:14px 16px;border-radius:10px;overflow-x:auto;line-height:1.6}
+pre .c{color:#8b9bb8}
+.mathline{direction:ltr;text-align:center;margin:10px 0;overflow-x:auto;overflow-y:hidden}
+mjx-container[display="true"]{direction:ltr;overflow-x:auto;overflow-y:hidden;margin:.6em 0 !important}
+mjx-container{direction:ltr}
+/* ---------- boxes ---------- */
+.box{border-radius:12px;margin:18px 0;border:1px solid;overflow:hidden;background:var(--paper)}
+.box-head{font-weight:700;padding:8px 16px;display:flex;align-items:center;gap:8px;font-size:15.5px}
+.box-body{padding:10px 18px 14px}
+.box-body > :first-child{margin-top:0}
+.box-body > :last-child{margin-bottom:0}
+.box.theory{border-color:#c9d9fb}.box.theory .box-head{background:var(--theory-bg);color:var(--theory)}
+.box.formula{border-color:#ddd0fb}.box.formula .box-head{background:var(--formula-bg);color:var(--formula)}
+.box.example{border-color:#c4e6cf}.box.example .box-head{background:var(--example-bg);color:var(--example)}
+.box.warn{border-color:#f5d9a6}.box.warn .box-head{background:var(--warn-bg);color:var(--warn)}
+.box.exercise{border-color:#f3c6db}.box.exercise .box-head{background:var(--exercise-bg);color:var(--exercise)}
+.box.summary{border-color:#b9e3dd}.box.summary .box-head{background:var(--summary-bg);color:var(--summary)}
+.keypoint{background:#14213d;color:#fff;border-radius:12px;padding:12px 18px;margin:18px 0;font-weight:500}
+.keypoint b{color:#f2b84b}
+/* ---------- tables ---------- */
+.tbl-wrap{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;background:var(--paper);font-size:15.5px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:right;vertical-align:top}
+th{background:#ede8db;font-weight:700}
+td.num,td.mono,th.num{direction:ltr;unicode-bidi:isolate;text-align:center;font-family:var(--mono);font-size:14.5px}
+tr.hl td{background:#fff3cf}
+tr.good td{background:#e8f6ec}
+tr.bad td{background:#fde8e8}
+/* ---------- diagrams ---------- */
+figure{margin:18px 0;text-align:center}
+figure svg{max-width:100%;height:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+/* ---------- interactive ---------- */
+.lab{background:#fff;border:2px dashed #9fb3d8;border-radius:14px;padding:14px 18px;margin:20px 0}
+.lab h5{margin:0 0 10px;font-size:16px;color:#14213d}
+.lab h5::before{content:"🧪 ";}
+.lab .row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-bottom:10px}
+.lab label{font-size:14.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.lab input,.lab select{font-family:var(--mono);font-size:15px;padding:5px 8px;border:1px solid #c8cfdc;border-radius:7px;width:120px;direction:ltr;text-align:center}
+.lab input.wide{width:260px}
+button{font-family:inherit;font-size:14.5px;font-weight:600;border:0;border-radius:8px;padding:7px 14px;background:var(--accent);color:#fff;cursor:pointer}
+button.ghost{background:#e7ecf5;color:#14213d}
+button:hover{filter:brightness(1.08)}
+.out{font-family:var(--mono);direction:ltr;text-align:left;background:#f4f6fa;border-radius:8px;padding:10px 12px;font-size:14px;white-space:pre-wrap;overflow-x:auto;line-height:1.6}
+.out.rtl{direction:rtl;text-align:right;font-family:inherit;font-size:15px}
+.msg-ok{color:#15803d;font-weight:700}
+.msg-bad{color:#b91c1c;font-weight:700}
+/* reveal */
+details.reveal{margin:10px 0;border:1px solid var(--line);border-radius:10px;background:#fff}
+details.reveal summary{cursor:pointer;padding:8px 14px;font-weight:700;color:var(--exercise);list-style:none}
+details.reveal summary::before{content:"◂ ";}
+details.reveal[open] summary::before{content:"▾ ";}
+details.reveal > div{padding:4px 16px 12px;border-top:1px dashed var(--line)}
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card .ic{font-size:26px}
+.card b{display:block;margin:4px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{background:#e7ecf5;border-radius:999px;padding:2px 12px;font-size:14px}
+.cover{background:linear-gradient(135deg,#14213d,#1f3a68);color:#fff;border-radius:18px;padding:30px 30px 26px;margin-bottom:20px}
+.cover h1{color:#fff}
+.cover p{color:#c9d5ee}
+.toc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:18px}
+.toc-grid a{display:block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:12px 14px;color:#fff;text-decoration:none}
+.toc-grid a b{color:#f2b84b;display:block}
+.toc-grid a:hover{background:rgba(255,255,255,.15)}
+.bits{font-family:var(--mono);direction:ltr;unicode-bidi:isolate;letter-spacing:.08em}
+.menu-btn{display:none}
+@media (max-width:900px){
+  nav.side{position:fixed;inset-inline-end:0;top:0;z-index:20;transform:translateX(100%);transition:transform .2s;box-shadow:-8px 0 24px rgba(0,0,0,.3)}
+  nav.side.open{transform:none}
+  .menu-btn{display:block;position:fixed;top:12px;inset-inline-start:12px;z-index:30;background:#14213d}
+  main{padding-top:60px}
+  body{font-size:16px}
+}
+</style>
+</head>
+<body>
+<button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
+<div class="layout">
+<nav class="side" id="sidebar">
+  <div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 1–3 + תרגיל בית 1</small></div>
+  <div class="progress"><span id="prog"></span></div>
+  <a href="#home" class="active">דף הבית</a>
+  <h4>פרק 1 — מבוא לקריפטוגרפיה</h4>
+  <a href="#ch1">סקירה: אליס, בוב ואיב</a>
+  <a class="sub" href="#kerckhoffs">עקרון קרקהוף</a>
+  <a class="sub" href="#atbash">צופן אתב״ש</a>
+  <a class="sub" href="#caesar">צופן קיסר</a>
+  <a class="sub" href="#substitution">צופן החלפה וניתוח תדירויות</a>
+  <a class="sub" href="#xor">פעולת XOR</a>
+  <a class="sub" href="#otp">פנקס חד־פעמי (OTP)</a>
+  <a class="sub" href="#attacks">סוגי התקפות</a>
+  <a class="sub" href="#rng">מחוללי מספרים אקראיים</a>
+  <a class="sub" href="#stream-block">צופן זרם מול צופן בלוקים</a>
+  <a class="sub" href="#ecb">ECB והתקפת החלפת בלוקים</a>
+  <a class="sub" href="#modes">מצבי הפעלה ו־CBC</a>
+  <a class="sub" href="#ch1-sum">סיכום ותרגול פרק 1</a>
+  <h4>פרק 2 — הצפנה אסימטרית ו־RSA</h4>
+  <a href="#ch2">בעיית הפצת המפתחות</a>
+  <a class="sub" href="#modulo">פעולת מודולו</a>
+  <a class="sub" href="#groups-zm">הקבוצות Zm ו־Zp*</a>
+  <a class="sub" href="#euclid">אלגוריתם אוקלידס</a>
+  <a class="sub" href="#eea">אוקלידס המורחב (EEA)</a>
+  <a class="sub" href="#phi">פונקציית אוילר φ</a>
+  <a class="sub" href="#fermat">משפטי פרמה ואוילר</a>
+  <a class="sub" href="#rsa">RSA — יצירת מפתחות</a>
+  <a class="sub" href="#rsa-enc">RSA — הצפנה, פענוח והוכחה</a>
+  <a class="sub" href="#rsa-example">RSA — דוגמאות מלאות</a>
+  <a class="sub" href="#sam">ריבוע וכפל (Square & Multiply)</a>
+  <a class="sub" href="#side-channel">התקפת ערוץ צד</a>
+  <a class="sub" href="#ch2-sum">סיכום ותרגול פרק 2</a>
+  <h4>פרק 3 — לוג דיסקרטי ו־Diffie-Hellman</h4>
+  <a href="#ch3">היסטוריה ואנלוגיית הצבעים</a>
+  <a class="sub" href="#groups">חבורות סופיות</a>
+  <a class="sub" href="#order">סדר של איבר</a>
+  <a class="sub" href="#cyclic">חבורות ציקליות ויוצרים</a>
+  <a class="sub" href="#dh">פרוטוקול Diffie-Hellman</a>
+  <a class="sub" href="#dlp">בעיית הלוג הדיסקרטי</a>
+  <a class="sub" href="#bsgs">התקפות: Baby-Step Giant-Step</a>
+  <a class="sub" href="#dlp-compare">השוואת התקפות ו־ECC</a>
+  <a class="sub" href="#mitm">אדם בתווך (MITM)</a>
+  <a class="sub" href="#ch3-sum">סיכום ותרגול פרק 3</a>
+  <h4>תרגיל בית 1</h4>
+  <a href="#hw1">מה כל שאלה בודקת ואיך ניגשים</a>
+  <a class="sub" href="#quiz">בוחן עצמי מסכם</a>
+</nav>
+<main id="top">
+<section id="home">
+<div class="cover">
+  <h1>🔐 מבוא לקריפטוגרפיה שימושית</h1>
+  <p>אתר למידה לפרקים 1–3 של הקורס (ד״ר יותם אשכנזי) — מבוא, הצפנה אסימטרית ו־<bdi dir="ltr">RSA</bdi>, לוג דיסקרטי ו־<bdi dir="ltr">Diffie-Hellman</bdi>. כל מושג מוסבר במילים, בנוסחה, בדוגמה עם מספרים אמיתיים, ובמעבדה אינטראקטיבית שבה אפשר לשחק עם המספרים בעצמך.</p>
+  <div class="toc-grid">
+    <a href="#ch1"><b>פרק 1</b>צפנים קלאסיים, <bdi dir="ltr">XOR, OTP</bdi>, סוגי התקפות, <bdi dir="ltr">ECB</bdi> מול <bdi dir="ltr">CBC</bdi></a>
+    <a href="#ch2"><b>פרק 2</b>מודולו, אוקלידס המורחב, φ, אוילר, <bdi dir="ltr">RSA</bdi>, ריבוע וכפל, ערוץ צד</a>
+    <a href="#ch3"><b>פרק 3</b>חבורות, סדר, יוצרים, <bdi dir="ltr">Diffie-Hellman, DLP, BSGS, MITM</bdi></a>
+    <a href="#hw1"><b>תרגיל בית 1</b>מה כל שאלה בודקת, שיטת עבודה ומלכודות (הגשה: 16.11 בשעה 23:59)</a>
+  </div>
+</div>
+<div class="box summary"><div class="box-head">🗺️ איך להשתמש באתר</div><div class="box-body">
+<ul>
+<li><strong>תיבה כחולה:</strong> תיאוריה — מה המושג ולמה הוא קיים.</li>
+<li><strong>תיבה סגולה:</strong> נוסחה או הגדרה פורמלית.</li>
+<li><strong>תיבה ירוקה:</strong> דוגמה פתורה עם מספרים — כל המספרים באתר נבדקו בחישוב.</li>
+<li><strong>תיבה כתומה:</strong> מלכודת — טעויות נפוצות במבחן ובתרגיל.</li>
+<li><strong>תיבה ורודה:</strong> תרגול עם פתרון נסתר.</li>
+<li><strong>מסגרת מקווקוות 🧪:</strong> מעבדה — מחשבון אינטראקטיבי שמראה את כל שלבי החישוב.</li>
+</ul>
+</div></div>
+</section>
+
+<!-- =============================== CHAPTER 1 =============================== -->
+<h2 class="chapter" id="ch1"><span class="num">1</span>מבוא לקריפטוגרפיה</h2>
+<p class="hook">הפרק הזה בונה את אוצר המילים של כל הקורס: מי התוקף, מה הוא יודע, ולמה "מרחב מפתחות ענק" לא מספיק. שאלות מבחן אוהבות כאן הבנה ולא חישוב — "למה <bdi dir="ltr">ECB</bdi> שבור?", "למה לא משתמשים ב־<bdi dir="ltr">OTP</bdi>?".</p>
+
+<h3><span class="sec">1.1</span>התמונה הגדולה: אליס, בוב ואיב</h3>
+<p>שלוש דמויות חוזרות בכל הקורס. <span class="term">Alice</span> שולחת, <span class="term">Bob</span> מקבל, ו־<span class="term">Eve</span> (מלשון <bdi dir="ltr">eavesdropper</bdi> — מצותתת) יושבת על הערוץ ורואה כל מה שעובר בו. הערוץ <strong>לא מאובטח:</strong> אינטרנט, <bdi dir="ltr">Wi-Fi</bdi>, קו טלפון. המטרה: שאיב תראה רק ג׳יבריש.</p>
+<figure>
+<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" font-family="Heebo,sans-serif">
+  <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker></defs>
+  <rect x="20" y="40" width="190" height="170" rx="14" fill="#eef4ff" stroke="#2563eb"/>
+  <text x="115" y="68" text-anchor="middle" font-weight="700" font-size="18" direction="rtl">Alice (שולחת)</text>
+  <rect x="45" y="85" width="140" height="30" rx="6" fill="#fff" stroke="#999"/><text x="115" y="105" text-anchor="middle" font-size="14">Plaintext</text>
+  <text x="115" y="135" text-anchor="middle" font-size="14" fill="#2563eb">Encrypt (🔑)</text>
+  <rect x="45" y="150" width="140" height="30" rx="6" fill="#14213d"/><text x="115" y="170" text-anchor="middle" font-size="14" fill="#fff">Ciphertext</text>
+  <rect x="550" y="40" width="190" height="170" rx="14" fill="#edf8f0" stroke="#15803d"/>
+  <text x="645" y="68" text-anchor="middle" font-weight="700" font-size="18" direction="rtl">Bob (מקבל)</text>
+  <rect x="575" y="85" width="140" height="30" rx="6" fill="#14213d"/><text x="645" y="105" text-anchor="middle" font-size="14" fill="#fff">Ciphertext</text>
+  <text x="645" y="135" text-anchor="middle" font-size="14" fill="#15803d">Decrypt (🔑)</text>
+  <rect x="575" y="150" width="140" height="30" rx="6" fill="#fff" stroke="#999"/><text x="645" y="170" text-anchor="middle" font-size="14">Plaintext</text>
+  <line x1="210" y1="165" x2="545" y2="100" stroke="#14213d" stroke-width="2.5" stroke-dasharray="8 6" marker-end="url(#ar)"/>
+  <text x="380" y="118" text-anchor="middle" font-size="14" fill="#555" direction="rtl">ערוץ לא מאובטח</text>
+  <circle cx="380" cy="205" r="26" fill="#fde8e8" stroke="#b91c1c"/><text x="380" y="212" text-anchor="middle" font-size="20">👁️</text>
+  <text x="380" y="245" text-anchor="middle" font-size="15" font-weight="700" fill="#b91c1c" direction="rtl">Eve — רואה רק Ciphertext</text>
+  <line x1="380" y1="178" x2="380" y2="140" stroke="#b91c1c" stroke-dasharray="3 4"/>
+</svg>
+<figcaption><bdi dir="ltr">Plaintext</bdi> ← הצפנה ← <bdi dir="ltr">Ciphertext</bdi> ← ערוץ ← פענוח ← <bdi dir="ltr">Plaintext</bdi></figcaption>
+</figure>
+<div class="box theory"><div class="box-head">📘 מילון מונחים בסיסי</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>מונח</th><th>אנגלית</th><th>משמעות</th></tr>
+<tr><td>טקסט גלוי</td><td class="mono">Plaintext (P / M)</td><td>ההודעה המקורית, הקריאה.</td></tr>
+<tr><td>טקסט מוצפן</td><td class="mono">Ciphertext (C)</td><td>מה שעובר בערוץ; אמור להיראות אקראי.</td></tr>
+<tr><td>מפתח</td><td class="mono">Key (K)</td><td>הסוד היחיד במערכת. קובע איך ההצפנה מתנהגת.</td></tr>
+<tr><td>הצפנה / פענוח</td><td class="mono">Encrypt / Decrypt</td><td>הפונקציות שהופכות <bdi dir="ltr">P</bdi> ל־<bdi dir="ltr">C</bdi> ולהפך.</td></tr>
+<tr><td>סימטרי</td><td class="mono">Symmetric</td><td>אותו מפתח להצפנה ולפענוח (<bdi dir="ltr">AES, ChaCha20</bdi>).</td></tr>
+<tr><td>אסימטרי</td><td class="mono">Asymmetric</td><td>זוג מפתחות: ציבורי להצפנה, פרטי לפענוח (<bdi dir="ltr">RSA</bdi>) — פרק 2.</td></tr>
+</table></div>
+</div></div>
+
+<h3 id="kerckhoffs"><span class="sec">1.2</span>עקרון קרקהוף (<bdi dir="ltr">Kerckhoffs, 1883</bdi>)</h3>
+<div class="box formula"><div class="box-head">📐 העיקרון</div><div class="box-body">
+<p>מערכת הצפנה צריכה להיות בטוחה <strong>גם אם כל פרטיה ידועים לתוקף — חוץ מהמפתח.</strong></p>
+</div></div>
+<div class="cards">
+<div class="card"><div class="ic">✅</div><b>תכנון נכון</b>הביטחון נשען רק על המפתח הסודי. את האלגוריתם אפשר לפרסם בקוד פתוח.</div>
+<div class="card"><div class="ic">🔬</div><b>ביקורת עמיתים</b>אלגוריתם ציבורי נבדק על ידי אלפי קריפטוגרפים, כך שבאגים מתגלים מוקדם.</div>
+<div class="card"><div class="ic">🚫</div><b>ביטחון באמצעות הסתרה</b>הסתרת האלגוריתם (<span class="term">security by obscurity</span>) אינה תחליף למפתח חזק. ברגע שהאלגוריתם דולף — הכול נשבר.</div>
+<div class="card"><div class="ic">🌍</div><b>בעולם האמיתי</b><span class="term">AES, RSA, ChaCha20</span> — כולם ציבוריים לחלוטין, וזה בדיוק מה שנותן בהם אמון.</div>
+</div>
+<div class="keypoint">💡 <b>משפט למבחן:</b> אם הביטחון של מערכת תלוי בכך שהתוקף לא יודע <em>איך</em> היא עובדת — היא מתוכננת לא נכון.</div>
+
+<h3 id="atbash"><span class="sec">1.3</span>הצופן העתיק ביותר: אתב״ש</h3>
+<p>האות הראשונה מוחלפת באחרונה, השנייה בלפני־אחרונה, וכן הלאה. בעברית: א↔ת, ב↔ש, ג↔ר… ומכאן השם <strong>את־בש</strong>. באנגלית: <span class="ltr">A↔Z, B↔Y, C↔X</span>.</p>
+<div class="box example"><div class="box-head">✏️ דוגמה מהתנ״ך — ירמיהו כ״ה, כ״ו</div><div class="box-body">
+<p>"וּמֶלֶךְ <strong>שֵׁשַׁךְ</strong> יִשְׁתֶּה אַחֲרֵיהֶם" — <strong>ששך</strong> הוא <strong>בבל</strong> בצופן אתב״ש:</p>
+<div class="tbl-wrap"><table>
+<tr><th>בבל</th><td>ב</td><td>ב</td><td>ל</td></tr>
+<tr><th>ששך</th><td>ש</td><td>ש</td><td>ך (כ)</td></tr>
+</table></div>
+<p>ב↔ש כי ב׳ היא השנייה מההתחלה ו־ש׳ השנייה מהסוף; ל↔כ כי שתיהן ה־11 מכל צד.</p>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ למה זה צופן חלש</div><div class="box-body">
+<p><strong>המפתח הוא האלגוריתם.</strong> אין שום סוד מעבר לשיטה עצמה — מי שמכיר את השיטה מפענח מיד. זו בדיוק הפרה של עקרון קרקהוף.</p>
+</div></div>
+
+<h3 id="caesar"><span class="sec">1.4</span>צופן קיסר (<bdi dir="ltr">Caesar</bdi>)</h3>
+<p>מזיזים כל אות במספר קבוע של מקומות באלף־בית. המפתח הוא גודל ההזזה <span class="ltr">k</span> (קיסר השתמש ב־3).</p>
+<div class="box formula"><div class="box-head">📐 נוסחה <span class="ltr">(A=0, B=1, …, Z=25)</span></div><div class="box-body">
+$$C = (P + k) \bmod 26 \qquad\qquad P = (C - k) \bmod 26$$
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה עם <bdi dir="ltr">k=3</bdi></div><div class="box-body">
+<p class="mathline"><span class="ltr">HELLO WORLD → KHOOR ZRUOG</span></p>
+<p>למשל <span class="ltr">H=7 → 7+3=10 = K</span>, ו־<span class="ltr">W=22 → 25 = Z</span>. מה עם <span class="ltr">Y</span>? <span class="ltr">24+3 = 27 mod 26 = 1 = B</span> — כאן נכנס המודולו ("גלגול" חזרה להתחלה).</p>
+</div></div>
+<div class="lab"><h5>מעבדה: צופן קיסר + תקיפת כוח גס</h5>
+<div class="row"><label>טקסט <input id="cz-in" class="wide" value="HELLO WORLD"></label><label>הזזה <bdi dir="ltr">k</bdi> <input id="cz-k" type="number" value="3" min="0" max="25"></label>
+<button onclick="caesarRun()">הצפן</button><button class="ghost" onclick="caesarBrute()">נסה את כל 25 המפתחות</button></div>
+<div class="out" id="cz-out"></div></div>
+<div class="tbl-wrap"><table>
+<tr><th>🔑 מרחב מפתחות</th><th>⚡ כוח גס</th><th>📊 חולשה</th></tr>
+<tr><td>רק 25 מפתחות אפשריים (הזזה 1–25).</td><td>תוקף מנסה את כולם בשבריר שנייה (נסה במעבדה למעלה).</td><td>תדירות האותיות נשמרת — האות הנפוצה בטקסט המוצפן היא כנראה <span class="ltr">E</span> המוזזת.</td></tr>
+</table></div>
+
+<h3 id="substitution"><span class="sec">1.5</span>צופן החלפה וניתוח תדירויות</h3>
+<p>במקום הזזה קבועה — כל אות ממופה לאות אחרת לפי טבלה שרירותית (תמורה של האלף־בית). <strong>הטבלה היא המפתח.</strong></p>
+<div class="tbl-wrap"><table>
+<tr><th>Plain</th><td class="num">A</td><td class="num">B</td><td class="num">C</td><td class="num">D</td><td class="num">E</td><td class="num">F</td><td class="num">G</td><td class="num">H</td><td class="num">I</td><td class="num">J</td><td class="num">…</td></tr>
+<tr><th>Cipher</th><td class="num">Q</td><td class="num">W</td><td class="num">E</td><td class="num">R</td><td class="num">T</td><td class="num">Y</td><td class="num">U</td><td class="num">I</td><td class="num">O</td><td class="num">P</td><td class="num">…</td></tr>
+</table></div>
+<div class="box formula"><div class="box-head">📐 גודל מרחב המפתחות</div><div class="box-body">
+$$26! = 403{,}291{,}461{,}126{,}605{,}635{,}584{,}000{,}000 \approx 2^{88}$$
+<p>זה יותר מדי לכוח גס. נשמע בלתי שביר — אבל:</p>
+</div></div>
+<div class="box theory"><div class="box-head">📘 ניתוח תדירויות (אל־כינדי, בערך 850 לספירה)</div><div class="box-body">
+<p>ההחלפה משנה את <em>שם</em> האות אבל לא את <em>כמה פעמים</em> היא מופיעה. באנגלית <span class="ltr">E</span> מופיעה בכ־<bdi dir="ltr">12.7%</bdi> מהאותיות. אם בטקסט המוצפן <span class="ltr">T</span> הכי נפוצה — כנראה <span class="ltr">T = E</span>. משם ממשיכים עם צמדים נפוצים (<span class="ltr">TH, HE</span>) ומילים קצרות (<span class="ltr">THE, AND</span>).</p>
+<figure>
+<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace">
+  <line x1="40" y1="180" x2="620" y2="180" stroke="#999"/>
+  <g fill="#2563eb">
+    <rect x="50" y="53" width="40" height="127"/><rect x="110" y="89" width="40" height="91"/><rect x="170" y="98" width="40" height="82"/><rect x="230" y="105" width="40" height="75"/><rect x="290" y="110" width="40" height="70"/><rect x="350" y="113" width="40" height="67"/><rect x="410" y="117" width="40" height="63"/><rect x="470" y="119" width="40" height="61"/><rect x="530" y="120" width="40" height="60"/>
+  </g>
+  <g font-size="15" text-anchor="middle" font-weight="600">
+    <text x="70" y="200">E</text><text x="130" y="200">T</text><text x="190" y="200">A</text><text x="250" y="200">O</text><text x="310" y="200">I</text><text x="370" y="200">N</text><text x="430" y="200">S</text><text x="490" y="200">H</text><text x="550" y="200">R</text>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#333">
+    <text x="70" y="47"><bdi dir="ltr">12.7%</bdi></text><text x="130" y="83"><bdi dir="ltr">9.1%</bdi></text><text x="190" y="92"><bdi dir="ltr">8.2%</bdi></text><text x="250" y="99"><bdi dir="ltr">7.5%</bdi></text><text x="310" y="104"><bdi dir="ltr">7.0%</bdi></text><text x="370" y="107"><bdi dir="ltr">6.7%</bdi></text><text x="430" y="111"><bdi dir="ltr">6.3%</bdi></text><text x="490" y="113"><bdi dir="ltr">6.1%</bdi></text><text x="550" y="114"><bdi dir="ltr">6.0%</bdi></text>
+  </g>
+  <text x="330" y="22" text-anchor="middle" font-size="14" font-family="Heebo" direction="rtl">שכיחות האותיות הנפוצות באנגלית</text>
+</svg>
+</figure>
+</div></div>
+<div class="keypoint">💡 <b>מרחב מפתחות גדול הוא תנאי הכרחי — אבל לא מספיק.</b> צופן החלפה מראה שאם המבנה הסטטיסטי של הטקסט "שורד" את ההצפנה, אפשר לשבור אותו בלי לנסות אף מפתח.</div>
+
+<h3 id="xor"><span class="sec">1.6</span>המפתח הסודי ופעולת <bdi dir="ltr">XOR</bdi></h3>
+<p><span class="term">XOR</span> (מסומן ⊕) הוא "או בלעדי": התוצאה 1 אם ורק אם הביטים <strong>שונים</strong>. זו אבן הבניין של כמעט כל צופן מודרני.</p>
+<div class="tbl-wrap"><table style="max-width:320px">
+<tr><th class="num">A</th><th class="num">B</th><th class="num">A⊕B</th></tr>
+<tr><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td class="num">0</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td class="num">1</td><td class="num">0</td><td class="num">1</td></tr>
+<tr><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+</table></div>
+<div class="box formula"><div class="box-head">📐 שלוש תכונות שכדאי לזכור</div><div class="box-body">
+$$A \oplus A = 0 \qquad A \oplus 0 = A \qquad A \oplus B \oplus B = A$$
+<p>התכונה השלישית היא הקסם: <strong>מצפינים ומפענחים באותה פעולה בדיוק.</strong> מבצעים <bdi dir="ltr">XOR</bdi> עם המפתח — ושוב <bdi dir="ltr">XOR</bdi> עם אותו מפתח מחזיר את המקור.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה מהשקף — האות <bdi dir="ltr">H</bdi></div><div class="box-body">
+<pre>Plaintext :  01001000   (H)
+Key       :  11010101
+             --------  XOR
+Ciphertext:  10011101
+Key       :  11010101
+             --------  XOR
+Plaintext :  01001000   (H)  ← back to the original</pre>
+</div></div>
+<div class="lab"><h5>מעבדה: <bdi dir="ltr">XOR</bdi> בין שני בתים</h5>
+<div class="row"><label>תו / בינארי <input id="xr-p" value="H"></label><label>מפתח (8 ביט) <input id="xr-k" value="11010101" class="wide" style="width:160px"></label><button onclick="xorRun()">חשב</button></div>
+<div class="out" id="xr-out"></div></div>
+
+<h3 id="otp"><span class="sec">1.7</span>פנקס חד־פעמי (<bdi dir="ltr">One-Time Pad</bdi>) — סודיות מושלמת</h3>
+<p>מצפינים ב־<bdi dir="ltr">XOR</bdi> עם מפתח אקראי באורך ההודעה: <span class="ltr">C = P ⊕ K</span>. שאנון (<bdi dir="ltr">Shannon</bdi>) הוכיח ב־1949 שזה <strong>בלתי שביר מתמטית:</strong> כל טקסט גלוי באורך הזה מתאים באותה מידה לכל טקסט מוצפן, ולכן הטקסט המוצפן לא מלמד דבר.</p>
+<div class="cards">
+<div class="card"><div class="ic">1️⃣</div><b>אורך המפתח = אורך ההודעה</b>לפחות. אין קיצורי דרך.</div>
+<div class="card"><div class="ic">2️⃣</div><b>אקראי באמת</b>ממקור פיזיקלי (<bdi dir="ltr">TRNG</bdi>), לא ממחולל פסאודו־אקראי.</div>
+<div class="card"><div class="ic">3️⃣</div><b>לעולם לא לחזור</b>שימוש חוזר במפתח מדליף מידע ושובר את הביטחון.</div>
+</div>
+<div class="box warn"><div class="box-head">⚠️ למה שימוש חוזר הורס הכול</div><div class="box-body">
+<p>אם הוצפנו שתי הודעות באותו מפתח, איב מחשבת <bdi dir="ltr">XOR</bdi> בין שני הטקסטים המוצפנים והמפתח מתבטל:</p>
+$$C_1 \oplus C_2 = (P_1 \oplus K) \oplus (P_2 \oplus K) = P_1 \oplus P_2$$
+<p>קיבלנו <bdi dir="ltr">XOR</bdi> של שתי הודעות טבעיות — ועליו כבר אפשר להפעיל ניתוח סטטיסטי.</p>
+</div></div>
+<details class="reveal"><summary>💬 שאלת השקף: אם <bdi dir="ltr">OTP</bdi> מושלם — למה לא משתמשים בו בכל מקום?</summary><div>
+<p><strong>כי הוא מעביר את הבעיה ולא פותר אותה.</strong> כדי לשלוח <bdi dir="ltr">1GB</bdi> צריך מראש מפתח סודי של <bdi dir="ltr">1GB</bdi>, שהועבר בדרך מאובטחת, שלא ישומש שוב לעולם. אם יש לך ערוץ מאובטח להעביר כזה מפתח — היית יכול להעביר בו את ההודעה עצמה. בנוסף, ייצור כמויות עצומות של אקראיות אמיתית וניהול המפתחות יקרים. זו בדיוק <strong>בעיית הפצת המפתחות</strong> שפרק 2 בא לפתור.</p>
+</div></details>
+
+<h3 id="attacks"><span class="sec">1.8</span>סוגי התקפות קריפטואנליטיות</h3>
+<p>מודל התקפה מתאר <strong>מה התוקף יכול לעשות</strong>. הסדר בטבלה הוא מהחלש לחזק — צופן טוב צריך לעמוד גם במודל החזק ביותר.</p>
+<div class="tbl-wrap"><table>
+<tr><th>מודל</th><th>מה יש לתוקף</th><th>מטרה</th><th>דוגמה</th></tr>
+<tr><td>🔒 <span class="term">Ciphertext-Only</span></td><td>רק טקסט מוצפן.</td><td>לשחזר טקסט גלוי או מפתח.</td><td>ניתוח תדירויות על צופן החלפה.</td></tr>
+<tr><td>📋 <span class="term">Known Plaintext</span></td><td>כמה זוגות של טקסט גלוי והמוצפן שלו.</td><td>לגזור את המפתח.</td><td>כותרת קבועה שידוע שמופיעה בכל הודעה.</td></tr>
+<tr><td>✏️ <span class="term">Chosen Plaintext</span></td><td>יכול להצפין הודעות לבחירתו.</td><td>לשחזר מפתח או לזייף טקסטים מוצפנים.</td><td>ב־<bdi dir="ltr">RSA</bdi> זה תמיד אפשרי — המפתח הציבורי גלוי.</td></tr>
+<tr><td>⚡ <span class="term">Chosen Ciphertext</span></td><td>יכול לפענח טקסטים מוצפנים לבחירתו.</td><td>לשחזר טקסט גלוי או מפתח.</td><td>התקפות <span class="term">padding oracle</span> על <bdi dir="ltr">TLS</bdi> — המודל החזק ביותר.</td></tr>
+</table></div>
+<h4>טקסונומיה: התקפות קלאסיות מול התקפות מימוש</h4>
+<div class="tbl-wrap"><table>
+<tr><th>קלאסיות (תוקפות את המתמטיקה)</th><th>מימוש (תוקפות את הקוד או החומרה)</th></tr>
+<tr><td><strong>כוח גס:</strong> לנסות את כל המפתחות.</td><td><strong>ערוץ צד:</strong> תזמון, צריכת חשמל, קרינה אלקטרומגנטית (ראו 2.13).</td></tr>
+<tr><td><strong>ניתוח מתמטי:</strong> ניצול חולשות אלגבריות.</td><td><strong>הזרקת תקלות:</strong> גרימת שגיאות שמדליפות מפתח.</td></tr>
+<tr><td><strong>ניתוח תדירויות:</strong> סטטיסטיקה על הטקסט המוצפן.</td><td><strong>הנדסה לאחור:</strong> שחזור האלגוריתם מקובץ בינארי.</td></tr>
+<tr><td><strong><span class="term">Meet-in-the-Middle</span>:</strong> החלפת זמן בזיכרון.</td><td><strong><span class="term">Cold Boot</span>:</strong> שליפת מפתחות מזיכרון <bdi dir="ltr">RAM</bdi>.</td></tr>
+<tr><td><strong>יום הולדת:</strong> הסתברות להתנגשויות.</td><td><strong><span class="term">Padding Oracle</span>:</strong> ניצול הודעות שגיאה (למשל <bdi dir="ltr">POODLE</bdi>).</td></tr>
+</table></div>
+<div class="keypoint">💡 <b>אלגוריתם מושלם עדיין יכול להישבר דרך המימוש שלו.</b> זה יחזור בפרק 2 עם התקפת ערוץ הצד על ריבוע וכפל.</div>
+
+<h3 id="rng"><span class="sec">1.9</span>מחוללי מספרים אקראיים (<bdi dir="ltr">RNG</bdi>)</h3>
+<div class="tbl-wrap"><table>
+<tr><th></th><th><span class="term">TRNG</span> — אקראי אמיתי</th><th><span class="term">PRNG</span> — פסאודו־אקראי</th></tr>
+<tr><td><strong>מקור</strong></td><td>אנטרופיה פיזיקלית: רעש תרמי, דעיכה רדיואקטיבית, רעש אטמוספרי, תזמון הקלדה ועכבר, קוביות.</td><td>אלגוריתם דטרמיניסטי שמתחיל מזרע (<span class="term">seed</span>).</td></tr>
+<tr><td><strong>שחזור</strong></td><td>לא ניתן לשחזר.</td><td>אותו זרע ← אותה סדרה בדיוק.</td></tr>
+<tr><td><strong>מהירות</strong></td><td>איטי, דורש חומרה.</td><td>מהיר ונייד.</td></tr>
+<tr><td><strong>ביטחון</strong></td><td>מצוין למפתחות.</td><td>לא בטוח אם הזרע צפוי. הגרסה הבטוחה: <span class="term">CSPRNG</span>.</td></tr>
+</table></div>
+<div class="box formula"><div class="box-head">📐 <bdi dir="ltr">PRNG</bdi> כנוסחת נסיגה</div><div class="box-body">
+$$S_0 = \text{seed} \qquad S_i = f(S_{i-1})$$
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ לעולם לא <code>rand()</code> לקריפטוגרפיה</div><div class="box-body"><p>אם התוקף מנחש את הזרע (למשל השעה שבה התוכנה עלתה), הוא משחזר את כל "המפתחות האקראיים". בפייתון משתמשים ב־<code>secrets</code> ולא ב־<code>random</code>.</p></div></div>
+
+<h3 id="stream-block"><span class="sec">1.10</span>צופן זרם מול צופן בלוקים</h3>
+<div class="tbl-wrap"><table>
+<tr><th>תכונה</th><th>🌊 צופן זרם (<bdi dir="ltr">Stream</bdi>)</th><th>🧱 צופן בלוקים (<bdi dir="ltr">Block</bdi>)</th></tr>
+<tr><td>יחידת עבודה</td><td>ביט או בית אחד בכל פעם.</td><td>בלוק בגודל קבוע (למשל 128 ביט).</td></tr>
+<tr><td>איך</td><td>מייצר זרם מפתח מהמפתח, ואז <span class="ltr">P ⊕ keystream = C</span>.</td><td>אותו מפתח מצפין כל בלוק; דרוש <strong>מצב הפעלה</strong> וריפוד (<span class="term">padding</span>).</td></tr>
+<tr><td>דוגמאות</td><td class="mono">RC4, ChaCha20, Salsa20</td><td class="mono">AES, DES, 3DES</td></tr>
+<tr><td>שימוש טיפוסי</td><td>סטרימינג, <bdi dir="ltr">VoIP, IoT</bdi>.</td><td>קבצים, <bdi dir="ltr">TLS</bdi>, אחסון.</td></tr>
+<tr><td>מהירות</td><td>מהיר יותר, השהיה נמוכה.</td><td>מעט איטי יותר.</td></tr>
+<tr><td>הדבר הקריטי לביטחון</td><td>זרם המפתח <strong>אסור שיחזור</strong> (כמו <bdi dir="ltr">OTP</bdi>).</td><td><strong>מצב ההפעלה</strong> קובע הכול.</td></tr>
+</table></div>
+
+<h3 id="ecb"><span class="sec">1.11</span>מצב <bdi dir="ltr">ECB</bdi> והתקפת החלפת הבלוקים</h3>
+<p>תרחיש מהכיתה: אליס שולחת לבנק הוראת העברה. הבנק מצפין ב־<span class="term">AES-ECB</span>. ההודעה מחולקת לשלושה בלוקים של 16 בתים, וכל בלוק מוצפן <strong>בנפרד</strong> עם אותו מפתח.</p>
+<div class="box formula"><div class="box-head">📐 ECB — Electronic Codebook</div><div class="box-body">
+$$C_i = E_K(P_i) \qquad P_i = D_K(C_i)$$
+<p>אותו בלוק גלוי נותן <strong>תמיד</strong> אותו בלוק מוצפן, ואין שום קשר בין בלוקים.</p>
+</div></div>
+<figure>
+<svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="14">
+  <text x="380" y="24" text-anchor="middle" font-family="Heebo" font-size="16" font-weight="700" direction="rtl">ההודעה המקורית (מיורטת)</text>
+  <g><rect x="60" y="40" width="200" height="44" rx="6" fill="#14213d"/><text x="160" y="67" text-anchor="middle" fill="#fff">C1 · FROM: Alice</text></g>
+  <g><rect x="280" y="40" width="200" height="44" rx="6" fill="#14213d"/><text x="380" y="67" text-anchor="middle" fill="#fff">C2 · TO: Bob</text></g>
+  <g><rect x="500" y="40" width="200" height="44" rx="6" fill="#14213d"/><text x="600" y="67" text-anchor="middle" fill="#fff">C3 · AMOUNT: 1,000</text></g>
+  <text x="380" y="122" text-anchor="middle" font-family="Heebo" font-size="15" direction="rtl" fill="#b91c1c">איב מקליטה העברה אחרת שלה, על סך 9,000, ולוקחת ממנה את הבלוק השלישי</text>
+  <rect x="500" y="134" width="200" height="40" rx="6" fill="#fde8e8" stroke="#b91c1c" stroke-width="2"/><text x="600" y="159" text-anchor="middle" fill="#b91c1c">C3′ · AMOUNT: 9,000</text>
+  <path d="M600 176 L600 222" stroke="#b91c1c" stroke-width="2.5" marker-end="url(#ar2)"/>
+  <defs><marker id="ar2" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+  <text x="380" y="214" text-anchor="middle" font-family="Heebo" font-size="16" font-weight="700" direction="rtl">מה שנשלח לבנק</text>
+  <rect x="60" y="226" width="200" height="44" rx="6" fill="#14213d"/><text x="160" y="253" text-anchor="middle" fill="#fff">C1 · FROM: Alice</text>
+  <rect x="280" y="226" width="200" height="44" rx="6" fill="#14213d"/><text x="380" y="253" text-anchor="middle" fill="#fff">C2 · TO: Bob</text>
+  <rect x="500" y="226" width="200" height="44" rx="6" fill="#b91c1c"/><text x="600" y="253" text-anchor="middle" fill="#fff">C3′ · AMOUNT: 9,000</text>
+  <text x="380" y="310" text-anchor="middle" font-family="Heebo" font-size="15" direction="rtl">הבנק מפענח: "העבר 9,000 מאליס לבוב" — בלי שאיב נגעה במפתח</text>
+</svg>
+<figcaption>התקפת החלפת בלוקים על <bdi dir="ltr">ECB</bdi>: איב לא שברה את <bdi dir="ltr">AES</bdi>, היא רק סידרה מחדש בלוקים.</figcaption>
+</figure>
+<div class="keypoint">💡 <b><bdi dir="ltr">ECB</bdi> מדליף מבנה ומאפשר "גזור והדבק".</b> כל בלוק מוצפן הוא יחידה עצמאית תקפה — אפשר להחליף, לשכפל ולהזיז בלוקים, והפענוח יצליח. הצפנה טובה לא מבטיחה <strong>שלמות</strong> (integrity).</div>
+
+<h3 id="modes"><span class="sec">1.12</span>מצבי הפעלה (<bdi dir="ltr">Modes of Operation</bdi>) והתיקון: <bdi dir="ltr">CBC</bdi></h3>
+<p>צופן בלוקים לבדו מצפין בלוק אחד. מצב ההפעלה מגדיר איך מצפינים הודעה שלמה.</p>
+<div class="tbl-wrap"><table>
+<tr><th>מצב</th><th>שם מלא</th><th>הרעיון</th><th>בטוח?</th></tr>
+<tr class="bad"><td class="mono">ECB</td><td class="mono">Electronic Codebook</td><td>כל בלוק מוצפן בנפרד.</td><td>❌ שבור</td></tr>
+<tr><td class="mono">CBC</td><td class="mono">Cipher Block Chaining</td><td><bdi dir="ltr">XOR</bdi> עם הבלוק המוצפן הקודם, ואז הצפנה.</td><td>✅</td></tr>
+<tr><td class="mono">CTR</td><td class="mono">Counter Mode</td><td>מצפינים מונה ← זרם מפתח (כמו צופן זרם).</td><td>✅</td></tr>
+<tr class="good"><td class="mono">GCM</td><td class="mono">Galois/Counter Mode</td><td><bdi dir="ltr">CTR</bdi> + תג אימות: סודיות <strong>וגם</strong> שלמות.</td><td>✅✅ הכי טוב</td></tr>
+<tr><td class="mono">CFB</td><td class="mono">Cipher Feedback</td><td>מצפינים את הבלוק המוצפן הקודם ועושים <bdi dir="ltr">XOR</bdi> עם הגלוי.</td><td>✅</td></tr>
+<tr><td class="mono">OFB</td><td class="mono">Output Feedback</td><td>זרם מפתח שנוצר ללא תלות בטקסט הגלוי.</td><td>✅</td></tr>
+</table></div>
+<p><span class="term">TLS 1.3</span> משתמש רק במצבים מאומתים: <span class="term">AES-GCM</span> או <span class="term">ChaCha20-Poly1305</span>. אם רואים <bdi dir="ltr">ECB</bdi> בקוד ייצור — זה באג.</p>
+<div class="box formula"><div class="box-head">📐 CBC — Cipher Block Chaining</div><div class="box-body">
+$$C_0 = IV \qquad C_i = E_K(P_i \oplus C_{i-1}) \qquad P_i = D_K(C_i) \oplus C_{i-1}$$
+<p>ה־<span class="term">IV</span> (וקטור אתחול) הוא ערך אקראי לכל הודעה, כך שגם שתי הודעות זהות מוצפנות אחרת.</p>
+</div></div>
+<figure>
+<svg viewBox="0 0 760 270" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="15">
+  <defs><marker id="ar3" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker></defs>
+  <g text-anchor="middle">
+  <rect x="20" y="105" width="60" height="36" rx="6" fill="#f2b84b"/><text x="50" y="128">IV</text>
+  <!-- blocks -->
+  <rect x="160" y="20" width="110" height="34" rx="6" fill="#fff" stroke="#555"/><text x="215" y="42">P1 (FROM)</text>
+  <rect x="380" y="20" width="110" height="34" rx="6" fill="#fff" stroke="#555"/><text x="435" y="42">P2 (TO)</text>
+  <rect x="600" y="20" width="120" height="34" rx="6" fill="#fff" stroke="#555"/><text x="660" y="42">P3 (1,000)</text>
+  <circle cx="215" cy="123" r="16" fill="#fff" stroke="#14213d" stroke-width="2"/><text x="215" y="129" font-size="18">⊕</text>
+  <circle cx="435" cy="123" r="16" fill="#fff" stroke="#14213d" stroke-width="2"/><text x="435" y="129" font-size="18">⊕</text>
+  <circle cx="660" cy="123" r="16" fill="#fff" stroke="#14213d" stroke-width="2"/><text x="660" y="129" font-size="18">⊕</text>
+  <rect x="165" y="160" width="100" height="36" rx="6" fill="#7c3aed"/><text x="215" y="183" fill="#fff">AES_K</text>
+  <rect x="385" y="160" width="100" height="36" rx="6" fill="#7c3aed"/><text x="435" y="183" fill="#fff">AES_K</text>
+  <rect x="610" y="160" width="100" height="36" rx="6" fill="#7c3aed"/><text x="660" y="183" fill="#fff">AES_K</text>
+  <rect x="175" y="222" width="80" height="34" rx="6" fill="#14213d"/><text x="215" y="244" fill="#fff">C1</text>
+  <rect x="395" y="222" width="80" height="34" rx="6" fill="#14213d"/><text x="435" y="244" fill="#fff">C2</text>
+  <rect x="620" y="222" width="80" height="34" rx="6" fill="#14213d"/><text x="660" y="244" fill="#fff">C3</text>
+  </g>
+  <g stroke="#14213d" stroke-width="2" fill="none" marker-end="url(#ar3)">
+  <path d="M215 54 V105"/><path d="M435 54 V105"/><path d="M660 54 V105"/>
+  <path d="M80 123 H197"/>
+  <path d="M215 139 V158"/><path d="M435 139 V158"/><path d="M660 139 V158"/>
+  <path d="M215 196 V220"/><path d="M435 196 V220"/><path d="M660 196 V220"/>
+  <path d="M255 239 H320 V123 H417"/><path d="M475 239 H545 V123 H642"/>
+  </g>
+</svg>
+<figcaption><bdi dir="ltr">CBC</bdi>: כל בלוק גלוי עובר <bdi dir="ltr">XOR</bdi> עם הבלוק המוצפן הקודם לפני ההצפנה — השרשרת קושרת את הבלוקים.</figcaption>
+</figure>
+<div class="box example"><div class="box-head">✏️ למה התקפת ההחלפה נכשלת ב־<bdi dir="ltr">CBC</bdi></div><div class="box-body">
+<ul>
+<li>הבלוק <span class="ltr">C3′</span> של איב נוצר בהודעה <em>אחרת</em>, כלומר הוא מצפין את <span class="ltr">P3′ ⊕ C2′</span> (עם ה־<bdi dir="ltr">C2</bdi> של ההודעה שלה).</li>
+<li>הבנק מפענח אותו בעזרת ה־<span class="ltr">C2</span> של אליס: <span class="ltr">D(C3′) ⊕ C2 = P3′ ⊕ C2′ ⊕ C2</span> — זה זבל ולא "<bdi dir="ltr">AMOUNT: 9,000</bdi>".</li>
+<li>כלומר בלוק לא "נושא את המשמעות שלו" לבד; הוא תלוי בשכן שלפניו.</li>
+</ul>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ דיוק חשוב (מעבר לשקף)</div><div class="box-body">
+<p>השקף אומר ש"שינוי בלוק משחית את כל הבלוקים שאחריו". זה נכון ב<strong>הצפנה</strong> (שינוי ב־<span class="ltr">P1</span> משנה את כל <span class="ltr">C1, C2, C3…</span>). ב<strong>פענוח</strong>, מנוסחת הפענוח רואים ששינוי <span class="ltr">C_i</span> משפיע רק על שני בלוקים:</p>
+<ul>
+<li><span class="ltr">P_i</span> — הופך לזבל מלא.</li>
+<li><span class="ltr">P_(i+1)</span> — מקבל היפוך ביטים בדיוק במקומות ששונו ב־<span class="ltr">C_i</span>.</li>
+</ul>
+<p>ובגלל זה <bdi dir="ltr">CBC</bdi> לבדו <strong>לא</strong> מבטיח שלמות: תוקף יכול להפוך ביטים נבחרים ב־<span class="ltr">P_(i+1)</span> במחיר זבל ב־<span class="ltr">P_i</span>. הפתרון המלא הוא מצב מאומת כמו <span class="term">GCM</span>, שבו כל שינוי נתפס על ידי תג האימות.</p>
+</div></div>
+
+<h3 id="ch1-sum"><span class="sec">1.13</span>סיכום ותרגול — פרק 1</h3>
+<div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
+<ul>
+<li><strong>קרקהוף:</strong> הכול ציבורי חוץ מהמפתח.</li>
+<li><strong>אתב״ש:</strong> אין מפתח — השיטה היא הסוד.</li>
+<li><strong>קיסר:</strong> 25 מפתחות ← כוח גס מיידי.</li>
+<li><strong>החלפה:</strong> <span class="ltr">26! ≈ 2^88</span> מפתחות, ועדיין נשבר בניתוח תדירויות.</li>
+<li><strong>XOR:</strong> <span class="ltr">A⊕B⊕B = A</span> ← הצפנה ופענוח זהים.</li>
+<li><strong>OTP:</strong> מושלם רק אם המפתח באורך ההודעה, אקראי באמת וחד־פעמי. לא מעשי בגלל הפצת המפתחות.</li>
+<li><strong>מודלי התקפה:</strong> <bdi dir="ltr">Ciphertext-only</bdi> ← <bdi dir="ltr">Known</bdi> ← <bdi dir="ltr">Chosen plaintext</bdi> ← <bdi dir="ltr">Chosen ciphertext</bdi> (מהחלש לחזק).</li>
+<li><strong>ECB:</strong> בלוקים עצמאיים ← דליפת מבנה והחלפת בלוקים. <strong>CBC</strong> משרשר, <strong>GCM</strong> מוסיף אימות.</li>
+</ul>
+</div></div>
+<div class="box exercise"><div class="box-head">🏋️ תרגול</div><div class="box-body">
+<p><strong>1.</strong> פענח את <span class="ltr">WKLV LV HDVB</span> שהוצפן בקיסר.</p>
+<details class="reveal"><summary>פתרון</summary><div><p>מנסים הזזות. עם <span class="ltr">k=3</span>: <span class="ltr">W→T, K→H, L→I, V→S</span> ← <span class="ltr">THIS IS EASY</span>. (במעבדה: הכנס את הטקסט ולחץ על "נסה את כל 25 המפתחות".)</p></div></details>
+<p><strong>2.</strong> תוקף שומר שני טקסטים מוצפנים שהוצפנו ב־<bdi dir="ltr">OTP</bdi> עם אותו מפתח. מה הוא יכול לחשב בלי לדעת את המפתח?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>את <span class="ltr">C1 ⊕ C2 = P1 ⊕ P2</span>. המפתח מתבטל, ונשאר <bdi dir="ltr">XOR</bdi> של שתי הודעות טבעיות שאפשר לפרק בניחוש מילים נפוצות (<span class="term">crib dragging</span>).</p></div></details>
+<p><strong>3.</strong> תמונה עם רקע לבן אחיד מוצפנת ב־<bdi dir="ltr">AES-ECB</bdi>. מה רואים כשמציגים את הקובץ המוצפן כתמונה?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>את קווי המתאר של התמונה המקורית ("הפינגווין של <bdi dir="ltr">ECB</bdi>"). כל בלוק לבן זהה הופך לאותו בלוק מוצפן, אז אזורים אחידים נשארים אחידים — המבנה דולף.</p></div></details>
+<p><strong>4.</strong> סדר מהחלש לחזק: <bdi dir="ltr">Chosen Plaintext, Ciphertext-Only, Chosen Ciphertext, Known Plaintext</bdi>.</p>
+<details class="reveal"><summary>פתרון</summary><div><p>Ciphertext-Only ← Known Plaintext ← Chosen Plaintext ← Chosen Ciphertext.</p></div></details>
+</div></div>
+<!-- =============================== CHAPTER 2 =============================== -->
+<h2 class="chapter" id="ch2"><span class="num">2</span>הצפנה אסימטרית ו־<bdi dir="ltr">RSA</bdi></h2>
+<p class="hook">זה הפרק החישובי של הקורס, ושאלות 1, 2 ו־4 בתרגיל הבית יושבות עליו. אם תדע לבצע ביד את אוקלידס המורחב ואת ריבוע וכפל — <bdi dir="ltr">RSA</bdi> הוא רק הרכבה של שניהם.</p>
+
+<h3><span class="sec">2.1</span>למה צריך הצפנה אסימטרית? בעיית הפצת המפתחות</h3>
+<p>בהצפנה סימטרית שני הצדדים חייבים מפתח משותף מראש. אבל אם אליס ובוב <strong>מעולם לא נפגשו</strong> — איך הם יעבירו מפתח, כשכל ערוץ יכול להיות מצותת?</p>
+<div class="box theory"><div class="box-head">📘 הפתרון האסימטרי</div><div class="box-body">
+<ul>
+<li>לכל משתתף <strong>זוג מפתחות:</strong> מפתח <strong>ציבורי</strong> (מפרסמים לכולם) ומפתח <strong>פרטי</strong> (שומרים בסוד).</li>
+<li>כל אחד יכול להצפין עם המפתח הציבורי של בוב — רק בוב יכול לפענח עם המפתח הפרטי שלו.</li>
+<li>אין צורך לשתף סוד מראש: המפתח הציבורי יכול לעבור בכל ערוץ, גם מול איב.</li>
+</ul>
+<p>הדימוי: <strong>תיבת דואר.</strong> כל אחד יכול להכניס מכתב דרך החריץ (מפתח ציבורי), רק לבעלים יש מפתח לפתוח אותה (מפתח פרטי).</p>
+</div></div>
+<div class="box theory"><div class="box-head">📘 על מה נשען הביטחון — בעיות מתמטיות "חד־כיווניות"</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>בעיה</th><th>הכיוון הקל</th><th>הכיוון הקשה</th><th>מי משתמש</th></tr>
+<tr><td>פירוק לגורמים</td><td>לכפול שני ראשוניים גדולים</td><td>לפרק את המכפלה בחזרה</td><td>RSA</td></tr>
+<tr><td>לוג דיסקרטי</td><td>לחשב <span class="ltr">g^x mod p</span></td><td>למצוא את <span class="ltr">x</span></td><td><bdi dir="ltr">Diffie-Hellman, ElGamal</bdi> (פרק 3)</td></tr>
+</table></div>
+</div></div>
+
+<h3 id="modulo"><span class="sec">2.2</span>פעולת מודולו</h3>
+<p>תחשוב על שעון: אחרי המקסימום חוזרים לאפס. בשעון של 24 שעות, 20 שעות אחרי 12:00 השעה היא לא 32 אלא <span class="ltr">32 mod 24 = 8</span>.</p>
+<figure>
+<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" style="max-width:300px">
+  <circle cx="150" cy="150" r="110" fill="#fff" stroke="#14213d" stroke-width="3"/>
+  <g font-size="15" text-anchor="middle" font-weight="600" id="clk"></g>
+  <path d="M150 150 L150 238" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M150 150 L226 194" stroke="#b91c1c" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="150" cy="150" r="6" fill="#14213d"/>
+  <text x="150" y="292" text-anchor="middle" font-size="14" font-family="Heebo" direction="rtl">12 + 20 = 32 ≡ 8 (mod 24)</text>
+</svg>
+<figcaption>שעון של 24 שעות: אפור — 12, אדום — 8. השעון הוא פעולת מודולו.</figcaption>
+</figure>
+<div class="box formula"><div class="box-head">📐 הגדרה פורמלית</div><div class="box-body">
+<p>יהיו <span class="ltr">a, r, m</span> מספרים שלמים, <span class="ltr">m &gt; 0</span>. אומרים ש־<bdi dir="ltr">a</bdi> שקול ל־<bdi dir="ltr">r</bdi> מודולו <bdi dir="ltr">m</bdi> אם <bdi dir="ltr">m</bdi> מחלק את ההפרש:</p>
+$$a \equiv r \pmod m \iff m \mid (a - r)$$
+<p>"השארית" הסטנדרטית היא הנציג היחיד בטווח <span class="ltr">0 … m−1</span>.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמאות</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>ביטוי</th><th>תוצאה</th><th>למה</th></tr>
+<tr><td class="num">17 mod 5</td><td class="num">2</td><td class="num">17 = 3·5 + 2</td></tr>
+<tr><td class="num">−3 mod 7</td><td class="num">4</td><td class="num">−3 + 7 = 4</td></tr>
+<tr><td class="num">100 mod 10</td><td class="num">0</td><td>מתחלק בדיוק</td></tr>
+</table></div>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ מלכודת: מספרים שליליים</div><div class="box-body"><p>תוצאה של מודולו היא תמיד בטווח <span class="ltr">0 … m−1</span>. אם יצא שלילי — מוסיפים <bdi dir="ltr">m</bdi> עד שזה חיובי. זה קריטי באוקלידס המורחב: אם קיבלת <span class="ltr">t = −79</span> מודולו 396, ההופכי הוא <span class="ltr">−79 + 396 = 317</span>.</p></div></div>
+<div class="box theory"><div class="box-head">📘 למה מותר לצמצם באמצע החישוב</div><div class="box-body">
+<p>החיבור והכפל "מכבדים" מודולו, ולכן אפשר להקטין כל תוצאת ביניים ולא להגיע אף פעם למספרים ענקיים:</p>
+$$(a \cdot b) \bmod n = \big((a \bmod n)\cdot(b \bmod n)\big) \bmod n$$
+<p>זה הבסיס של ריבוע וכפל (2.12).</p>
+</div></div>
+
+<h3 id="groups-zm"><span class="sec">2.3</span>הקבוצות <span class="ltr">Zm</span> ו־<span class="ltr">Zp*</span></h3>
+<div class="box formula"><div class="box-head">📐 <span class="ltr">Zm</span> — חבורה ביחס לחיבור</div><div class="box-body">
+$$\mathbb{Z}_m = \{0, 1, 2, \dots, m-1\}$$
+<div class="tbl-wrap"><table>
+<tr><th>סגירות</th><th>איבר נייטרלי</th><th>הופכי</th><th>אסוציאטיביות</th></tr>
+<tr><td class="num">a+b mod m ∈ Zm</td><td class="num">0</td><td class="num">−a ≡ m−a</td><td class="num">(a+b)+c ≡ a+(b+c)</td></tr>
+</table></div>
+</div></div>
+<div class="box formula"><div class="box-head">📐 <span class="ltr">Zp*</span> — חבורה ביחס לכפל (<bdi dir="ltr">p</bdi> ראשוני)</div><div class="box-body">
+$$\mathbb{Z}_p^* = \{1, 2, \dots, p-1\}$$
+<p>מכיוון ש־<bdi dir="ltr">p</bdi> ראשוני, לכל <bdi dir="ltr">a</bdi> בקבוצה מתקיים <span class="ltr">gcd(a, p) = 1</span>, ולכן לכל איבר יש הופכי כפלי. <strong>זו החבורה שבה חיים <bdi dir="ltr">RSA</bdi> ו־<bdi dir="ltr">Diffie-Hellman</bdi>.</strong></p>
+</div></div>
+
+<h3 id="euclid"><span class="sec">2.4</span>אלגוריתם אוקלידס — מחלק משותף מקסימלי (<bdi dir="ltr">GCD</bdi>)</h3>
+<div class="box formula"><div class="box-head">📐 התובנה המרכזית</div><div class="box-body">
+$$\gcd(r_0, r_1) = \gcd(r_1,\; r_0 \bmod r_1)$$
+<p>מחליפים כל פעם את הגדול בשארית, ועוצרים כשהשארית 0. ה־<bdi dir="ltr">GCD</bdi> הוא המספר האחרון שאינו אפס.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ <span class="ltr">gcd(27, 21)</span> ו־<span class="ltr">gcd(28, 63)</span></div><div class="box-body">
+<pre>gcd(27, 21)          27 = 1·21 + 6
+= gcd(21, 6)         21 = 3·6  + 3
+= gcd( 6, 3)          6 = 2·3  + 0
+= gcd( 3, 0)  →  3
+
+gcd(63, 28)          63 = 2·28 + 7
+= gcd(28, 7)         28 = 4·7  + 0
+= gcd( 7, 0)  →  7</pre>
+</div></div>
+<p><strong>למה זה עובד גם למספרים בגודל <span class="ltr">2^1000</span>?</strong> כל שני צעדים השארית קטנה לפחות בחצי, ולכן מספר הצעדים הוא <span class="ltr">O(log min(r0, r1))</span> — כמה אלפי צעדים, לא <span class="ltr">2^1000</span>.</p>
+
+<h3 id="eea"><span class="sec">2.5</span>אוקלידס המורחב (<bdi dir="ltr">EEA</bdi>) — איך מוצאים הופכי מודולרי</h3>
+<p>האלגוריתם המורחב מוצא, בנוסף ל־<bdi dir="ltr">GCD</bdi>, גם מקדמים <bdi dir="ltr">s</bdi> ו־<bdi dir="ltr">t</bdi> כך ש:</p>
+$$\gcd(r_0, r_1) = s \cdot r_0 + t \cdot r_1$$
+<div class="box theory"><div class="box-head">📘 למה זה מה שצריך ל־<bdi dir="ltr">RSA</bdi></div><div class="box-body">
+<p>אם <span class="ltr">gcd(n, a) = 1</span>, אז <span class="ltr">s·n + t·a = 1</span>. נקח מודולו <bdi dir="ltr">n</bdi>: האיבר <span class="ltr">s·n</span> נעלם ונשאר <span class="ltr">t·a ≡ 1 (mod n)</span>. כלומר:</p>
+$$t \equiv a^{-1} \pmod n$$
+<p>ב־<bdi dir="ltr">RSA</bdi> מציבים <span class="ltr">n = φ(n)</span> ו־<span class="ltr">a = e</span>, ומקבלים את המפתח הפרטי <span class="ltr">d</span>.</p>
+</div></div>
+<div class="box formula"><div class="box-head">📐 הטבלה — כלל הנסיגה</div><div class="box-body">
+<p>שתי השורות הראשונות קבועות: <span class="ltr">(r0, s=1, t=0)</span> ו־<span class="ltr">(r1, s=0, t=1)</span>. בכל שורה חדשה:</p>
+$$q_i = \left\lfloor \frac{r_{i-2}}{r_{i-1}} \right\rfloor \qquad r_i = r_{i-2} - q_i r_{i-1} \qquad s_i = s_{i-2} - q_i s_{i-1} \qquad t_i = t_{i-2} - q_i t_{i-1}$$
+<p>עוצרים כש־<span class="ltr">r = 1</span> (אם רוצים הופכי) או <span class="ltr">r = 0</span> (ה־<bdi dir="ltr">GCD</bdi> הוא ה־<bdi dir="ltr">r</bdi> שלפניו). <strong>אותו כלל בדיוק לשלוש העמודות <bdi dir="ltr">r, s, t</bdi>.</strong></p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמת הכיתה: ההופכי של 7 מודולו 160</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>i</th><th>r</th><th>q</th><th>s</th><th>t</th><th>בדיקה: <bdi dir="ltr">s·160 + t·7</bdi></th></tr>
+<tr><td class="num">0</td><td class="num">160</td><td class="num">—</td><td class="num">1</td><td class="num">0</td><td class="num">160</td></tr>
+<tr><td class="num">1</td><td class="num">7</td><td class="num">—</td><td class="num">0</td><td class="num">1</td><td class="num">7</td></tr>
+<tr><td class="num">2</td><td class="num">6</td><td class="num">22</td><td class="num">1 − 22·0 = 1</td><td class="num">0 − 22·1 = −22</td><td class="num">160 − 154 = 6</td></tr>
+<tr class="hl"><td class="num">3</td><td class="num">1</td><td class="num">1</td><td class="num">0 − 1·1 = −1</td><td class="num">1 − 1·(−22) = 23</td><td class="num">−160 + 161 = 1</td></tr>
+</table></div>
+<p>הגענו ל־<span class="ltr">r = 1</span>, ולכן <span class="ltr">t = 23</span> הוא ההופכי: <span class="ltr">7 · 23 = 161 = 160 + 1 ≡ 1 (mod 160)</span> ✓</p>
+</div></div>
+<div class="keypoint">💡 <b>טריק בדיקה:</b> בכל שורה בטבלה חייב להתקיים <span class="ltr">r = s·r0 + t·r1</span>. אם שורה אחת לא מסתדרת — הטעות שם. זו הדרך הכי מהירה לתפוס טעות חשבון במבחן.</div>
+<div class="lab"><h5>מעבדה: טבלת אוקלידס המורחב</h5>
+<div class="row"><label><bdi dir="ltr">r0</bdi> (למשל φ(<bdi dir="ltr">n</bdi>)) <input id="ee-a" value="160"></label><label><bdi dir="ltr">r1</bdi> (למשל <bdi dir="ltr">e</bdi>) <input id="ee-b" value="7"></label><button onclick="eeaRun()">בנה טבלה</button></div>
+<div id="ee-out"></div></div>
+
+<h3 id="phi"><span class="sec">2.6</span>פונקציית אוילר <span class="ltr">φ(m)</span></h3>
+<div class="box formula"><div class="box-head">📐 הגדרה</div><div class="box-body">
+<p><span class="ltr">φ(m)</span> הוא מספר המספרים בטווח <span class="ltr">0 … m−1</span> שזרים ל־<bdi dir="ltr">m</bdi>:</p>
+$$\varphi(m) = \big|\{\, i \in \mathbb{Z}_m : \gcd(i, m) = 1 \,\}\big|$$
+<p>דוגמה: ב־<span class="ltr">Z6 = {0,…,5}</span> הזרים ל־6 הם רק <span class="ltr">{1, 5}</span>, לכן <span class="ltr">φ(6) = 2</span>.</p>
+</div></div>
+<div class="box formula"><div class="box-head">📐 נוסחה לפי פירוק לראשוניים</div><div class="box-body">
+<p>אם הפירוק הוא:</p>
+$$m = p_1^{a_1} \cdot p_2^{a_2} \cdots p_k^{a_k}$$
+<p>אז:</p>
+$$\varphi(m) = \prod_{i=1}^{k}\left(p_i^{a_i} - p_i^{a_i - 1}\right) = m \cdot \prod_{i=1}^{k}\left(1 - \frac{1}{p_i}\right)$$
+<p>שני מקרים שחוזרים כל הזמן:</p>
+$$\varphi(p) = p - 1 \qquad\qquad \varphi(p \cdot q) = (p-1)(q-1)$$
+<p>(הראשון כי כל המספרים <span class="ltr">1 … p−1</span> זרים לראשוני; השני כי φ כפלית עבור מספרים זרים.)</p>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ שימו לב לשקף 10</div><div class="box-body"><p>בשקף מופיעה השורה <span class="ltr">φ(m) = ∏(1 − 1/p_i)</span> בלי הכופל <bdi dir="ltr">m</bdi> — חסר שם <span class="ltr">m ·</span> בהתחלה. הנוסחה הנכונה היא זו שלמעלה.</p></div></div>
+<div class="box example"><div class="box-head">✏️ <span class="ltr">φ(240)</span></div><div class="box-body">
+$$240 = 2^4 \cdot 3 \cdot 5$$
+$$\varphi(240) = (2^4 - 2^3)(3-1)(5-1) = 8 \cdot 2 \cdot 4 = 64$$
+<p>בדיקה בדרך השנייה: <span class="ltr">240 · (1/2) · (2/3) · (4/5) = 64</span> ✓</p>
+</div></div>
+
+<h3 id="fermat"><span class="sec">2.7</span>המשפט הקטן של פרמה ומשפט אוילר</h3>
+<div class="tbl-wrap"><table>
+<tr><th>המשפט הקטן של פרמה</th><th>משפט אוילר (הכללה)</th></tr>
+<tr><td>אם <bdi dir="ltr">p</bdi> ראשוני ו־<bdi dir="ltr">p</bdi> לא מחלק את <bdi dir="ltr">a</bdi>:
+$$a^{p-1} \equiv 1 \pmod p$$
+ובצורה השקולה:
+$$a^{p} \equiv a \pmod p$$</td>
+<td>אם <span class="ltr">gcd(a, m) = 1</span>:
+$$a^{\varphi(m)} \equiv 1 \pmod m$$
+פרמה הוא המקרה הפרטי <span class="ltr">m = p</span>, כי <span class="ltr">φ(p) = p − 1</span>.</td></tr>
+</table></div>
+<div class="box example"><div class="box-head">✏️ <span class="ltr">5^4 mod 12</span></div><div class="box-body">
+<p><span class="ltr">φ(12) = φ(4)·φ(3) = 2·2 = 4</span>, ו־<span class="ltr">gcd(5, 12) = 1</span>, לכן לפי אוילר התוצאה 1. בדיקה: <span class="ltr">5^4 = 625 = 52·12 + 1</span> ✓</p>
+</div></div>
+<div class="keypoint">💡 <b>שימוש מעשי:</b> מעריכים אפשר לצמצם מודולו <span class="ltr">φ(m)</span>. למשל <span class="ltr">3^1002 mod 11</span>: כי <span class="ltr">φ(11)=10</span>, ו־<span class="ltr">1002 mod 10 = 2</span>, אז התשובה <span class="ltr">3^2 = 9</span>.</div>
+
+<h3 id="rsa"><span class="sec">2.8</span><bdi dir="ltr">RSA</bdi> — היסטוריה ויצירת מפתחות</h3>
+<div class="cards">
+<div class="card"><div class="ic">🏛️</div><b>1977 — המצאה פומבית</b>ריבסט, שמיר ואדלמן ב־<bdi dir="ltr">MIT</bdi>. מערכת המפתח הציבורי המעשית הראשונה.</div>
+<div class="card"><div class="ic">🇬🇧</div><b>1973 — המצאה סודית</b>קליפורד קוקס ב־<bdi dir="ltr">GCHQ</bdi>. נשאר מסווג עד 1997.</div>
+<div class="card"><div class="ic">📏</div><b>גודל מפתחות היום</b>מודולוס <bdi dir="ltr">n</bdi> של 2,048 עד 4,096 ביט. מפתחות של 1,024 ביט נחשבים שבורים.</div>
+</div>
+<p>כל מערכת מפתח ציבורי בנויה משלושה שלבים: <strong>יצירת מפתחות ← הצפנה ← פענוח.</strong></p>
+<div class="box formula"><div class="box-head">📐 יצירת מפתחות — שישה שלבים</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>מה עושים</th><th>הנוסחה</th><th>סודי?</th></tr>
+<tr><td class="num">1</td><td>בוחרים שני ראשוניים גדולים ושונים (במציאות 1,024+ ביט כל אחד).</td><td class="num">p, q</td><td>🔒 סודי</td></tr>
+<tr><td class="num">2</td><td>מחשבים את המודולוס.</td><td class="num">n = p · q</td><td>🌐 ציבורי</td></tr>
+<tr><td class="num">3</td><td>מחשבים את פונקציית אוילר.</td><td class="num">φ(n) = (p−1)(q−1)</td><td>🔒 סודי</td></tr>
+<tr><td class="num">4</td><td>בוחרים מעריך ציבורי (נפוץ: <span class="ltr">e = 65537 = 2^16 + 1</span>).</td><td class="num">1 &lt; e &lt; φ(n),  gcd(e, φ(n)) = 1</td><td>🌐 ציבורי</td></tr>
+<tr><td class="num">5</td><td>מחשבים מעריך פרטי — ההופכי של <bdi dir="ltr">e</bdi>, בעזרת <bdi dir="ltr">EEA</bdi>.</td><td class="num">e · d ≡ 1 (mod φ(n))</td><td>🔒 סודי</td></tr>
+<tr><td class="num">6</td><td>מרכיבים את זוג המפתחות.</td><td class="num">public (n, e) · private (n, d)</td><td>—</td></tr>
+</table></div>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ למה התנאי <span class="ltr">gcd(e, φ(n)) = 1</span>?</div><div class="box-body"><p>כי רק אז ל־<bdi dir="ltr">e</bdi> יש הופכי מודולו <span class="ltr">φ(n)</span>. אם תבחר <bdi dir="ltr">e</bdi> שאינו זר ל־φ(<bdi dir="ltr">n</bdi>), האלגוריתם המורחב יסתיים ב־<bdi dir="ltr">GCD</bdi> גדול מ־1 ולא יהיה <bdi dir="ltr">d</bdi>. בדוגמת הכיתה <span class="ltr">e = 5</span> נפסל כי <span class="ltr">gcd(5, 160) = 5</span>.</p></div></div>
+
+<h3 id="rsa-enc"><span class="sec">2.9</span><bdi dir="ltr">RSA</bdi> — הצפנה, פענוח והוכחת נכונות</h3>
+<div class="tbl-wrap"><table>
+<tr><th>🔒 הצפנה (עם המפתח הציבורי של בוב)</th><th>🔓 פענוח (עם המפתח הפרטי של בוב)</th></tr>
+<tr><td>$$C = M^{e} \bmod n$$</td><td>$$M = C^{d} \bmod n$$</td></tr>
+</table></div>
+<div class="box warn"><div class="box-head">⚠️ התנאי שכולם שוכחים: <span class="ltr">0 ≤ M &lt; n</span></div><div class="box-body">
+<p>ההצפנה והפענוח מחזירים מספר <strong>מודולו <bdi dir="ltr">n</bdi></strong>, כלומר בטווח <span class="ltr">0 … n−1</span>. אם <span class="ltr">M ≥ n</span>, הפענוח לא יכול להחזיר את <bdi dir="ltr">M</bdi> — הוא מחזיר את <span class="ltr">M mod n</span>. לכן הודעה ארוכה מחלקים לבלוקים קטנים מ־<bdi dir="ltr">n</bdi>. <strong>זה בדיוק מה ששאלה 2 בתרגיל בודקת</strong> (ראו <a href="#hw1">תרגיל בית 1</a>).</p>
+</div></div>
+<div class="box theory"><div class="box-head">📘 הוכחת נכונות — למה הפענוח מחזיר את <bdi dir="ltr">M</bdi></div><div class="box-body">
+<p><strong>צעד 1:</strong> מציבים את ההצפנה בפענוח.</p>
+$$C^d \equiv (M^e)^d = M^{ed} \pmod n$$
+<p><strong>צעד 2:</strong> מכיוון ש־<bdi dir="ltr">d</bdi> הוא ההופכי של <bdi dir="ltr">e</bdi> מודולו <span class="ltr">φ(n)</span>, קיים <bdi dir="ltr">k</bdi> שלם כך ש:</p>
+$$e \cdot d = k \cdot \varphi(n) + 1$$
+<p><strong>צעד 3:</strong> מציבים ומשתמשים במשפט אוילר:</p>
+$$M^{ed} = M^{k\varphi(n) + 1} = \left(M^{\varphi(n)}\right)^{k} \cdot M \equiv 1^{k} \cdot M = M \pmod n$$
+<p><strong>הערה:</strong> אוילר דורש <span class="ltr">gcd(M, n) = 1</span>. התוצאה נכונה גם כש־<bdi dir="ltr">M</bdi> מתחלק ב־<bdi dir="ltr">p</bdi> או ב־<bdi dir="ltr">q</bdi> (מוכיחים בנפרד מודולו <bdi dir="ltr">p</bdi> ומודולו <bdi dir="ltr">q</bdi> ומאחדים בעזרת משפט השאריות הסיני), אבל ההוכחה בכיתה מכסה את המקרה הרגיל.</p>
+</div></div>
+<div class="keypoint">💡 <b>למה איב לא יכולה לפענח:</b> היא יודעת <span class="ltr">(n, e)</span> ו־<bdi dir="ltr">C</bdi>. כדי למצוא <bdi dir="ltr">d</bdi> צריך את <span class="ltr">φ(n) = (p−1)(q−1)</span>, וכדי לדעת אותו צריך לפרק את <bdi dir="ltr">n</bdi> ל־<bdi dir="ltr">p·q</bdi>. עבור <bdi dir="ltr">n</bdi> של 2,048 ביט זה לא אפשרי בזמן סביר.</div>
+
+<h3 id="rsa-example"><span class="sec">2.10</span><bdi dir="ltr">RSA</bdi> — דוגמאות מלאות</h3>
+<div class="box example"><div class="box-head">✏️ דוגמה 1 (מהשקפים): <span class="ltr">p = 11, q = 17, M = 88</span></div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>חישוב</th></tr>
+<tr><td>n</td><td class="num">11 · 17 = 187</td></tr>
+<tr><td>φ(n)</td><td class="num">10 · 16 = 160</td></tr>
+<tr><td>e</td><td>בשקף: <span class="ltr">e=5</span> נפסל כי <span class="ltr">gcd(5,160)=5</span>, ולכן <span class="ltr">e=7</span> ✓ (גם <span class="ltr">e=3</span> היה חוקי)</td></tr>
+<tr><td>d</td><td class="num">7 · d ≡ 1 (mod 160) → d = 23   (EEA table above)</td></tr>
+<tr><td>מפתחות</td><td class="num">public (187, 7) · private (187, 23)</td></tr>
+<tr class="hl"><td>הצפנה</td><td class="num">C = 88^7 mod 187 = 11</td></tr>
+<tr class="hl"><td>פענוח</td><td class="num">M = 11^23 mod 187 = 88 ✓</td></tr>
+</table></div>
+<p>שימו לב: <span class="ltr">M = 88 &lt; n = 187</span>, ולכן הכול עובד. את החזקות מחשבים בריבוע וכפל — הטבלאות המלאות ב־<a href="#sam">2.12</a>.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה 2 (חדשה, כל השלבים): <span class="ltr">p = 19, q = 23, M = 100</span></div><div class="box-body">
+<p><strong>שלבים 1–3:</strong></p>
+$$n = 19 \cdot 23 = 437 \qquad \varphi(n) = 18 \cdot 22 = 396$$
+<p><strong>שלב 4:</strong> מפרקים <span class="ltr">396 = 2^2 · 3^2 · 11</span>. לכן <bdi dir="ltr">e</bdi> צריך להיות אי־זוגי, לא מתחלק ב־3 ולא ב־11. ה־<bdi dir="ltr">e</bdi> הקטן ביותר: <span class="ltr">e = 5</span> ✓</p>
+<p><strong>שלב 5:</strong> אוקלידס המורחב על <span class="ltr">(396, 5)</span>:</p>
+<div class="tbl-wrap"><table>
+<tr><th>i</th><th>r</th><th>q</th><th>s</th><th>t</th></tr>
+<tr><td class="num">0</td><td class="num">396</td><td class="num">—</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td class="num">1</td><td class="num">5</td><td class="num">—</td><td class="num">0</td><td class="num">1</td></tr>
+<tr class="hl"><td class="num">2</td><td class="num">1</td><td class="num">79</td><td class="num">1</td><td class="num">0 − 79·1 = −79</td></tr>
+</table></div>
+<p><span class="ltr">t = −79</span> שלילי, לכן מוסיפים φ(<bdi dir="ltr">n</bdi>): <span class="ltr">d = −79 + 396 = 317</span>. בדיקה: <span class="ltr">5 · 317 = 1585 = 4 · 396 + 1</span> ✓</p>
+<p><strong>שלב 6:</strong> ציבורי <span class="ltr">(437, 5)</span>, פרטי <span class="ltr">(437, 317)</span>.</p>
+<p><strong>הצפנה:</strong> <span class="ltr">C = 100^5 mod 437</span>. 5 בבינארי הוא <span class="ltr">101</span>:</p>
+<div class="tbl-wrap"><table>
+<tr><th>ביט</th><th>פעולה</th><th>ערך</th></tr>
+<tr><td class="num">1</td><td>התחלה</td><td class="num">z = 100</td></tr>
+<tr><td class="num">0</td><td>ריבוע</td><td class="num">100² = 10000 mod 437 = 386</td></tr>
+<tr><td class="num">1</td><td>ריבוע ואז כפל</td><td class="num">386² mod 437 = 416 → 416·100 mod 437 = 85</td></tr>
+</table></div>
+<p><span class="ltr">C = 85</span>. <strong>פענוח:</strong> <span class="ltr">85^317 mod 437 = 100</span> ✓ (תשעה ביטים — נסו במעבדה של ריבוע וכפל עם <span class="ltr">x=85, e=317, n=437</span>).</p>
+</div></div>
+<div class="lab"><h5>מעבדה: <bdi dir="ltr">RSA</bdi> מלא עם כל שלבי החישוב</h5>
+<div class="row"><label>p <input id="rsa-p" value="11"></label><label>q <input id="rsa-q" value="17"></label><label><bdi dir="ltr">e</bdi> (ריק = הקטן החוקי) <input id="rsa-e" value="7"></label><label>M <input id="rsa-m" value="88"></label><button onclick="rsaRun()">חשב</button></div>
+<div id="rsa-out"></div>
+<p style="font-size:14px;color:var(--muted);margin:8px 0 0">המעבדה נועדה לבדוק את החישוב הידני שלך — בתרגיל צריך להראות את השלבים בעצמך.</p>
+</div>
+
+<h3 id="sam"><span class="sec">2.11–2.12</span>חזקה יעילה: ריבוע וכפל (<bdi dir="ltr">Square & Multiply</bdi>)</h3>
+<p>ב־<bdi dir="ltr">RSA</bdi> מחשבים <span class="ltr">M^e mod n</span> עם <bdi dir="ltr">e</bdi> של אלפי ביטים. כפל נאיבי דורש <span class="ltr">e − 1</span> כפלים — עבור <bdi dir="ltr">d</bdi> של 2,048 ביט זה יותר מכמות האטומים ביקום.</p>
+<div class="box theory"><div class="box-head">📘 רעיון 1: ריבוע חוזר</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>נאיבי: <span class="ltr">x^8</span></th><th>ריבוע חוזר: <span class="ltr">x^8</span></th></tr>
+<tr><td class="num">x·x=x² , x²·x=x³ , … , x⁷·x=x⁸   →  7 mult</td><td class="num">x·x=x² , x²·x²=x⁴ , x⁴·x⁴=x⁸   →  3 mult</td></tr>
+</table></div>
+<p>באופן כללי <span class="ltr">x^(2^k)</span> דורש רק <bdi dir="ltr">k</bdi> ריבועים במקום <span class="ltr">2^k − 1</span> כפלים. למשל <span class="ltr">x^1024</span>: עשרה ריבועים במקום 1,023 כפלים.</p>
+</div></div>
+<div class="box formula"><div class="box-head">📐 רעיון 2: האלגוריתם לכל מעריך — לפי הייצוג הבינארי</div><div class="box-body">
+<ol>
+<li>כותבים את המעריך בבינארי.</li>
+<li>מתחילים עם <span class="ltr">z = x</span> (הביט הראשון תמיד 1).</li>
+<li>עוברים על שאר הביטים <strong>משמאל לימין:</strong>
+  <ul><li><strong>תמיד:</strong> ריבוע <span class="ltr">z = z² mod n</span>.</li><li><strong>אם הביט 1:</strong> גם כפל <span class="ltr">z = z · x mod n</span>.</li></ul></li>
+</ol>
+<p><strong>זכרו: "ריבוע תמיד, כפל רק על 1".</strong></p>
+$$\text{cost} \le 2\lfloor \log_2 e \rfloor \text{ multiplications} \quad\text{vs.}\quad e - 1$$
+<p>עבור <span class="ltr">e = 65537 = 10000000000000001₂</span>: 16 ריבועים ועוד כפל אחד = 17 פעולות, במקום 65,536. (השקף כותב 34 — זה החסם העליון <span class="ltr">2·16</span>; בפועל ל־65537 יש רק שני ביטים דולקים.)</p>
+</div></div>
+<div class="box theory"><div class="box-head">📘 למה זה נכון — הרעיון בשורה אחת</div><div class="box-body">
+<p>אם עד עכשיו <bdi dir="ltr">z</bdi> מחזיק את <span class="ltr">x^k</span>, אז ריבוע נותן <span class="ltr">x^(2k)</span> (הוספת ביט 0 מימין למעריך), וכפל ב־<bdi dir="ltr">x</bdi> נותן <span class="ltr">x^(2k+1)</span> (הוספת ביט 1). כך בונים את המעריך ביט אחרי ביט, בדיוק כמו שקוראים מספר בינארי משמאל לימין.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ <span class="ltr">x^26</span> — <span class="ltr">26 = 11010₂</span></div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>ביט</th><th>פעולה</th><th><bdi dir="ltr">z</bdi> (המעריך במעריך בינארי)</th></tr>
+<tr><td class="num">1</td><td>התחלה</td><td class="num">x¹   (1₂)</td></tr>
+<tr><td class="num">1</td><td>ריבוע + כפל</td><td class="num">x² · x = x³   (11₂)</td></tr>
+<tr><td class="num">0</td><td>ריבוע</td><td class="num">x⁶   (110₂)</td></tr>
+<tr><td class="num">1</td><td>ריבוע + כפל</td><td class="num">x¹² · x = x¹³   (1101₂)</td></tr>
+<tr><td class="num">0</td><td>ריבוע</td><td class="num">x²⁶   (11010₂)</td></tr>
+</table></div>
+<p>4 ריבועים + 2 כפלים = <strong>6 כפלים</strong> במקום 25. (השקף סופר "5 פעולות" — הוא סופר "ריבוע+כפל" כשלב אחד.)</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ <span class="ltr">x^67</span> — <span class="ltr">67 = 1000011₂</span></div><div class="box-body">
+<p class="mathline"><span class="ltr">x → x² → x⁴ → x⁸ → x¹⁶ → x³²·x = x³³ → x⁶⁶·x = x⁶⁷</span></p>
+<p>6 ריבועים + 2 כפלים = 8 פעולות, במקום 66. האצה של פי 8 בערך.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ עם מספרים אמיתיים: <span class="ltr">88^7 mod 187</span> ו־<span class="ltr">11^23 mod 187</span></div><div class="box-body">
+<p><strong>הצפנה</strong>, <span class="ltr">7 = 111₂</span>:</p>
+<div class="tbl-wrap"><table>
+<tr><th>ביט</th><th>ריבוע</th><th>כפל ב־88</th><th>z</th></tr>
+<tr><td class="num">1</td><td class="num">—</td><td class="num">—</td><td class="num">88</td></tr>
+<tr><td class="num">1</td><td class="num">88² = 7744 mod 187 = 77</td><td class="num">77·88 = 6776 mod 187 = 44</td><td class="num">44</td></tr>
+<tr class="hl"><td class="num">1</td><td class="num">44² = 1936 mod 187 = 66</td><td class="num">66·88 = 5808 mod 187 = 11</td><td class="num">11</td></tr>
+</table></div>
+<p><strong>פענוח</strong>, <span class="ltr">23 = 10111₂</span>:</p>
+<div class="tbl-wrap"><table>
+<tr><th>ביט</th><th>ריבוע</th><th>כפל ב־11</th><th>z</th></tr>
+<tr><td class="num">1</td><td class="num">—</td><td class="num">—</td><td class="num">11</td></tr>
+<tr><td class="num">0</td><td class="num">11² = 121</td><td class="num">—</td><td class="num">121</td></tr>
+<tr><td class="num">1</td><td class="num">121² = 14641 mod 187 = 55</td><td class="num">55·11 = 605 mod 187 = 44</td><td class="num">44</td></tr>
+<tr><td class="num">1</td><td class="num">44² mod 187 = 66</td><td class="num">66·11 = 726 mod 187 = 165</td><td class="num">165</td></tr>
+<tr class="hl"><td class="num">1</td><td class="num">165² = 27225 mod 187 = 110</td><td class="num">110·11 = 1210 mod 187 = 88</td><td class="num">88 ✓</td></tr>
+</table></div>
+</div></div>
+<div class="lab"><h5>מעבדה: מעקב ריבוע וכפל</h5>
+<div class="row"><label>בסיס <bdi dir="ltr">x</bdi> <input id="sm-x" value="88"></label><label>מעריך <bdi dir="ltr">e</bdi> <input id="sm-e" value="7"></label><label>מודולוס <bdi dir="ltr">n</bdi> <input id="sm-n" value="187"></label><button onclick="samRun()">עקוב</button></div>
+<div id="sm-out"></div></div>
+<pre><span class="c"># Square-and-Multiply, left to right (same as Python's pow(x, e, n))</span>
+def square_and_multiply(x, e, n):
+    bits = bin(e)[2:]          <span class="c"># '111' for e = 7</span>
+    z = x % n                  <span class="c"># first bit is always 1</span>
+    for b in bits[1:]:
+        z = (z * z) % n        <span class="c"># always square</span>
+        if b == '1':
+            z = (z * x) % n    <span class="c"># multiply only on 1-bits</span>
+    return z
+
+print(square_and_multiply(88, 7, 187))   <span class="c"># 11</span>
+print(square_and_multiply(11, 23, 187))  <span class="c"># 88</span></pre>
+
+<h3 id="side-channel"><span class="sec">2.13</span>התקפת ערוץ צד על <bdi dir="ltr">RSA</bdi></h3>
+<p>האלגוריתם בטוח — <strong>המימוש</strong> מדליף. בריבוע וכפל, ביט 1 גורם לריבוע <em>וגם</em> לכפל, וביט 0 רק לריבוע. אם מודדים צריכת חשמל או זמן בזמן הפענוח (שמשתמש ב־<bdi dir="ltr">d</bdi> הסודי) — רואים את הביטים של <bdi dir="ltr">d</bdi> אחד אחרי השני.</p>
+<figure>
+<svg viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace">
+  <polyline fill="none" stroke="#b91c1c" stroke-width="2.5" points="20,140 40,140 45,80 95,80 100,140 120,140 125,80 175,80 180,140 190,140 195,95 245,95 250,140 260,140 265,80 315,80 320,140 340,140 345,80 395,80 400,140 410,140 415,95 465,95 470,140 480,140 485,80 535,80 540,140 550,140 555,95 605,95 610,140 630,140 635,80 685,80 690,140 700,140 705,95 740,95 745,140"/>
+  <g font-size="14" text-anchor="middle" font-weight="700">
+    <text x="70" y="70">S</text><text x="150" y="70">S</text><text x="220" y="85" fill="#2563eb">M</text><text x="290" y="70">S</text><text x="370" y="70">S</text><text x="440" y="85" fill="#2563eb">M</text><text x="510" y="70">S</text><text x="580" y="85" fill="#2563eb">M</text><text x="660" y="70">S</text><text x="722" y="85" fill="#2563eb">M</text>
+  </g>
+  <g font-size="18" text-anchor="middle" font-weight="800" fill="#14213d">
+    <text x="70" y="180">0</text><text x="185" y="180">1</text><text x="290" y="180">0</text><text x="405" y="180">1</text><text x="545" y="180">1</text><text x="690" y="180">1</text>
+  </g>
+  <text x="380" y="30" text-anchor="middle" font-family="Heebo" font-size="15" direction="rtl">S לבד = ביט 0 · S ואחריו M = ביט 1 ← קוראים את d ישר מהגרף</text>
+</svg>
+<figcaption>עקבת צריכת חשמל סכמטית: כל "<bdi dir="ltr">S</bdi>" הוא ריבוע, כל "<bdi dir="ltr">M</bdi>" הוא כפל.</figcaption>
+</figure>
+<div class="tbl-wrap"><table>
+<tr><th>הגנה</th><th>הרעיון</th></tr>
+<tr><td><strong>סינוור (<span class="term">Blinding</span>)</strong></td><td>מכפילים את ההודעה במספר אקראי <span class="ltr">r^e</span> לפני הפענוח ומסירים את <bdi dir="ltr">r</bdi> אחרי — העקבה לא מתואמת עם הקלט.</td></tr>
+<tr><td><strong>זמן קבוע</strong></td><td>תמיד מבצעים גם ריבוע וגם כפל, ובביט 0 זורקים את תוצאת הכפל.</td></tr>
+<tr><td><strong><span class="term">Montgomery ladder</span></strong></td><td>אלגוריתם שבו כל ביט מבצע בדיוק אותן פעולות.</td></tr>
+<tr><td><strong>חומרה</strong></td><td>הזרקת רעש לצריכת החשמל.</td></tr>
+</table></div>
+<p>ההתקפה הודגמה על חומרה אמיתית: כרטיסים חכמים ו־<bdi dir="ltr">TPM</bdi>.</p>
+
+<h3 id="ch2-sum"><span class="sec">2.14</span>סיכום ותרגול — פרק 2</h3>
+<div class="box summary"><div class="box-head">📌 דף מצב</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>כלי</th><th>מה הוא נותן</th><th>איפה ב־<bdi dir="ltr">RSA</bdi></th></tr>
+<tr><td>מודולו</td><td>עולם סופי שבו הכול "מתגלגל"</td><td>כל חישוב</td></tr>
+<tr><td>אוקלידס</td><td><span class="ltr">gcd</span></td><td>בדיקת <span class="ltr">gcd(e, φ(n)) = 1</span></td></tr>
+<tr><td>אוקלידס המורחב</td><td>הופכי מודולרי</td><td>חישוב <bdi dir="ltr">d</bdi></td></tr>
+<tr><td>φ</td><td>גודל החבורה הכפלית</td><td><span class="ltr">φ(n) = (p−1)(q−1)</span></td></tr>
+<tr><td>אוילר</td><td><span class="ltr">a^φ(m) ≡ 1</span></td><td>הוכחת הנכונות</td></tr>
+<tr><td>ריבוע וכפל</td><td>חזקה ב־<span class="ltr">O(log e)</span> כפלים</td><td>הצפנה ופענוח</td></tr>
+</table></div>
+</div></div>
+<div class="box exercise"><div class="box-head">🏋️ תרגול</div><div class="box-body">
+<p><strong>1.</strong> מצא את ההופכי של 17 מודולו 60.</p>
+<details class="reveal"><summary>פתרון</summary><div>
+<pre>i   r    q    s     t
+0   60   -    1     0
+1   17   -    0     1
+2    9   3    1    -3      60 - 3*17 = 9
+3    8   1   -1     4      17 - 1*9  = 8
+4    1   1    2    -7      9  - 1*8  = 1</pre>
+<p><span class="ltr">t = −7 ≡ 53</span>. בדיקה: <span class="ltr">17 · 53 = 901 = 15 · 60 + 1</span> ✓</p></div></details>
+<p><strong>2.</strong> חשב את <span class="ltr">φ(100)</span> ואת <span class="ltr">φ(97)</span>.</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">100 = 2²·5²</span> ← <span class="ltr">(4−2)(25−5) = 2·20 = 40</span>. 97 ראשוני ← <span class="ltr">φ(97) = 96</span>.</p></div></details>
+<p><strong>3.</strong> עם <span class="ltr">p = 5, q = 11</span>: האם <span class="ltr">e = 3</span> חוקי? מצא <bdi dir="ltr">e</bdi> חוקי קטן ואת <bdi dir="ltr">d</bdi>.</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">n = 55, φ(n) = 40</span>. <span class="ltr">gcd(3, 40) = 1</span> ← חוקי. <span class="ltr">3 · 27 = 81 = 2·40 + 1</span> ← <span class="ltr">d = 27</span>.</p></div></details>
+<p><strong>4.</strong> כמה ריבועים וכמה כפלים דורש <span class="ltr">x^45</span>?</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">45 = 101101₂</span> — שישה ביטים, ארבעה מהם 1. ריבועים: 5 (מספר הביטים פחות 1). כפלים: 3 (מספר האחדות פחות 1). סה״כ 8, במקום 44.</p></div></details>
+<p><strong>5.</strong> למה התקפת ערוץ הצד תוקפת את הפענוח ולא את ההצפנה?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>בהצפנה המעריך הוא <bdi dir="ltr">e</bdi> — ציבורי, אין מה לגלות. בפענוח המעריך הוא <bdi dir="ltr">d</bdi> הסודי, ותבנית ה־<bdi dir="ltr">S/M</bdi> חושפת את הביטים שלו.</p></div></details>
+</div></div>
+<!-- =============================== CHAPTER 3 =============================== -->
+<h2 class="chapter" id="ch3"><span class="num">3</span>לוג דיסקרטי ו־<bdi dir="ltr">Diffie-Hellman</bdi></h2>
+<p class="hook"><bdi dir="ltr">RSA</bdi> פתר את "איך מצפינים למישהו שלא פגשתי". <bdi dir="ltr">Diffie-Hellman</bdi> פותר בעיה קצת אחרת: איך שני צדדים <strong>מייצרים יחד</strong> מפתח סודי משותף מול מצותת. שאלה 3 בתרגיל היא בדיוק הפרוטוקול הזה עם מספרים קטנים.</p>
+
+<h3><span class="sec">3.1</span>היסטוריה</h3>
+<div class="cards">
+<div class="card"><div class="ic">🏷️</div><b>1976 — המצאה פומבית</b>וויטפילד דיפי ומרטין הלמן, סטנפורד: <span class="term">"New Directions in Cryptography"</span>. פרוטוקול החלפת המפתחות הציבורי הראשון. גם ראלף מרקל תרם לרעיון.</div>
+<div class="card"><div class="ic">🇬🇧</div><b>1974 — המצאה סודית</b>מלקולם וויליאמסון ב־<bdi dir="ltr">GCHQ</bdi> פיתח את אותו רעיון באופן עצמאי. מסווג עד 1997.</div>
+<div class="card"><div class="ic">📰</div><b>היום</b><bdi dir="ltr">DH</bdi> ב־<span class="ltr">Zp*</span>: <bdi dir="ltr">p</bdi> של 2,048 ביט לפחות (מומלץ 3,072). <span class="term">ECDH</span>: כ־256 ביט לאותו ביטחון. בשימוש ב־<bdi dir="ltr">TLS, SSH, Signal, WhatsApp, iMessage</bdi>.</div>
+</div>
+
+<h3><span class="sec">3.2</span>אנלוגיית הצבעים</h3>
+<p>האינטואיציה: <strong>לערבב צבעים קל, להפריד אותם בחזרה קשה מאוד.</strong></p>
+<figure>
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" font-family="Heebo,sans-serif" font-size="14">
+  <text x="160" y="26" text-anchor="middle" font-weight="700" font-size="17">Alice</text>
+  <text x="600" y="26" text-anchor="middle" font-weight="700" font-size="17">Bob</text>
+  <text x="380" y="26" text-anchor="middle" font-weight="700" font-size="17" fill="#b91c1c" direction="rtl">Eve רואה</text>
+  <!-- step1 -->
+  <text x="20" y="66" font-size="13" fill="#555" direction="rtl" text-anchor="start">1</text>
+  <circle cx="160" cy="62" r="20" fill="#f6e27a" stroke="#555"/><circle cx="600" cy="62" r="20" fill="#f6e27a" stroke="#555"/><circle cx="380" cy="62" r="20" fill="#f6e27a" stroke="#555"/>
+  <text x="380" y="98" text-anchor="middle" direction="rtl">צבע משותף ציבורי (p, g)</text>
+  <!-- step2 -->
+  <circle cx="110" cy="140" r="18" fill="#e4572e" stroke="#555"/><text x="110" y="176" text-anchor="middle" direction="rtl">סוד a</text>
+  <circle cx="650" cy="140" r="18" fill="#2e86de" stroke="#555"/><text x="650" y="176" text-anchor="middle" direction="rtl">סוד b</text>
+  <circle cx="200" cy="140" r="20" fill="#f0a04b" stroke="#555"/><text x="200" y="176" text-anchor="middle">A = gᵃ</text>
+  <circle cx="560" cy="140" r="20" fill="#8fc49b" stroke="#555"/><text x="560" y="176" text-anchor="middle">B = gᵇ</text>
+  <!-- exchange -->
+  <path d="M222 140 C 330 120, 430 120, 538 200" stroke="#14213d" stroke-width="2" fill="none" marker-end="url(#ar4)"/>
+  <path d="M538 140 C 430 120, 330 120, 222 200" stroke="#14213d" stroke-width="2" fill="none" marker-end="url(#ar4)"/>
+  <defs><marker id="ar4" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker></defs>
+  <circle cx="360" cy="175" r="16" fill="#f0a04b" stroke="#555"/><circle cx="400" cy="175" r="16" fill="#8fc49b" stroke="#555"/>
+  <text x="380" y="214" text-anchor="middle" direction="rtl" fill="#b91c1c">שתי התערובות — אבל לא את הסודות</text>
+  <!-- step3 -->
+  <circle cx="200" cy="230" r="20" fill="#8fc49b" stroke="#555"/><text x="236" y="236">+</text><circle cx="270" cy="230" r="16" fill="#e4572e" stroke="#555"/>
+  <circle cx="560" cy="230" r="20" fill="#f0a04b" stroke="#555"/><text x="516" y="236">+</text><circle cx="490" cy="230" r="16" fill="#2e86de" stroke="#555"/>
+  <circle cx="200" cy="300" r="26" fill="#8a6a3b" stroke="#222" stroke-width="2"/><circle cx="560" cy="300" r="26" fill="#8a6a3b" stroke="#222" stroke-width="2"/>
+  <text x="380" y="296" text-anchor="middle" font-weight="700" direction="rtl">אותו צבע סופי לשניהם</text>
+  <text x="380" y="320" text-anchor="middle">K = gᵃᵇ mod p</text>
+  <path d="M200 252 V272" stroke="#555" marker-end="url(#ar4)"/><path d="M560 252 V272" stroke="#555" marker-end="url(#ar4)"/>
+</svg>
+<figcaption>שלב 1: צבע משותף ציבורי · שלב 2: כל צד מוסיף סוד ושולח את התערובת · שלב 3: כל צד מוסיף את הסוד שלו לתערובת של השני.</figcaption>
+</figure>
+<div class="tbl-wrap"><table>
+<tr><th>באנלוגיה</th><th>במתמטיקה</th></tr>
+<tr><td>הצבע המשותף — לא סודי, גם איב רואה</td><td>הפרמטרים הציבוריים <bdi dir="ltr">p</bdi> (ראשוני) ו־<bdi dir="ltr">g</bdi> (יוצר)</td></tr>
+<tr><td>הצבע הסודי של כל צד</td><td><bdi dir="ltr">a</bdi> אצל אליס, <bdi dir="ltr">b</bdi> אצל בוב — לעולם לא נשלחים</td></tr>
+<tr><td>התערובת שנשלחת</td><td class="num">A = gᵃ mod p ,  B = gᵇ mod p</td></tr>
+<tr><td>הצבע הסופי המשותף</td><td class="num">K = Bᵃ = Aᵇ = gᵃᵇ mod p</td></tr>
+<tr><td>"קשה להפריד צבעים"</td><td>קשה לחלץ את <bdi dir="ltr">a</bdi> מתוך <span class="ltr">gᵃ mod p</span> — בעיית הלוג הדיסקרטי</td></tr>
+</table></div>
+
+<h3 id="groups"><span class="sec">3.3</span>חבורות סופיות</h3>
+<p>כדי להבין למה צריך "יוצר" ולמה עובדים מודולו ראשוני, צריך את המושג חבורה.</p>
+<div class="box formula"><div class="box-head">📐 הגדרה: חבורה <span class="ltr">(G, ∘)</span></div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>תכונה</th><th>נוסחה</th></tr>
+<tr><td class="num">1</td><td>סגירות</td><td class="num">a ∘ b = c ∈ G</td></tr>
+<tr><td class="num">2</td><td>אסוציאטיביות</td><td class="num">(a ∘ b) ∘ c = a ∘ (b ∘ c)</td></tr>
+<tr><td class="num">3</td><td>איבר נייטרלי</td><td class="num">a ∘ 1 = a</td></tr>
+<tr><td class="num">4</td><td>איבר הופכי</td><td class="num">a ∘ a⁻¹ = 1</td></tr>
+<tr><td class="num">5</td><td>קומוטטיביות (רשות)</td><td class="num">a ∘ b = b ∘ a</td></tr>
+</table></div>
+<p>תכונות 1–4 ← <strong>חבורה</strong>. עם תכונה 5 ← <strong>חבורה אבלית</strong> (חילופית).</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ האם <span class="ltr">(Z9, ×)</span> חבורה?</div><div class="box-body">
+<p><strong>לא.</strong> הבעיה היא תכונה 4 — לא לכל איבר יש הופכי:</p>
+<ul>
+<li><span class="ltr">gcd(3, 9) = 3 ≠ 1</span> ← ל־3 אין הופכי (כל הכפולות של 3 מודולו 9 הן 0, 3, 6 — אף פעם 1).</li>
+<li><span class="ltr">gcd(6, 9) = 3 ≠ 1</span> ← גם ל־6 אין. וכמובן ל־0 אין.</li>
+</ul>
+<p><strong>התיקון:</strong> לוקחים רק את האיברים הזרים ל־9.</p>
+$$\mathbb{Z}_9^* = \{x \in \mathbb{Z}_9 : \gcd(x, 9) = 1\} = \{1, 2, 4, 5, 7, 8\}$$
+<p>זו כן חבורה כפלית (גודלה <span class="ltr">φ(9) = 6</span>). הופכיים: <span class="ltr">2·5 = 10 ≡ 1</span>, <span class="ltr">4·7 = 28 ≡ 1</span>, <span class="ltr">8·8 = 64 ≡ 1</span>.</p>
+</div></div>
+<div class="keypoint">💡 <b>הכלל הכללי:</b> <span class="ltr">Zp*</span> עם <bdi dir="ltr">p</bdi> ראשוני היא תמיד חבורה כפלית, כי כל <span class="ltr">1 … p−1</span> זרים ל־<bdi dir="ltr">p</bdi>.</div>
+
+<h3 id="order"><span class="sec">3.4</span>סדר של איבר</h3>
+<div class="box formula"><div class="box-head">📐 הגדרה</div><div class="box-body">
+<p>הסדר של <bdi dir="ltr">a</bdi> הוא החזקה החיובית <strong>הקטנה ביותר</strong> שנותנת 1:</p>
+$$\operatorname{ord}(a) = \min\{\, k > 0 : a^k \equiv 1 \pmod p \,\}$$
+</div></div>
+<div class="box example"><div class="box-head">✏️ חזקות של 3 ב־<span class="ltr">Z11*</span></div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th class="num">k</th><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num">5</td><td class="num">6</td><td class="num">7</td></tr>
+<tr><th class="num">3ᵏ mod 11</th><td class="num">3</td><td class="num">9</td><td class="num">5</td><td class="num">4</td><td class="num" style="background:#fff3cf;font-weight:700">1</td><td class="num">3</td><td class="num">9</td></tr>
+</table></div>
+<p>החזקה הראשונה שנותנת 1 היא 5, לכן <span class="ltr">ord(3) = 5</span>. מכאן והלאה הסדרה חוזרת במחזור של 5 — היא "מבקרת" רק ב־5 מתוך 10 האיברים.</p>
+</div></div>
+<div class="box theory"><div class="box-head">📘 משפט לגראנז׳</div><div class="box-body">
+<p>הסדר של כל איבר <strong>מחלק</strong> את גודל החבורה. ב־<span class="ltr">Z11*</span> הגודל 10, לכן הסדרים האפשריים הם רק 1, 2, 5, 10. ואכן <span class="ltr">ord(3) = 5</span> ו־5 מחלק את 10 ✓.</p>
+<p><strong>שימוש מעשי:</strong> כדי למצוא סדר לא צריך לנסות את כל החזקות — מספיק לבדוק את המחלקים של <span class="ltr">p − 1</span>.</p>
+</div></div>
+
+<h3 id="cyclic"><span class="sec">3.5</span>חבורות ציקליות ויוצרים (איברים פרימיטיביים)</h3>
+<div class="box formula"><div class="box-head">📐 הגדרה 8.2.6</div><div class="box-body">
+<p>חבורה <bdi dir="ltr">G</bdi> שיש בה איבר α שהסדר שלו שווה לגודל החבורה <span class="ltr">ord(α) = |G|</span> נקראת <strong>ציקלית</strong>, ו־α נקרא <strong>יוצר</strong> (או איבר פרימיטיבי, <span class="term">generator / primitive root</span>): החזקות שלו מייצרות את כל איברי החבורה.</p>
+$$G = \{\, \alpha^k : k \in \mathbb{Z} \,\}$$
+</div></div>
+<div class="cards">
+<div class="card"><div class="ic">♾️</div><b>קיום</b><span class="ltr">Zp*</span> ציקלית תמיד עבור <bdi dir="ltr">p</bdi> ראשוני — יש בה לפחות יוצר אחד.</div>
+<div class="card"><div class="ic">🔢</div><b>כמה יוצרים?</b>בדיוק <span class="ltr">φ(p−1)</span> (בשקף: <span class="ltr">φ(φ(p))</span>, אותו דבר). עבור <span class="ltr">p = 11</span>: <span class="ltr">φ(10) = 4</span>.</div>
+</div>
+<div class="box example"><div class="box-head">✏️ כל האיברים של <span class="ltr">Z11*</span> — מי יוצר?</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>a</th><th>החזקות <bdi dir="ltr">a</bdi>¹ … <bdi dir="ltr">a</bdi>¹⁰ (<bdi dir="ltr">mod 11</bdi>)</th><th>סדר</th><th>יוצר?</th></tr>
+<tr><td class="num">1</td><td class="num">1</td><td class="num">1</td><td>לא — טריוויאלי</td></tr>
+<tr class="good"><td class="num">2</td><td class="num">2 4 8 5 10 9 7 3 6 1</td><td class="num">10</td><td>כן ★</td></tr>
+<tr><td class="num">3</td><td class="num">3 9 5 4 1</td><td class="num">5</td><td>לא</td></tr>
+<tr><td class="num">4</td><td class="num">4 5 9 3 1</td><td class="num">5</td><td>לא</td></tr>
+<tr><td class="num">5</td><td class="num">5 3 4 9 1</td><td class="num">5</td><td>לא</td></tr>
+<tr class="good"><td class="num">6</td><td class="num">6 3 7 9 10 5 8 4 2 1</td><td class="num">10</td><td>כן ★</td></tr>
+<tr class="good"><td class="num">7</td><td class="num">7 5 2 3 10 4 6 9 8 1</td><td class="num">10</td><td>כן ★</td></tr>
+<tr class="good"><td class="num">8</td><td class="num">8 9 6 4 10 3 2 5 7 1</td><td class="num">10</td><td>כן ★</td></tr>
+<tr><td class="num">9</td><td class="num">9 4 3 5 1</td><td class="num">5</td><td>לא</td></tr>
+<tr><td class="num">10</td><td class="num">10 1</td><td class="num">2</td><td>לא</td></tr>
+</table></div>
+<p>היוצרים: <span class="ltr">{2, 6, 7, 8}</span> — בדיוק <span class="ltr">φ(10) = 4</span> ✓. (בשקף הושמטו השורות של 4 ו־9; שניהם מסדר 5.)</p>
+</div></div>
+<figure>
+<svg viewBox="0 0 620 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" id="cyc-svg"></svg>
+<figcaption>שמאל: החזקות של 2 עוברות על כל 10 האיברים (יוצר). ימין: החזקות של 3 נסגרות אחרי 5 צעדים.</figcaption>
+</figure>
+<div class="box formula"><div class="box-head">📐 מבחן מהיר: האם <bdi dir="ltr">g</bdi> יוצר של <span class="ltr">Zp*</span>?</div><div class="box-body">
+<p><bdi dir="ltr">g</bdi> הוא יוצר אם ורק אם לכל ראשוני <bdi dir="ltr">q</bdi> שמחלק את <span class="ltr">p − 1</span>:</p>
+$$g^{(p-1)/q} \not\equiv 1 \pmod p$$
+<p>הרעיון: אם הסדר של <bdi dir="ltr">g</bdi> קטן מ־<span class="ltr">p − 1</span>, הוא מחלק אמיתי של <span class="ltr">p − 1</span>, ולכן מחלק לפחות אחד מהמספרים <span class="ltr">(p−1)/q</span> — ואז החזקה הזו תיתן 1.</p>
+<p><strong>דוגמה:</strong> <span class="ltr">p = 11, p − 1 = 10 = 2 · 5</span>. בודקים את <span class="ltr">g^5</span> ואת <span class="ltr">g^2</span>. עבור 2: <span class="ltr">2^5 = 32 ≡ 10</span>, <span class="ltr">2^2 = 4</span> — אף אחד אינו 1 ← יוצר. עבור 3: <span class="ltr">3^5 ≡ 1</span> ← לא יוצר.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: סדרים ויוצרים ב־<span class="ltr">Zp*</span></h5>
+<div class="row"><label><bdi dir="ltr">p</bdi> ראשוני (עד 200) <input id="gr-p" value="11"></label><button onclick="groupRun()">הצג טבלה</button></div>
+<div id="gr-out"></div></div>
+
+<h3 id="dh"><span class="sec">3.6</span>פרוטוקול <bdi dir="ltr">Diffie-Hellman</bdi></h3>
+<div class="box formula"><div class="box-head">📐 הפרוטוקול — ארבעה שלבים</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>אליס</th><th>ערוץ ציבורי (איב רואה)</th><th>בוב</th></tr>
+<tr><td class="num">1</td><td colspan="3" style="text-align:center">מסכימים על ראשוני גדול <bdi dir="ltr">p</bdi> ויוצר <bdi dir="ltr">g</bdi> של <span class="ltr">Zp*</span> — שניהם ציבוריים</td></tr>
+<tr><td class="num">2</td><td>בוחרת סוד <span class="ltr">a</span>, מחשבת <span class="ltr">A = gᵃ mod p</span></td><td class="num">⟵ A</td><td></td></tr>
+<tr><td class="num">3</td><td></td><td class="num">B ⟶</td><td>בוחר סוד <span class="ltr">b</span>, מחשב <span class="ltr">B = gᵇ mod p</span></td></tr>
+<tr class="hl"><td class="num">4</td><td class="num">K = Bᵃ mod p</td><td>—</td><td class="num">K = Aᵇ mod p</td></tr>
+</table></div>
+<p><strong>למה שניהם מקבלים אותו <bdi dir="ltr">K</bdi>:</strong></p>
+$$B^a = (g^b)^a = g^{ab} = (g^a)^b = A^b \pmod p$$
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ מלכודות בביצוע ידני</div><div class="box-body">
+<ul>
+<li>הסודות <bdi dir="ltr">a, b</bdi> צריכים להיות בטווח <span class="ltr">2 … p−2</span> (ערכים כמו 1 או <span class="ltr">p−1</span> נותנים <bdi dir="ltr">A</bdi> טריוויאלי).</li>
+<li>אליס מעלה את <strong>B</strong> בחזקת <strong>a</strong> — לא את <bdi dir="ltr">g</bdi> ולא את <bdi dir="ltr">A</bdi>. טעות נפוצה: לחשב <span class="ltr">Aᵃ</span>.</li>
+<li>תמיד לבדוק: שני הצדדים חייבים לקבל אותו <bdi dir="ltr">K</bdi>. אם לא — יש טעות חשבון.</li>
+<li>כדאי להראות ש־<bdi dir="ltr">g</bdi> באמת יוצר (במבחן היוצרים מ־3.5).</li>
+</ul>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה מלאה: <span class="ltr">p = 37, g = 2, a = 7, b = 11</span></div><div class="box-body">
+<p><strong>שלב 0 — האם 2 יוצר?</strong> <span class="ltr">p − 1 = 36 = 2² · 3²</span>. בודקים <span class="ltr">2^18</span> ו־<span class="ltr">2^12</span> מודולו 37: יוצאים 36 ו־26, לא 1 ← 2 יוצר ✓.</p>
+<p><strong>שלב 2 — אליס:</strong> <span class="ltr">A = 2^7 mod 37</span>, <span class="ltr">7 = 111₂</span>:</p>
+<p class="mathline"><span class="ltr">z=2 → 2²·2 = 8 → 8²=64≡27, 27·2 = 54 ≡ 17</span></p>
+<p>אליס שולחת <span class="ltr">A = 17</span>.</p>
+<p><strong>שלב 3 — בוב:</strong> <span class="ltr">B = 2^11 mod 37</span>, <span class="ltr">11 = 1011₂</span>:</p>
+<p class="mathline"><span class="ltr">z=2 → 2²=4 → 4²·2 = 32 → 32²=1024≡25, 25·2 = 50 ≡ 13</span></p>
+<p>בוב שולח <span class="ltr">B = 13</span>.</p>
+<p><strong>שלב 4:</strong></p>
+<div class="tbl-wrap"><table>
+<tr><th>אליס: <span class="ltr">K = 13^7 mod 37</span></th><th>בוב: <span class="ltr">K = 17^11 mod 37</span></th></tr>
+<tr><td class="num">z=13<br>13²=169≡21 , 21·13=273≡14<br>14²=196≡11 , 11·13=143≡32</td><td class="num">z=17<br>17²=289≡30   (bit 0)<br>30²=900≡12 , 12·17=204≡19<br>19²=361≡28 , 28·17=476≡32</td></tr>
+<tr class="hl"><td class="num">K = 32</td><td class="num">K = 32 ✓</td></tr>
+</table></div>
+<p>בדיקה ישירה: <span class="ltr">2^(7·11) = 2^77 mod 37 = 32</span> ✓. איב ראתה רק <span class="ltr">p=37, g=2, A=17, B=13</span>.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ הדוגמה מהשקף: <span class="ltr">p = 1,000,003, g = 2, a = 123,456, b = 789,012</span></div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>ערך</th><th>בשקף</th><th>חישוב אמיתי</th></tr>
+<tr><td class="num">A = 2^123456 mod p</td><td class="num">435,147</td><td class="num">435,147 ✓</td></tr>
+<tr class="bad"><td class="num">B = 2^789012 mod p</td><td class="num">969,498</td><td class="num">989,498</td></tr>
+<tr><td class="num">K</td><td class="num">611,413</td><td class="num">611,413 ✓</td></tr>
+</table></div>
+<p>בשקף יש שגיאת הקלדה ב־<bdi dir="ltr">B</bdi> (ספרה אחת). הסוד המשותף נכון. אם אתה מעתיק מהשקף — שים לב.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: <bdi dir="ltr">Diffie-Hellman</bdi> צעד אחר צעד</h5>
+<div class="row"><label>p <input id="dh-p" value="37"></label><label>g <input id="dh-g" value="2"></label><label><bdi dir="ltr">a</bdi> (סוד של אליס) <input id="dh-a" value="7"></label><label><bdi dir="ltr">b</bdi> (סוד של בוב) <input id="dh-b" value="11"></label><button onclick="dhRun()">הרץ פרוטוקול</button></div>
+<div id="dh-out"></div>
+<p style="font-size:14px;color:var(--muted);margin:8px 0 0">המעבדה מראה את כל חישובי ריבוע וכפל, כך שאפשר להשוות שורה מול שורה לחישוב שלך.</p>
+</div>
+
+<h3 id="dlp"><span class="sec">3.7</span>בעיית הלוג הדיסקרטי (<bdi dir="ltr">DLP</bdi>)</h3>
+<div class="box formula"><div class="box-head">📐 הבעיה</div><div class="box-body">
+<p>בהינתן <span class="ltr">g, y, p</span>, מצא <bdi dir="ltr">x</bdi> כך ש:</p>
+$$g^x \equiv y \pmod p$$
+<p>ובחבורה ציקלית כללית <span class="ltr">G = ⟨α⟩</span> (הבעיה המוכללת, <span class="term">GDLP</span>): בהינתן <span class="ltr">β ∈ G</span>, מצא <bdi dir="ltr">x</bdi> כך ש־<span class="ltr">α^x = β</span>.</p>
+</div></div>
+<div class="tbl-wrap"><table>
+<tr><th>⚡ הכיוון הקל</th><th>🛑 הכיוון הקשה</th></tr>
+<tr><td>נתונים <span class="ltr">g, x, p</span> ← מחשבים <span class="ltr">y = g^x mod p</span> בריבוע וכפל: <span class="ltr">O(log x)</span> כפלים. מהיר גם ל־<span class="ltr">x ≈ 10^300</span>.</td><td>נתונים <span class="ltr">g, y, p</span> ← מוצאים <bdi dir="ltr">x</bdi>. אין אלגוריתם יעיל כללי. הטוב ביותר ל־<span class="ltr">Zp*</span> הוא תת־אקספוננציאלי.</td></tr>
+</table></div>
+<div class="box example"><div class="box-head">✏️ <span class="ltr">5^x ≡ 56 (mod 97)</span> בכוח גס</div><div class="box-body">
+<p class="mathline"><span class="ltr">5¹=5, 5²=25, 5³=125≡28, 5⁴=140≡43, … , 5³⁷≡56 ✓</span></p>
+<p>התשובה <span class="ltr">x = 37</span>. עבור <bdi dir="ltr">p=97</bdi> זה 37 ניסיונות; עבור <bdi dir="ltr">p</bdi> של 2,048 ביט — בלתי אפשרי.</p>
+</div></div>
+<div class="keypoint">💡 <b>הקשר ל־<bdi dir="ltr">DH</bdi>:</b> איב רואה <span class="ltr">A = gᵃ mod p</span>. אם היא פותרת <bdi dir="ltr">DLP</bdi> היא מקבלת את <bdi dir="ltr">a</bdi> ומחשבת <span class="ltr">K = Bᵃ</span>. לכן ביטחון <bdi dir="ltr">DH</bdi> ≤ קושי ה־<bdi dir="ltr">DLP</bdi>.</div>
+
+<h3 id="bsgs"><span class="sec">3.8</span>התקפות על <bdi dir="ltr">DLP</bdi>: <bdi dir="ltr">Baby-Step Giant-Step</bdi></h3>
+<div class="tbl-wrap"><table>
+<tr><th>שיטה</th><th>הרעיון</th><th>זמן</th></tr>
+<tr><td>1. 🔍 כוח גס</td><td>מנסים <span class="ltr">α¹, α², …</span> עד שמגיעים ל־β.</td><td class="num">O(n)</td></tr>
+<tr><td>2. 👣 שורש ריבועי</td><td><span class="term">Baby-Step Giant-Step</span> (שנקס) ו־<span class="term">Pollard's ρ</span>.</td><td class="num">O(√n)</td></tr>
+<tr><td>3. 📈 <span class="term">Index Calculus</span></td><td>תת־אקספוננציאלי, עובד רק בחבורות מסוימות (<span class="ltr">Zp*</span> ו־<span class="ltr">GF(2^m)*</span>).</td><td class="num">L_p[1/3, c]</td></tr>
+</table></div>
+<div class="box theory"><div class="box-head">📘 הרעיון של <bdi dir="ltr">BSGS</bdi> — לפרק את <bdi dir="ltr">x</bdi> לשני חלקים</div><div class="box-body">
+<p>נבחר <span class="ltr">m = ⌈√n⌉</span>. כל <bdi dir="ltr">x</bdi> בין 0 ל־<span class="ltr">n−1</span> אפשר לכתוב כ־<span class="ltr">x = i·m + j</span> עם <span class="ltr">0 ≤ i, j &lt; m</span> (כמו מנה ושארית בחלוקה ב־<bdi dir="ltr">m</bdi>). אז:</p>
+$$g^{im + j} = \beta \iff g^{j} = \beta \cdot \left(g^{m}\right)^{-i}$$
+<p>הצד השמאלי תלוי רק ב־<bdi dir="ltr">j</bdi> ("צעדי תינוק" — שומרים בטבלה), הצד הימני רק ב־<bdi dir="ltr">i</bdi> ("צעדי ענק"). במקום <bdi dir="ltr">n</bdi> ניסיונות — <bdi dir="ltr">m</bdi> חישובים לכל צד, ובדיקה בטבלה. <strong>זמן וזיכרון <span class="ltr">O(√n)</span>.</strong></p>
+</div></div>
+<div class="box formula"><div class="box-head">📐 האלגוריתם</div><div class="box-body">
+<ol>
+<li><span class="ltr">m ← ⌈√n⌉</span>.</li>
+<li>לכל <span class="ltr">j = 0 … m−1</span>: מחשבים <span class="ltr">g^j</span> ושומרים <span class="ltr">(g^j, j)</span> בטבלה <bdi dir="ltr">T</bdi>.</li>
+<li>מחשבים <span class="ltr">γ = g^m</span>, ואת ההופכי <span class="ltr">γ⁻¹</span>.</li>
+<li>לכל <span class="ltr">i = 0 … m−1</span>: מחשבים <span class="ltr">β · γ^(−i)</span> (כל פעם כופלים ב־<span class="ltr">γ⁻¹</span>).</li>
+<li>אם הערך נמצא ב־<bdi dir="ltr">T</bdi> כ־<span class="ltr">(g^j, j)</span>: מחזירים <span class="ltr">x = i·m + j</span>.</li>
+<li>אם אין התאמה: אין פתרון (או ש־<bdi dir="ltr">n</bdi> שגוי).</li>
+</ol>
+</div></div>
+<div class="box example"><div class="box-head">✏️ <bdi dir="ltr">BSGS</bdi> על <span class="ltr">5^x ≡ 56 (mod 97)</span></div><div class="box-body">
+<p>גודל החבורה <span class="ltr">n = 96</span>, ולכן <span class="ltr">m = ⌈√96⌉ = 10</span>.</p>
+<p><strong>צעדי תינוק</strong> — <span class="ltr">5^j mod 97</span>:</p>
+<div class="tbl-wrap"><table>
+<tr><th class="num">j</th><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num">5</td><td class="num">6</td><td class="num">7</td><td class="num">8</td><td class="num">9</td></tr>
+<tr><th class="num">5ʲ</th><td class="num">1</td><td class="num">5</td><td class="num">25</td><td class="num">28</td><td class="num">43</td><td class="num">21</td><td class="num">8</td><td class="num" style="background:#fff3cf;font-weight:700">40</td><td class="num">6</td><td class="num">30</td></tr>
+</table></div>
+<p><strong>צעד הענק:</strong> <span class="ltr">γ = 5^10 ≡ 53</span>, וההופכי <span class="ltr">γ⁻¹ = 11</span> (כי <span class="ltr">53·11 = 583 = 6·97 + 1</span>).</p>
+<div class="tbl-wrap"><table>
+<tr><th class="num">i</th><th>β · γ⁻ⁱ</th><th>בטבלה?</th></tr>
+<tr><td class="num">0</td><td class="num">56</td><td>לא</td></tr>
+<tr><td class="num">1</td><td class="num">56·11 = 616 ≡ 34</td><td>לא</td></tr>
+<tr><td class="num">2</td><td class="num">34·11 = 374 ≡ 83</td><td>לא</td></tr>
+<tr class="hl"><td class="num">3</td><td class="num">83·11 = 913 ≡ 40</td><td>כן! <span class="ltr">j = 7</span></td></tr>
+</table></div>
+<p><span class="ltr">x = i·m + j = 3·10 + 7 = 37</span> ✓ — 10 צעדי תינוק ו־4 צעדי ענק, במקום 37 ניסיונות.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: <bdi dir="ltr">BSGS</bdi></h5>
+<div class="row"><label>p <input id="bs-p" value="97"></label><label>g <input id="bs-g" value="5"></label><label>β (y) <input id="bs-y" value="56"></label><button onclick="bsgsRun()">פתור</button></div>
+<div id="bs-out"></div></div>
+
+<h3 id="dlp-compare"><span class="sec">3.9</span>השוואת ההתקפות ולמה עקומים אליפטיים</h3>
+<div class="tbl-wrap"><table>
+<tr><th>אלגוריתם</th><th>זמן</th><th>זיכרון</th><th>דטרמיניסטי?</th></tr>
+<tr><td>כוח גס</td><td class="num">O(n)</td><td class="num">O(1)</td><td>כן</td></tr>
+<tr><td>BSGS</td><td class="num">O(√n)</td><td class="num">O(√n)</td><td>כן</td></tr>
+<tr><td>Pollard ρ</td><td class="num">O(√n)</td><td class="num">O(1)</td><td>לא (הסתברותי)</td></tr>
+<tr><td>Index Calculus</td><td class="num">L_p[1/3, c]</td><td>פולינומי</td><td>לא (הסתברותי)</td></tr>
+</table></div>
+<div class="box warn"><div class="box-head">⚠️ תיקון קטן לשקף 26</div><div class="box-body"><p>השקף מאחד את <bdi dir="ltr">BSGS</bdi> ו־<bdi dir="ltr">Pollard</bdi> ρ לשורה אחת ("זיכרון <span class="ltr">O(√n)</span>, דטרמיניסטי"). זה נכון ל־<bdi dir="ltr">BSGS</bdi>. <span class="term">Pollard ρ</span> מגיע לאותו זמן עם זיכרון קבוע, אבל הוא אלגוריתם <strong>הסתברותי</strong> (מבוסס הליכה אקראית והתנגשויות).</p></div></div>
+<div class="box theory"><div class="box-head">📘 המסקנות המעשיות</div><div class="box-body">
+<ul>
+<li>התקפות השורש הריבועי עובדות <strong>בכל</strong> חבורה ← חבורה בגודל <span class="ltr">2^256</span> נותנת לכל היותר <span class="ltr">2^128</span> ביטחון.</li>
+<li><span class="term">Index Calculus</span> תת־אקספוננציאלי ב־<span class="ltr">Zp*</span> ← צריך <bdi dir="ltr">p</bdi> גדול מאוד (2,048–4,096 ביט), בדיוק כמו <bdi dir="ltr">n</bdi> ב־<bdi dir="ltr">RSA</bdi>.</li>
+<li>Index Calculus <strong>לא עובד</strong> על עקומים אליפטיים ← <bdi dir="ltr">ECC</bdi> מסתפק בכ־256 ביט לביטחון של 128 ביט.</li>
+</ul>
+<p>חבורות ציקליות בשימוש: <span class="ltr">Zp*</span>, <span class="ltr">GF(2^m)*</span>, ונקודות על עקום אליפטי (החזקה ביותר לגודל נתון).</p>
+</div></div>
+
+<h3 id="mitm"><span class="sec">3.10</span>התקפה על <bdi dir="ltr">DH</bdi>: אדם בתווך (<bdi dir="ltr">Man-in-the-Middle</bdi>)</h3>
+<p><bdi dir="ltr">DH</bdi> פותר הפצת מפתחות, אבל <strong>לא מספק אימות:</strong> אליס לא יודעת שה־<bdi dir="ltr">B</bdi> שקיבלה באמת הגיע מבוב.</p>
+<figure>
+<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="14">
+  <defs><marker id="ar5" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker>
+  <marker id="ar6" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+  <rect x="20" y="70" width="140" height="80" rx="12" fill="#eef4ff" stroke="#2563eb"/><text x="90" y="105" text-anchor="middle" font-weight="700" font-family="Heebo" font-size="17">Alice</text><text x="90" y="130" text-anchor="middle">secret a</text>
+  <rect x="310" y="70" width="140" height="80" rx="12" fill="#fde8e8" stroke="#b91c1c"/><text x="380" y="105" text-anchor="middle" font-weight="700" font-family="Heebo" font-size="17" fill="#b91c1c">Eve</text><text x="380" y="130" text-anchor="middle">secret e</text>
+  <rect x="600" y="70" width="140" height="80" rx="12" fill="#edf8f0" stroke="#15803d"/><text x="670" y="105" text-anchor="middle" font-weight="700" font-family="Heebo" font-size="17">Bob</text><text x="670" y="130" text-anchor="middle">secret b</text>
+  <path d="M160 88 H306" stroke="#14213d" stroke-width="2" marker-end="url(#ar5)"/><text x="233" y="80" text-anchor="middle">A = gᵃ</text>
+  <path d="M310 132 H164" stroke="#b91c1c" stroke-width="2" marker-end="url(#ar6)"/><text x="237" y="150" text-anchor="middle" fill="#b91c1c">E = gᵉ</text>
+  <path d="M600 88 H454" stroke="#14213d" stroke-width="2" marker-end="url(#ar5)"/><text x="527" y="80" text-anchor="middle">B = gᵇ</text>
+  <path d="M450 132 H596" stroke="#b91c1c" stroke-width="2" marker-end="url(#ar6)"/><text x="523" y="150" text-anchor="middle" fill="#b91c1c">E = gᵉ</text>
+  <text x="200" y="200" text-anchor="middle" fill="#b91c1c">K₁ = gᵃᵉ</text>
+  <text x="560" y="200" text-anchor="middle" fill="#b91c1c">K₂ = gᵇᵉ</text>
+  <text x="380" y="235" text-anchor="middle" font-family="Heebo" font-size="15" direction="rtl">איב מפענחת עם K₁, קוראת, מצפינה מחדש עם K₂ ומעבירה הלאה</text>
+</svg>
+</figure>
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>מה קורה</th></tr>
+<tr><td class="num">1</td><td>אליס שולחת <span class="ltr">A</span>; איב עוצרת ושולחת לבוב <span class="ltr">E = gᵉ</span> משלה.</td></tr>
+<tr><td class="num">2</td><td>בוב שולח <span class="ltr">B</span>; איב עוצרת ושולחת לאליס <span class="ltr">E</span>.</td></tr>
+<tr><td class="num">3</td><td>אליס מחשבת <span class="ltr">K₁ = Eᵃ = gᵃᵉ</span> — משותף עם איב. בוב מחשב <span class="ltr">K₂ = Eᵇ = gᵇᵉ</span> — גם הוא משותף עם איב.</td></tr>
+<tr><td class="num">4</td><td>איב מפענחת כל הודעה, קוראת (ואולי משנה), מצפינה מחדש ומעבירה. אליס ובוב בטוחים שהם מדברים ישירות.</td></tr>
+</table></div>
+<div class="keypoint">💡 <b>שורש הבעיה: אין אימות.</b> שימו לב — איב <strong>לא פתרה</strong> <bdi dir="ltr">DLP</bdi>. הפתרון: לחתום על הערכים הציבוריים בתעודות (<span class="term">PKI</span>), או <bdi dir="ltr">DH</bdi> מאומת כמו ב־<bdi dir="ltr">TLS</bdi>.</div>
+
+<h3 id="ch3-sum"><span class="sec">3.11</span>סיכום ותרגול — פרק 3</h3>
+<div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
+<ul>
+<li><strong>חבורה:</strong> סגירות, אסוציאטיביות, נייטרלי, הופכי (+ קומוטטיביות ← אבלית). <span class="ltr">(Z9, ×)</span> אינה חבורה, <span class="ltr">Z9*</span> כן.</li>
+<li><strong>סדר:</strong> החזקה הקטנה שנותנת 1; מחלק את גודל החבורה (לגראנז׳).</li>
+<li><strong>יוצר:</strong> איבר מסדר <span class="ltr">p−1</span>; יש <span class="ltr">φ(p−1)</span> כאלה; בודקים עם <span class="ltr">g^((p−1)/q) ≠ 1</span>.</li>
+<li><strong>DH:</strong> <span class="ltr">A = gᵃ, B = gᵇ, K = Bᵃ = Aᵇ = gᵃᵇ</span> (הכול מודולו <bdi dir="ltr">p</bdi>).</li>
+<li><strong>DLP:</strong> חזקה קלה, לוג קשה. <bdi dir="ltr">BSGS</bdi> ב־<span class="ltr">O(√n)</span>.</li>
+<li><strong>MITM:</strong> <bdi dir="ltr">DH</bdi> בלי אימות פגיע; פתרון — חתימות / תעודות.</li>
+</ul>
+</div></div>
+<div class="box exercise"><div class="box-head">🏋️ תרגול</div><div class="box-body">
+<p><strong>1.</strong> מצא את <span class="ltr">ord(2)</span> ב־<span class="ltr">Z7*</span>. האם 2 יוצר? מצא יוצר של <span class="ltr">Z7*</span>.</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">2¹=2, 2²=4, 2³=8≡1</span> ← <span class="ltr">ord(2)=3 &lt; 6</span>, לא יוצר. נבדוק 3: <span class="ltr">p−1 = 6 = 2·3</span>; <span class="ltr">3³ = 27 ≡ 6 ≠ 1</span>, <span class="ltr">3² = 9 ≡ 2 ≠ 1</span> ← 3 יוצר. (היוצרים: <span class="ltr">{3, 5}</span>, בדיוק <span class="ltr">φ(6) = 2</span>.)</p></div></details>
+<p><strong>2.</strong> <bdi dir="ltr">DH</bdi> עם <span class="ltr">p = 11, g = 2, a = 4, b = 8</span>. מה <bdi dir="ltr">A, B, K</bdi>?</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">A = 2⁴ = 16 ≡ 5</span>. <span class="ltr">B = 2⁸ = 256 ≡ 3</span> (מהטבלה בפרק 3.5: <span class="ltr">2⁸ ≡ 3</span>). אליס: <span class="ltr">K = 3⁴ = 81 ≡ 4</span>. בוב: <span class="ltr">K = 5⁸</span>; <span class="ltr">5² = 25 ≡ 3, 5⁴ ≡ 9, 5⁸ ≡ 81 ≡ 4</span> ✓. בדיקה: <span class="ltr">2^32 = 2^(32 mod 10) = 2² = 4</span> ✓.</p></div></details>
+<p><strong>3.</strong> למה איב בהתקפת <bdi dir="ltr">MITM</bdi> לא צריכה לפתור <bdi dir="ltr">DLP</bdi>?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>כי היא לא מנסה לגלות את <bdi dir="ltr">a</bdi> או <bdi dir="ltr">b</bdi>. היא פשוט מנהלת שתי החלפות <bdi dir="ltr">DH</bdi> לגיטימיות — אחת עם כל צד — עם סוד <bdi dir="ltr">e</bdi> שהיא עצמה בחרה.</p></div></details>
+<p><strong>4.</strong> כמה צעדים בערך דורש <bdi dir="ltr">BSGS</bdi> בחבורה בגודל <span class="ltr">2^64</span>?</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">m = √(2^64) = 2^32</span> — בערך <span class="ltr">2^32</span> צעדי תינוק ועוד עד <span class="ltr">2^32</span> צעדי ענק, וגם <span class="ltr">2^32</span> כניסות בטבלה. אפשרי על מחשב רגיל, ולכן חבורה כזו קטנה מדי.</p></div></details>
+</div></div>
+<!-- =============================== HOMEWORK 1 =============================== -->
+<h2 class="chapter" id="hw1"><span class="num">📝</span>תרגיל בית 1 — מה כל שאלה בודקת ואיך ניגשים</h2>
+<p class="hook">הגשה: 16.11 בשעה 23:59. כאן לא תמצא את התשובות לשאלות 1 ו־3 (המספרים שם הם שלך), אלא את שיטת העבודה, רשימת הבדיקה והמלכודות — ומעבדות שבהן תוכל לבדוק את החישוב הידני שלך.</p>
+
+<h3><span class="sec">ש1</span><bdi dir="ltr">RSA</bdi> ידני מלא — יצירת מפתחות, הצפנה ופענוח</h3>
+<div class="box theory"><div class="box-head">📘 נוסח השאלה</div><div class="box-body">
+<p>באופן ידני, בצעו את תהליך יצירת המפתחות, ההצפנה והפענוח של אלגוריתם <bdi dir="ltr">RSA</bdi>. בחרו שני מספרים ראשוניים שונים בתחום 10–100 (לא את הצמד 13, 17 משאלה 2). יש להראות את כל שלבי החישוב.</p>
+</div></div>
+<div class="box formula"><div class="box-head">📐 רשימת שלבים שצריכים להופיע בהגשה</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>מה להראות</th><th>איפה באתר</th></tr>
+<tr><td class="num">1</td><td>בחירת <bdi dir="ltr">p, q</bdi> והצדקה קצרה שהם ראשוניים ושונים (לא 13 ו־17).</td><td><a href="#rsa">2.8</a></td></tr>
+<tr><td class="num">2</td><td>חישוב <span class="ltr">n = p·q</span>.</td><td><a href="#rsa">2.8</a></td></tr>
+<tr><td class="num">3</td><td>חישוב <span class="ltr">φ(n) = (p−1)(q−1)</span> ופירוקו לראשוניים (עוזר לבחור <bdi dir="ltr">e</bdi>).</td><td><a href="#phi">2.6</a></td></tr>
+<tr><td class="num">4</td><td>בחירת <bdi dir="ltr">e</bdi> והוכחה ש־<span class="ltr">gcd(e, φ(n)) = 1</span> — עם שלבי אוקלידס.</td><td><a href="#euclid">2.4</a></td></tr>
+<tr><td class="num">5</td><td>חישוב <bdi dir="ltr">d</bdi> בטבלת אוקלידס המורחב, תיקון ל־<bdi dir="ltr">d</bdi> חיובי, ובדיקה <span class="ltr">e·d mod φ(n) = 1</span>.</td><td><a href="#eea">2.5</a></td></tr>
+<tr><td class="num">6</td><td>בחירת הודעה <bdi dir="ltr">M</bdi> עם <span class="ltr">M &lt; n</span>, והצפנה <span class="ltr">C = M^e mod n</span> בטבלת ריבוע וכפל.</td><td><a href="#sam">2.12</a></td></tr>
+<tr><td class="num">7</td><td>פענוח <span class="ltr">C^d mod n</span> בטבלת ריבוע וכפל, והראיה שחזרת ל־<bdi dir="ltr">M</bdi>.</td><td><a href="#sam">2.12</a></td></tr>
+</table></div>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ מלכודות ועצות לשאלה 1</div><div class="box-body">
+<ul>
+<li><strong><bdi dir="ltr">M</bdi> חייב להיות קטן מ־<bdi dir="ltr">n</bdi></strong> — זה בדיוק הלקח של שאלה 2.</li>
+<li>אל תבחר את 13 ו־17 (אסור), ועדיף לא את 11 ו־17 מהשקפים — הבודק ירצה לראות עבודה שלך.</li>
+<li>ה־<bdi dir="ltr">d</bdi> עלול לצאת גדול (מאות). זה בסדר: בטבלת ריבוע וכפל יהיו כמה שורות כמו מספר הביטים של <bdi dir="ltr">d</bdi> (למשל <bdi dir="ltr">d</bdi> בין 256 ל־511 ← 9 ביטים ← 8 שורות אחרי ההתחלה).</li>
+<li>אם <bdi dir="ltr">EEA</bdi> נתן <bdi dir="ltr">t</bdi> שלילי — הוסף <span class="ltr">φ(n)</span>.</li>
+<li>צמצם מודולו <bdi dir="ltr">n</bdi> <strong>אחרי כל כפל</strong>. כך אף פעם לא תעבור מספרים בני 5 ספרות.</li>
+<li>אל תבחר <bdi dir="ltr">M</bdi> שמתחלק ב־<bdi dir="ltr">p</bdi> או ב־<bdi dir="ltr">q</bdi>, ואל תבחר <span class="ltr">M = 0, 1</span> או <span class="ltr">n−1</span> — עובד מתמטית אבל נראה רע בהגשה.</li>
+</ul>
+</div></div>
+<p>לבדיקת החישוב: <a href="#rsa-example">המעבדה של <bdi dir="ltr">RSA</bdi></a> מראה את כל טבלאות <bdi dir="ltr">EEA</bdi> וריבוע וכפל עבור המספרים שתבחר.</p>
+
+<h3><span class="sec">ש2</span>למה הפענוח מחזיר תשובה שגויה?</h3>
+<div class="box theory"><div class="box-head">📘 הנתונים בשאלה</div><div class="box-body">
+<pre>p = 13,  q = 17
+n = p·q = 221
+φ(n) = (p−1)(q−1) = 192
+e = 5      (relatively prime to 192)
+d = 77     (e·d ≡ 1 mod φ(n))
+
+Message:            M  = 300
+Encryption:         c  = 300^5 mod 221 = 27
+Decryption attempt: m' = 27^77 mod 221 = 79</pre>
+</div></div>
+<div class="box exercise"><div class="box-head">🧭 איך לחשוב על זה (נסה לבד לפני שאתה פותח)</div><div class="box-body">
+<ol>
+<li>בדוק את המפתחות: האם <span class="ltr">e·d ≡ 1 (mod 192)</span>? האם <span class="ltr">gcd(5, 192) = 1</span>?</li>
+<li>בדוק את החשבון: האם 27 ו־79 באמת התוצאות הנכונות של החזקות? (אפשר במעבדת ריבוע וכפל.)</li>
+<li>אם הכול נכון — חזור ל<a href="#rsa-enc">תנאי שכולם שוכחים</a> ב־2.9. מה הקשר בין 300, 221 ו־79?</li>
+</ol>
+</div></div>
+<details class="reveal"><summary>הסבר מלא</summary><div>
+<p><strong>המפתחות והחשבון תקינים.</strong> <span class="ltr">5 · 77 = 385 = 2 · 192 + 1</span> ✓, ו־<span class="ltr">gcd(5, 192) = 1</span> ✓. גם 27 ו־79 הן התוצאות הנכונות של החזקות.</p>
+<p><strong>הבעיה היא ש־<span class="ltr">M = 300 ≥ n = 221</span>.</strong> <bdi dir="ltr">RSA</bdi> עובד בחבורה <span class="ltr">Zn = {0, …, 220}</span>. ההצפנה לא "רואה" את 300, אלא את השארית שלו:</p>
+$$300 \bmod 221 = 79 \quad\Longrightarrow\quad 300^5 \equiv 79^5 \equiv 27 \pmod{221}$$
+<p>הפענוח מחזיר בדיוק את מה שהוצפן בפועל — והוא חייב להחזיר מספר בטווח <span class="ltr">0 … 220</span>:</p>
+$$27^{77} \equiv 79 = 300 - 221 \pmod{221}$$
+<p>כלומר הפענוח <strong>נכון</strong> מודולו <bdi dir="ltr">n</bdi> — הוא פשוט לא יכול להבחין בין 79, 300, 521… כי כולם אותו איבר ב־<span class="ltr">Z221</span>. המידע "כמה פעמים עברנו את 221" אבד כבר בהצפנה.</p>
+<p><strong>התיקון:</strong> לדרוש <span class="ltr">0 ≤ M &lt; n</span> — לבחור <bdi dir="ltr">p, q</bdi> כך ש־<span class="ltr">n &gt; 300</span> (למשל <bdi dir="ltr">n</bdi> של אלפי ביטים במציאות), או לחלק את ההודעה לבלוקים שכל אחד קטן מ־<bdi dir="ltr">n</bdi>.</p>
+</div></details>
+
+<h3><span class="sec">ש3</span><bdi dir="ltr">Diffie-Hellman</bdi> ידני עם <span class="ltr">p = 23, g = 5</span></h3>
+<div class="box formula"><div class="box-head">📐 רשימת שלבים שצריכים להופיע בהגשה</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>מה להראות</th><th>איפה באתר</th></tr>
+<tr><td class="num">0</td><td>(מומלץ) הראה ש־5 יוצר של <span class="ltr">Z23*</span>: פרק את <span class="ltr">22 = 2 · 11</span> ובדוק ש־<span class="ltr">5^11</span> ו־<span class="ltr">5^2</span> אינם 1 מודולו 23.</td><td><a href="#cyclic">3.5</a></td></tr>
+<tr><td class="num">1</td><td>אליס בוחרת סוד <bdi dir="ltr">a</bdi>, בוב בוחר סוד <bdi dir="ltr">b</bdi> (בטווח <span class="ltr">2 … 21</span>, שונים זה מזה).</td><td><a href="#dh">3.6</a></td></tr>
+<tr><td class="num">2</td><td><span class="ltr">A = 5^a mod 23</span> — בטבלת ריבוע וכפל.</td><td><a href="#sam">2.12</a></td></tr>
+<tr><td class="num">3</td><td><span class="ltr">B = 5^b mod 23</span> — בטבלת ריבוע וכפל.</td><td><a href="#sam">2.12</a></td></tr>
+<tr><td class="num">4</td><td>אליס: <span class="ltr">K = B^a mod 23</span>; בוב: <span class="ltr">K = A^b mod 23</span>. שני החישובים במלואם.</td><td><a href="#dh">3.6</a></td></tr>
+<tr><td class="num">5</td><td>הראה ששני ה־<bdi dir="ltr">K</bdi> שווים, ואמור מה איב רואה ומה לא.</td><td><a href="#dlp">3.7</a></td></tr>
+</table></div>
+</div></div>
+<p>הדוגמה המלאה עם <span class="ltr">p = 37, g = 2</span> ב־<a href="#dh">3.6</a> בנויה בדיוק במבנה הזה. במעבדה שם אפשר להציב <span class="ltr">p=23, g=5</span> והסודות שבחרת ולהשוות לחישוב שלך.</p>
+
+<h3><span class="sec">ש4</span>(רשות) חזקה מודולרית יעילה — במילים שלכם</h3>
+<div class="box theory"><div class="box-head">📘 מבנה מומלץ לתשובה</div><div class="box-body">
+<ol>
+<li><strong>הבעיה:</strong> חישוב ישיר של <span class="ltr">x^e</span> דורש <span class="ltr">e−1</span> כפלים, והמספר עצמו מתנפח לאלפי ספרות לפני שמצמצמים.</li>
+<li><strong>רעיון 1 — צמצום תוך כדי:</strong> מותר לקחת <bdi dir="ltr">mod n</bdi> אחרי כל כפל, כך שכל תוצאת ביניים קטנה מ־<bdi dir="ltr">n</bdi>.</li>
+<li><strong>רעיון 2 — הייצוג הבינארי:</strong> עוברים על ביטי המעריך משמאל לימין; בכל ביט מעלים בריבוע, ובביט 1 מכפילים גם ב־<bdi dir="ltr">x</bdi>.</li>
+<li><strong>למה זה נכון:</strong> ריבוע מכפיל את המעריך ב־2 (מוסיף ביט 0), כפל מוסיף 1 (הופך אותו לביט 1).</li>
+<li><strong>עלות:</strong> לכל היותר <span class="ltr">2⌊log₂ e⌋</span> כפלים במקום <span class="ltr">e−1</span>; דוגמה מספרית אחת קטנה.</li>
+</ol>
+<p>החומר המלא: <a href="#sam">2.11–2.12</a>. כתוב את ההסבר בניסוח שלך — זה מה שהשאלה מבקשת.</p>
+</div></div>
+
+<!-- =============================== QUIZ =============================== -->
+<h3 id="quiz"><span class="sec">✔</span>בוחן עצמי מסכם</h3>
+<p>לחץ על תשובה — תקבל משוב מיד.</p>
+<div id="quiz-box"></div>
+<p id="quiz-score" style="font-weight:700"></p>
+</main>
+</div>
+<script>
+/* ---------------- helpers ---------------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function big(id){ const v = $(id).value.trim(); if(!/^-?\d+$/.test(v)) throw new Error('הערך "' + v + '" אינו מספר שלם'); return BigInt(v); }
+const mod = (a, n) => ((a % n) + n) % n;
+function gcd(a, b){ a = a < 0n ? -a : a; b = b < 0n ? -b : b; while(b){ [a, b] = [b, a % b]; } return a; }
+function isPrime(n){ if(n < 2n) return false; if(n < 4n) return true; if(n % 2n === 0n) return false; for(let i = 3n; i * i <= n; i += 2n){ if(n % i === 0n) return false; } return true; }
+function factor(n){ const f = []; let d = 2n; while(d * d <= n){ let k = 0; while(n % d === 0n){ n /= d; k++; } if(k) f.push([d, k]); d += d === 2n ? 1n : 2n; } if(n > 1n) f.push([n, 1]); return f; }
+const factStr = f => f.map(([p, k]) => k > 1 ? p + '^' + k : '' + p).join(' · ');
+function powmod(x, e, n){ let r = 1n; x = mod(x, n); while(e > 0n){ if(e & 1n) r = r * x % n; x = x * x % n; e >>= 1n; } return r; }
+function table(head, rows, hlLast){
+  let h = '<div class="tbl-wrap"><table><tr>' + head.map(x => '<th class="num">' + x + '</th>').join('') + '</tr>';
+  rows.forEach((r, i) => { h += '<tr' + (hlLast && i === rows.length - 1 ? ' class="hl"' : '') + '>' + r.map(x => '<td class="num">' + x + '</td>').join('') + '</tr>'; });
+  return h + '</table></div>';
+}
+function fail(out, e){ $(out).innerHTML = '<p class="msg-bad">' + esc(e.message) + '</p>'; }
+
+/* ---------------- Caesar ---------------- */
+function shift(t, k){ return t.toUpperCase().replace(/[A-Z]/g, c => String.fromCharCode((c.charCodeAt(0) - 65 + k + 26 * 10) % 26 + 65)); }
+function caesarRun(){ const t = $('cz-in').value, k = parseInt($('cz-k').value) || 0; $('cz-out').textContent = 'k = ' + k + ' :  ' + t.toUpperCase() + '  →  ' + shift(t, k); }
+function caesarBrute(){ const t = $('cz-in').value; let s = 'Trying all keys (decryption = shift by −k):\n'; for(let k = 1; k <= 25; k++){ s += 'k=' + String(k).padStart(2) + ' : ' + shift(t, -k) + '\n'; } $('cz-out').textContent = s; }
+
+/* ---------------- XOR ---------------- */
+function xorRun(){
+  let p = $('xr-p').value.trim(), k = $('xr-k').value.trim();
+  let pb = /^[01]{8}$/.test(p) ? p : (p.length ? p.charCodeAt(0).toString(2).padStart(8, '0').slice(-8) : '00000000');
+  if(!/^[01]{8}$/.test(k)){ $('xr-out').textContent = 'The key must be exactly 8 bits (0/1).'; return; }
+  const x = (a, b) => [...a].map((c, i) => c === b[i] ? '0' : '1').join('');
+  const c = x(pb, k), back = x(c, k);
+  const ch = s => { const v = parseInt(s, 2); return v >= 32 && v < 127 ? ' (' + String.fromCharCode(v) + ')' : ''; };
+  $('xr-out').textContent = 'Plaintext : ' + pb + ch(pb) + '\nKey       : ' + k + '\n            --------  XOR\nCiphertext: ' + c + '\nKey       : ' + k + '\n            --------  XOR\nDecrypted : ' + back + ch(back) + (back === pb ? '   ✓ identical' : '');
+}
+
+/* ---------------- EEA ---------------- */
+function eeaRows(a, b){
+  const rows = [[0, a, '—', 1n, 0n], [1, b, '—', 0n, 1n]];
+  while(rows[rows.length - 1][1] !== 0n){
+    const [, r0, , s0, t0] = rows[rows.length - 2], [, r1, , s1, t1] = rows[rows.length - 1];
+    const q = r0 / r1; rows.push([rows.length, r0 - q * r1, q, s0 - q * s1, t0 - q * t1]);
+  }
+  return rows;
+}
+function eeaHtml(a, b){
+  const rows = eeaRows(a, b);
+  const g = rows[rows.length - 2][1];
+  const shown = rows.slice(0, -1);   // drop the final r=0 row for readability
+  let h = table(['i', 'r', 'q', 's', 't', 's·' + a + ' + t·' + b], shown.map(r => [r[0], r[1], r[2], r[3], r[4], r[3] * a + r[4] * b]), true);
+  const last = shown[shown.length - 1];
+  h += '<div class="out rtl">';
+  h += 'gcd(' + a + ', ' + b + ') = <b class="ltr">' + g + '</b>. ';
+  if(g === 1n){
+    const inv = mod(last[4], a);
+    h += 'ההופכי של <span class="ltr">' + b + '</span> מודולו <span class="ltr">' + a + '</span> הוא <span class="ltr">t = ' + last[4] + '</span>' + (last[4] < 0n ? ' ← שלילי, מוסיפים ' + a + ': <b class="ltr">' + inv + '</b>' : ' = <b class="ltr">' + inv + '</b>') +
+         '.<br>בדיקה: <span class="ltr">' + b + ' · ' + inv + ' = ' + (b * inv) + ' = ' + (b * inv / a) + '·' + a + ' + ' + (b * inv % a) + '</span> <span class="msg-ok">✓</span>';
+  } else h += '<span class="msg-bad">ה־gcd אינו 1 — אין הופכי מודולרי.</span>';
+  return h + '</div>';
+}
+function eeaRun(){ try{ const a = big('ee-a'), b = big('ee-b'); if(a <= 0n || b <= 0n) throw new Error('הכנס מספרים חיוביים'); $('ee-out').innerHTML = eeaHtml(a, b); } catch(e){ fail('ee-out', e); } }
+
+/* ---------------- Square & Multiply ---------------- */
+function samTrace(x, e, n){
+  const bits = e.toString(2), rows = []; let z = mod(x, n), sq = 0, mu = 0;
+  rows.push(['1', 'start', '—', '—', z]);
+  for(const b of bits.slice(1)){
+    const before = z; z = z * z % n; sq++;
+    let sqs = before + '² = ' + (before * before) + ' ≡ ' + z;
+    if(b === '1'){ const s = z; z = z * mod(x, n) % n; mu++; rows.push([b, 'Sq + Mul', sqs, s + '·' + mod(x, n) + ' = ' + (s * mod(x, n)) + ' ≡ ' + z, z]); }
+    else rows.push([b, 'Sq', sqs, '—', z]);
+  }
+  return {bits, rows, sq, mu, z};
+}
+function samHtml(x, e, n){
+  if(e <= 0n) throw new Error('המעריך חייב להיות חיובי');
+  const t = samTrace(x, e, n);
+  let h = '<div class="out rtl">המעריך בבינארי: <span class="ltr">' + e + ' = ' + t.bits + '₂</span> (' + t.bits.length + ' ביטים)</div>';
+  h += table(['bit', 'action', 'square (mod ' + n + ')', 'multiply by ' + mod(x, n), 'z'], t.rows, true);
+  h += '<div class="out rtl">התוצאה: <b class="ltr">' + x + '^' + e + ' mod ' + n + ' = ' + t.z + '</b> · ריבועים: ' + t.sq + ' · כפלים: ' + t.mu + ' · סה״כ ' + (t.sq + t.mu) + ' פעולות (נאיבי: <span class="ltr">' + (e - 1n) + '</span>)</div>';
+  return h;
+}
+function samRun(){ try{ const n = big('sm-n'); if(n < 2n) throw new Error('n חייב להיות לפחות 2'); $('sm-out').innerHTML = samHtml(big('sm-x'), big('sm-e'), n); } catch(e){ fail('sm-out', e); } }
+
+/* ---------------- RSA ---------------- */
+function rsaRun(){
+  try{
+    const p = big('rsa-p'), q = big('rsa-q'), M = big('rsa-m');
+    if(!isPrime(p)) throw new Error('p = ' + p + ' אינו ראשוני (' + factStr(factor(p)) + ')');
+    if(!isPrime(q)) throw new Error('q = ' + q + ' אינו ראשוני (' + factStr(factor(q)) + ')');
+    if(p === q) throw new Error('p ו־q חייבים להיות שונים');
+    const n = p * q, ph = (p - 1n) * (q - 1n);
+    let e, ev = $('rsa-e').value.trim();
+    if(ev === ''){ e = 3n; while(gcd(e, ph) !== 1n) e += 2n; } else e = BigInt(ev);
+    let h = '<h4>שלבים 1–3</h4><div class="out">n    = ' + p + ' · ' + q + ' = ' + n + '\nφ(n) = (' + p + '−1)(' + q + '−1) = ' + (p - 1n) + ' · ' + (q - 1n) + ' = ' + ph + ' = ' + factStr(factor(ph)) + '</div>';
+    h += '<h4>שלב 4 — בדיקת e</h4>';
+    if(e <= 1n || e >= ph){ $('rsa-out').innerHTML = h + '<p class="msg-bad">e חייב לקיים 1 &lt; e &lt; φ(n)</p>'; return; }
+    const g = gcd(e, ph);
+    h += '<div class="out">gcd(' + e + ', ' + ph + ') = ' + g + (g === 1n ? '   ✓ valid' : '   ✗ not valid — choose another e') + '</div>';
+    if(g !== 1n){ $('rsa-out').innerHTML = h; return; }
+    h += '<h4>שלב 5 — d בעזרת אוקלידס המורחב</h4>' + eeaHtml(ph, e);
+    const d = mod(eeaRows(ph, e).slice(-2)[0][4], ph);
+    h += '<h4>שלב 6 — המפתחות</h4><div class="out">public  (n, e) = (' + n + ', ' + e + ')\nprivate (n, d) = (' + n + ', ' + d + ')</div>';
+    if(M < 0n) throw new Error('M חייב להיות אי־שלילי');
+    if(M >= n) h += '<p class="msg-bad">⚠️ M = ' + M + ' ≥ n = ' + n + ' — הפענוח יחזיר את M mod n = ' + (M % n) + ' ולא את M (ראו שאלה 2 בתרגיל).</p>';
+    h += '<h4>הצפנה: <span class="ltr">C = ' + M + '^' + e + ' mod ' + n + '</span></h4>' + samHtml(M, e, n);
+    const C = powmod(M, e, n);
+    h += '<h4>פענוח: <span class="ltr">M = ' + C + '^' + d + ' mod ' + n + '</span></h4>' + samHtml(C, d, n);
+    const back = powmod(C, d, n);
+    h += '<p class="' + (back === M ? 'msg-ok' : 'msg-bad') + '">' + (back === M ? '✓ הפענוח החזיר את M = ' + M : '✗ הפענוח החזיר ' + back + ' ולא ' + M) + '</p>';
+    $('rsa-out').innerHTML = h;
+  } catch(e){ fail('rsa-out', e); }
+}
+
+/* ---------------- groups ---------------- */
+function groupRun(){
+  try{
+    const p = Number(big('gr-p'));
+    if(p < 3 || p > 200 || !isPrime(BigInt(p))) throw new Error('הכנס ראשוני בין 3 ל־200');
+    const pf = factor(BigInt(p - 1)).map(x => Number(x[0]));
+    let rows = [], gens = [];
+    for(let a = 1; a < p; a++){
+      let v = a, k = 1, seq = [a]; while(v !== 1){ v = v * a % p; k++; seq.push(v); }
+      const isG = k === p - 1; if(isG) gens.push(a);
+      const test = pf.map(q => a + '^' + ((p - 1) / q) + '≡' + Number(powmod(BigInt(a), BigInt((p - 1) / q), BigInt(p)))).join(' , ');
+      rows.push('<tr' + (isG ? ' class="good"' : '') + '><td class="num">' + a + '</td><td class="num">' + (seq.length > 24 ? seq.slice(0, 24).join(' ') + ' …' : seq.join(' ')) + '</td><td class="num">' + k + '</td><td class="num">' + test + '</td><td>' + (isG ? 'כן ★' : 'לא') + '</td></tr>');
+    }
+    let h = '<div class="out rtl">גודל החבורה <span class="ltr">p − 1 = ' + (p - 1) + ' = ' + factStr(factor(BigInt(p - 1))) + '</span>. יוצרים: <b class="ltr">{' + gens.join(', ') + '}</b> — סה״כ ' + gens.length + ' = φ(' + (p - 1) + ') ✓</div>';
+    h += '<div class="tbl-wrap"><table><tr><th>a</th><th>a¹, a², … עד 1</th><th>סדר</th><th>מבחן היוצר</th><th>יוצר?</th></tr>' + rows.join('') + '</table></div>';
+    $('gr-out').innerHTML = h;
+  } catch(e){ fail('gr-out', e); }
+}
+
+/* ---------------- Diffie-Hellman ---------------- */
+function dhRun(){
+  try{
+    const p = big('dh-p'), g = big('dh-g'), a = big('dh-a'), b = big('dh-b');
+    if(!isPrime(p)) throw new Error('p חייב להיות ראשוני');
+    if(g <= 1n || g >= p) throw new Error('g חייב להיות בטווח 2 … p−1');
+    let h = '';
+    const pf = factor(p - 1n).map(x => x[0]);
+    const tests = pf.map(q => [q, powmod(g, (p - 1n) / q, p)]);
+    const isGen = tests.every(t => t[1] !== 1n);
+    h += '<h4>שלב 0 — האם g יוצר?</h4><div class="out">p − 1 = ' + (p - 1n) + ' = ' + factStr(factor(p - 1n)) + '\n' + tests.map(t => g + '^(' + (p - 1n) + '/' + t[0] + ') = ' + g + '^' + ((p - 1n) / t[0]) + ' mod ' + p + ' = ' + t[1] + (t[1] === 1n ? '   ✗ = 1' : '   ≠ 1')).join('\n') + '\n→ ' + (isGen ? 'g is a generator ✓' : 'g is NOT a generator ✗') + '</div>';
+    if(a < 2n || a > p - 2n || b < 2n || b > p - 2n) h += '<p class="msg-bad">⚠️ מומלץ לבחור סודות בטווח 2 … p−2</p>';
+    const A = powmod(g, a, p), B = powmod(g, b, p);
+    h += '<h4>אליס: <span class="ltr">A = ' + g + '^' + a + ' mod ' + p + '</span></h4>' + samHtml(g, a, p);
+    h += '<h4>בוב: <span class="ltr">B = ' + g + '^' + b + ' mod ' + p + '</span></h4>' + samHtml(g, b, p);
+    h += '<div class="out rtl">על הערוץ (איב רואה): <span class="ltr">p = ' + p + ', g = ' + g + ', A = ' + A + ', B = ' + B + '</span></div>';
+    h += '<h4>אליס: <span class="ltr">K = B^a = ' + B + '^' + a + ' mod ' + p + '</span></h4>' + samHtml(B, a, p);
+    h += '<h4>בוב: <span class="ltr">K = A^b = ' + A + '^' + b + ' mod ' + p + '</span></h4>' + samHtml(A, b, p);
+    const K1 = powmod(B, a, p), K2 = powmod(A, b, p);
+    h += '<p class="' + (K1 === K2 ? 'msg-ok' : 'msg-bad') + '">' + (K1 === K2 ? '✓ שני הצדדים קיבלו K = ' + K1 + ' (בדיקה: g^(ab) mod p = ' + powmod(g, a * b, p) + ')' : '✗ שונה') + '</p>';
+    $('dh-out').innerHTML = h;
+  } catch(e){ fail('dh-out', e); }
+}
+
+/* ---------------- BSGS ---------------- */
+function bsgsRun(){
+  try{
+    const p = big('bs-p'), g = big('bs-g'), y = big('bs-y');
+    if(!isPrime(p) || p > 1000000n) throw new Error('p חייב להיות ראשוני עד 1,000,000');
+    const n = p - 1n; let m = 0n; while(m * m < n) m++;
+    const T = new Map(), baby = [];
+    for(let j = 0n; j < m; j++){ const v = powmod(g, j, p); if(!T.has(v)) T.set(v, j); baby.push([j, v]); }
+    const gm = powmod(g, m, p), ginv = powmod(gm, p - 2n, p);
+    let h = '<div class="out">n = ' + n + ' ,  m = ⌈√' + n + '⌉ = ' + m + '\nγ = g^m = ' + g + '^' + m + ' mod ' + p + ' = ' + gm + ' ,  γ⁻¹ = ' + ginv + '   (check: ' + gm + '·' + ginv + ' mod ' + p + ' = ' + (gm * ginv % p) + ')</div>';
+    h += '<h4>צעדי תינוק</h4>' + (m <= 40n ? table(['j', 'g^j mod ' + p], baby.map(r => [r[0], r[1]])) : '<div class="out rtl">(' + m + ' ערכים — הטבלה גדולה מדי להצגה)</div>');
+    let cur = mod(y, p), giant = [], found = null;
+    for(let i = 0n; i < m; i++){
+      if(T.has(cur)){ found = [i, T.get(cur)]; giant.push([i, cur, 'j = ' + T.get(cur) + ' ✓']); break; }
+      giant.push([i, cur, '—']); cur = cur * ginv % p;
+    }
+    h += '<h4>צעדי ענק</h4>' + table(['i', 'β·γ^(−i)', 'in table?'], giant.slice(-40), !!found);
+    if(found){ const x = found[0] * m + found[1]; h += '<p class="msg-ok">x = i·m + j = ' + found[0] + '·' + m + ' + ' + found[1] + ' = ' + x + ' · בדיקה: ' + g + '^' + x + ' mod ' + p + ' = ' + powmod(g, x, p) + '</p>'; }
+    else h += '<p class="msg-bad">לא נמצא פתרון — ייתכן ש־g אינו יוצר ו־β לא בתת־החבורה שלו.</p>';
+    $('bs-out').innerHTML = h;
+  } catch(e){ fail('bs-out', e); }
+}
+
+/* ---------------- static diagrams built by script ---------------- */
+(function clock(){
+  const g = document.getElementById('clk'); if(!g) return; let s = '';
+  for(let h = 0; h < 24; h++){ const a = h / 24 * 2 * Math.PI, x = 150 + 92 * Math.sin(a), y = 150 - 92 * Math.cos(a) + 5;
+    s += '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '"' + (h === 8 ? ' fill="#b91c1c" font-size="18"' : h === 12 ? ' fill="#64748b" font-size="18"' : '') + '>' + h + '</text>'; }
+  g.innerHTML = s;
+})();
+(function cyc(){
+  const svg = document.getElementById('cyc-svg'); if(!svg) return; const p = 11;
+  const pos = k => { const a = (k - 1) / 10 * 2 * Math.PI; return [Math.sin(a), -Math.cos(a)]; };
+  let s = '<defs><marker id="cy" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#0f766e"/></marker><marker id="cy2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#b45309"/></marker></defs>';
+  const draw = (cx, base, col, mk, title) => {
+    const R = 105; let pts = {}; for(let v = 1; v <= 10; v++){ const [sx, sy] = pos(v); pts[v] = [cx + R * sx, 150 + R * sy]; }
+    let seq = [], v = 1; do { v = v * base % p; seq.push(v); } while(v !== 1);
+    let prev = 1, arrows = '';
+    seq.forEach(w => { const [x1, y1] = pts[prev], [x2, y2] = pts[w]; const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1;
+      arrows += '<line x1="' + (x1 + dx / L * 16).toFixed(1) + '" y1="' + (y1 + dy / L * 16).toFixed(1) + '" x2="' + (x2 - dx / L * 18).toFixed(1) + '" y2="' + (y2 - dy / L * 18).toFixed(1) + '" stroke="' + col + '" stroke-width="1.8" marker-end="url(#' + mk + ')"/>'; prev = w; });
+    let nodes = ''; for(let w = 1; w <= 10; w++){ const on = seq.includes(w); const [x, y] = pts[w];
+      nodes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="15" fill="' + (on ? '#fff' : '#eee') + '" stroke="' + (on ? col : '#bbb') + '" stroke-width="2"/><text x="' + x.toFixed(1) + '" y="' + (y + 5).toFixed(1) + '" text-anchor="middle" font-size="14" fill="' + (on ? '#14213d' : '#aaa') + '">' + w + '</text>'; }
+    return arrows + nodes + '<text x="' + cx + '" y="285" text-anchor="middle" font-size="15" font-weight="700">' + title + '</text>';
+  };
+  s += draw(155, 2, '#0f766e', 'cy', 'powers of 2 : ord = 10') + draw(465, 3, '#b45309', 'cy2', 'powers of 3 : ord = 5');
+  svg.innerHTML = s;
+})();
+
+/* ---------------- quiz ---------------- */
+const QUIZ = [
+ ['לפי עקרון קרקהוף, מה חייב להישאר סודי?', ['האלגוריתם', 'המפתח בלבד', 'גם האלגוריתם וגם המפתח', 'אורך ההודעה'], 1, 'כל המערכת יכולה להיות ציבורית; הביטחון נשען רק על המפתח.'],
+ ['למה צופן החלפה נשבר למרות <span class="ltr">26! ≈ 2^88</span> מפתחות?', ['כי אפשר לנסות את כל המפתחות', 'כי תדירות האותיות נשמרת', 'כי המפתח קצר מההודעה', 'כי הוא משתמש ב־XOR'], 1, 'ניתוח תדירויות: ההחלפה משנה את שם האות אבל לא את שכיחותה.'],
+ ['מה קורה אם משתמשים באותו מפתח OTP פעמיים?', ['שום דבר, OTP תמיד בטוח', 'התוקף מקבל את המפתח ישירות', '<span class="ltr">C1 ⊕ C2 = P1 ⊕ P2</span> — המפתח מתבטל', 'ההודעה השנייה לא ניתנת לפענוח'], 2, 'המפתח מתבטל ב־XOR ונשאר XOR של שתי ההודעות.'],
+ ['מה התכונה של ECB שמאפשרת את התקפת החלפת הבלוקים?', ['כל בלוק מוצפן בנפרד עם אותו מפתח', 'הוא משתמש ב־IV אקראי', 'הוא צופן זרם', 'המפתח קצר מדי'], 0, 'בלוקים עצמאיים ← אפשר להזיז ולהחליף אותם והפענוח עדיין מצליח.'],
+ ['<span class="ltr">p = 7, q = 11</span>. מהו <span class="ltr">φ(n)</span>?', ['77', '60', '70', '66'], 1, '<span class="ltr">(7−1)(11−1) = 6 · 10 = 60</span>.'],
+ ['עם <span class="ltr">φ(n) = 60</span>, איזה e חוקי?', ['e = 6', 'e = 15', 'e = 7', 'e = 10'], 2, 'רק 7 זר ל־60 (<span class="ltr">gcd(7,60)=1</span>). ההופכי: <span class="ltr">d = 43</span>, כי <span class="ltr">7·43 = 301 = 5·60 + 1</span>.'],
+ ['כמה ביטים של המעריך גורמים לפעולת כפל באלגוריתם ריבוע וכפל?', ['כל הביטים', 'רק ביטי 1 (חוץ מהראשון)', 'רק ביטי 0', 'אף אחד'], 1, '"ריבוע תמיד, כפל רק על 1". הביט הראשון הוא נקודת ההתחלה <span class="ltr">z = x</span>.'],
+ ['בהתקפת ערוץ צד על RSA, מה חושף שהביט של d הוא 1?', ['זמן/הספק ארוך יותר — יש גם ריבוע וגם כפל', 'הודעת שגיאה', 'גודל הטקסט המוצפן', 'ה־IV'], 0, 'ביט 1 = ריבוע + כפל, ביט 0 = רק ריבוע; העקבה מסגירה את הביטים.'],
+ ['ב־<span class="ltr">Z11*</span>, מה הסדר של 10?', ['10', '5', '2', '1'], 2, '<span class="ltr">10 ≡ −1</span>, ולכן <span class="ltr">10² ≡ 1</span>.'],
+ ['ב־DH, אליס קיבלה B מבוב. איך היא מחשבת את המפתח?', ['<span class="ltr">K = A^b</span>', '<span class="ltr">K = B^a mod p</span>', '<span class="ltr">K = g^B mod p</span>', '<span class="ltr">K = A · B mod p</span>'], 1, 'אליס מכירה את a ואת B: <span class="ltr">K = B^a = g^(ab)</span>.'],
+ ['מה סיבוכיות הזמן של Baby-Step Giant-Step בחבורה בגודל n?', ['O(n)', 'O(log n)', 'O(√n)', 'O(1)'], 2, 'שני חלקים של <span class="ltr">m = ⌈√n⌉</span> צעדים כל אחד.'],
+ ['מה שורש הבעיה בהתקפת MITM על DH?', ['ה־DLP קל', 'p קטן מדי', 'אין אימות של הצדדים', 'g אינו יוצר'], 2, 'איב לא פותרת DLP; היא פשוט מתחזה לכל צד. הפתרון: חתימות/תעודות.']
+];
+(function buildQuiz(){
+  const box = $('quiz-box'); if(!box) return; let score = 0, answered = 0;
+  QUIZ.forEach((q, i) => {
+    const d = document.createElement('div'); d.className = 'box exercise';
+    d.innerHTML = '<div class="box-head">שאלה ' + (i + 1) + '</div><div class="box-body"><p>' + q[0] + '</p><div class="chips">' + q[1].map((o, j) => '<button class="ghost" data-j="' + j + '">' + o + '</button>').join('') + '</div><p class="fb" style="display:none"></p></div>';
+    d.querySelectorAll('button').forEach(b => b.onclick = () => {
+      if(d.dataset.done) return; d.dataset.done = 1; answered++;
+      const j = +b.dataset.j, ok = j === q[2]; if(ok) score++;
+      d.querySelectorAll('button').forEach(x => { const k = +x.dataset.j; x.style.background = k === q[2] ? '#15803d' : (k === j ? '#b91c1c' : '#e7ecf5'); x.style.color = (k === q[2] || k === j) ? '#fff' : '#14213d'; });
+      const fb = d.querySelector('.fb'); fb.style.display = 'block'; fb.innerHTML = '<span class="' + (ok ? 'msg-ok' : 'msg-bad') + '">' + (ok ? '✓ נכון.' : '✗ לא בדיוק.') + '</span> ' + q[3];
+      $('quiz-score').textContent = 'ציון: ' + score + ' / ' + answered + (answered === QUIZ.length ? ' — סיימת!' : '');
+    });
+    box.appendChild(d);
+  });
+})();
+
+/* ---------------- sidebar: active link + progress ---------------- */
+(function nav(){
+  const links = [...document.querySelectorAll('nav.side a[href^="#"]')];
+  const targets = links.map(a => document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+  function upd(){
+    let cur = targets[0];
+    for(const t of targets){ if(t.getBoundingClientRect().top < 120) cur = t; }
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur.id));
+    const h = document.documentElement; $('prog').style.width = (100 * h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight)) + '%';
+  }
+  addEventListener('scroll', upd, {passive: true}); upd();
+  links.forEach(a => a.addEventListener('click', () => document.querySelector('nav.side').classList.remove('open')));
+})();
+
+/* run labs once with defaults */
+caesarRun(); xorRun(); eeaRun(); samRun(); rsaRun(); groupRun(); dhRun(); bsgsRun();
+</script>
+</body>
+</html>
