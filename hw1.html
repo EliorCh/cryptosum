@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>תרגיל בית 1 — שיטת עבודה ובוחן מסכם · קריפטוגרפיה שימושית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code','svg'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
+<div class="layout">
+<nav class="side" id="sidebar">
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–3 + תרגיל בית 1</small></div>
+<div class="progress"><span id="prog"></span></div>
+<a class="chap" href="index.html">דף הבית</a>
+<a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
+<a class="chap" href="ch1.html">פרק 1 — מבוא לקריפטוגרפיה</a>
+<a class="chap" href="ch2.html">פרק 2 — הצפנה אסימטרית ו־RSA</a>
+<a class="chap" href="ch3.html">פרק 3 — לוג דיסקרטי ו־Diffie-Hellman</a>
+<a class="chap here" href="hw1.html">תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a>
+<a class="sub" href="#hw1">פתיחה</a>
+<a class="sub" href="#quiz">בוחן עצמי מסכם</a>
+</nav>
+<main id="top">
+<!-- =============================== HOMEWORK 1 =============================== -->
+<h2 class="chapter" id="hw1"><span class="num">📝</span>תרגיל בית 1 — מה כל שאלה בודקת ואיך ניגשים</h2>
+<div class="prereq">📚 <strong>לפני הפרק כדאי להכיר:</strong> פרקים 2 ו־3.</div>
+<p class="hook">הגשה: 16.11 בשעה 23:59. כאן לא תמצא את התשובות לשאלות 1 ו־3 (המספרים שם הם שלך), אלא את שיטת העבודה, רשימת הבדיקה והמלכודות — ומעבדות שבהן תוכל לבדוק את החישוב הידני שלך.</p>
+
+<h3><span class="sec">ש1</span><bdi dir="ltr">RSA</bdi> ידני מלא — יצירת מפתחות, הצפנה ופענוח</h3>
+<div class="box theory"><div class="box-head">📘 נוסח השאלה</div><div class="box-body">
+<p>באופן ידני, בצעו את תהליך יצירת המפתחות, ההצפנה והפענוח של אלגוריתם <bdi dir="ltr">RSA</bdi>. בחרו שני מספרים ראשוניים שונים בתחום 10–100 (לא את הצמד 13, 17 משאלה 2). יש להראות את כל שלבי החישוב.</p>
+</div></div>
+<div class="box formula"><div class="box-head">📐 רשימת שלבים שצריכים להופיע בהגשה</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>מה להראות</th><th>איפה באתר</th></tr>
+<tr><td class="num">1</td><td>בחירת <bdi dir="ltr">p, q</bdi> והצדקה קצרה שהם ראשוניים ושונים (לא 13 ו־17).</td><td><a href="ch2.html#rsa">2.8</a></td></tr>
+<tr><td class="num">2</td><td>חישוב <span class="ltr">n = p·q</span>.</td><td><a href="ch2.html#rsa">2.8</a></td></tr>
+<tr><td class="num">3</td><td>חישוב <span class="ltr">φ(n) = (p−1)(q−1)</span> ופירוקו לראשוניים (עוזר לבחור <bdi dir="ltr">e</bdi>).</td><td><a href="ch2.html#phi">2.6</a></td></tr>
+<tr><td class="num">4</td><td>בחירת <bdi dir="ltr">e</bdi> והוכחה ש־<span class="ltr">gcd(e, φ(n)) = 1</span> — עם שלבי אוקלידס.</td><td><a href="ch2.html#euclid">2.4</a></td></tr>
+<tr><td class="num">5</td><td>חישוב <bdi dir="ltr">d</bdi> בטבלת אוקלידס המורחב, תיקון ל־<bdi dir="ltr">d</bdi> חיובי, ובדיקה <span class="ltr">e·d mod φ(n) = 1</span>.</td><td><a href="ch2.html#eea">2.5</a></td></tr>
+<tr><td class="num">6</td><td>בחירת הודעה <bdi dir="ltr">M</bdi> עם <span class="ltr">M &lt; n</span>, והצפנה <span class="ltr">C = M^e mod n</span> בטבלת ריבוע וכפל.</td><td><a href="ch2.html#sam">2.12</a></td></tr>
+<tr><td class="num">7</td><td>פענוח <span class="ltr">C^d mod n</span> בטבלת ריבוע וכפל, והראיה שחזרת ל־<bdi dir="ltr">M</bdi>.</td><td><a href="ch2.html#sam">2.12</a></td></tr>
+</table></div>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ מלכודות ועצות לשאלה 1</div><div class="box-body">
+<ul>
+<li><strong><bdi dir="ltr">M</bdi> חייב להיות קטן מ־<bdi dir="ltr">n</bdi></strong> — זה בדיוק הלקח של שאלה 2.</li>
+<li>אל תבחר את 13 ו־17 (אסור), ועדיף לא את 11 ו־17 מהשקפים — הבודק ירצה לראות עבודה שלך.</li>
+<li>ה־<bdi dir="ltr">d</bdi> עלול לצאת גדול (מאות). זה בסדר: בטבלת ריבוע וכפל יהיו כמה שורות כמו מספר הביטים של <bdi dir="ltr">d</bdi> (למשל <bdi dir="ltr">d</bdi> בין 256 ל־511 ← 9 ביטים ← 8 שורות אחרי ההתחלה).</li>
+<li>אם <bdi dir="ltr">EEA</bdi> נתן <bdi dir="ltr">t</bdi> שלילי — הוסף <span class="ltr">φ(n)</span>.</li>
+<li>צמצם מודולו <bdi dir="ltr">n</bdi> <strong>אחרי כל כפל</strong>. כך אף פעם לא תעבור מספרים בני 5 ספרות.</li>
+<li>אל תבחר <bdi dir="ltr">M</bdi> שמתחלק ב־<bdi dir="ltr">p</bdi> או ב־<bdi dir="ltr">q</bdi>, ואל תבחר <span class="ltr">M = 0, 1</span> או <span class="ltr">n−1</span> — עובד מתמטית אבל נראה רע בהגשה.</li>
+</ul>
+</div></div>
+<p>לבדיקת החישוב: <a href="ch2.html#rsa-example">המעבדה של <bdi dir="ltr">RSA</bdi></a> מראה את כל טבלאות <bdi dir="ltr">EEA</bdi> וריבוע וכפל עבור המספרים שתבחר.</p>
+
+<h3><span class="sec">ש2</span>למה הפענוח מחזיר תשובה שגויה?</h3>
+<div class="box theory"><div class="box-head">📘 הנתונים בשאלה</div><div class="box-body">
+<pre>p = 13,  q = 17
+n = p·q = 221
+φ(n) = (p−1)(q−1) = 192
+e = 5      (relatively prime to 192)
+d = 77     (e·d ≡ 1 mod φ(n))
+
+Message:            M  = 300
+Encryption:         c  = 300^5 mod 221 = 27
+Decryption attempt: m' = 27^77 mod 221 = 79</pre>
+</div></div>
+<div class="box exercise"><div class="box-head">🧭 איך לחשוב על זה (נסה לבד לפני שאתה פותח)</div><div class="box-body">
+<ol>
+<li>בדוק את המפתחות: האם <span class="ltr">e·d ≡ 1 (mod 192)</span>? האם <span class="ltr">gcd(5, 192) = 1</span>?</li>
+<li>בדוק את החשבון: האם 27 ו־79 באמת התוצאות הנכונות של החזקות? (אפשר במעבדת ריבוע וכפל.)</li>
+<li>אם הכול נכון — חזור ל<a href="ch2.html#rsa-enc">תנאי שכולם שוכחים</a> ב־2.9. מה הקשר בין 300, 221 ו־79?</li>
+</ol>
+</div></div>
+<details class="reveal"><summary>הסבר מלא</summary><div>
+<p><strong>המפתחות והחשבון תקינים.</strong> <span class="ltr">5 · 77 = 385 = 2 · 192 + 1</span> ✓, ו־<span class="ltr">gcd(5, 192) = 1</span> ✓. גם 27 ו־79 הן התוצאות הנכונות של החזקות.</p>
+<p><strong>הבעיה היא ש־<span class="ltr">M = 300 ≥ n = 221</span>.</strong> <bdi dir="ltr">RSA</bdi> עובד בחבורה <span class="ltr">Zn = {0, …, 220}</span>. ההצפנה לא "רואה" את 300, אלא את השארית שלו:</p>
+$$300 \bmod 221 = 79 \quad\Longrightarrow\quad 300^5 \equiv 79^5 \equiv 27 \pmod{221}$$
+<p>הפענוח מחזיר בדיוק את מה שהוצפן בפועל — והוא חייב להחזיר מספר בטווח <span class="ltr">0 … 220</span>:</p>
+$$27^{77} \equiv 79 = 300 - 221 \pmod{221}$$
+<p>כלומר הפענוח <strong>נכון</strong> מודולו <bdi dir="ltr">n</bdi> — הוא פשוט לא יכול להבחין בין 79, 300, 521… כי כולם אותו איבר ב־<span class="ltr">Z221</span>. המידע "כמה פעמים עברנו את 221" אבד כבר בהצפנה.</p>
+<p><strong>התיקון:</strong> לדרוש <span class="ltr">0 ≤ M &lt; n</span> — לבחור <bdi dir="ltr">p, q</bdi> כך ש־<span class="ltr">n &gt; 300</span> (למשל <bdi dir="ltr">n</bdi> של אלפי ביטים במציאות), או לחלק את ההודעה לבלוקים שכל אחד קטן מ־<bdi dir="ltr">n</bdi>.</p>
+</div></details>
+
+<h3><span class="sec">ש3</span><bdi dir="ltr">Diffie-Hellman</bdi> ידני עם <span class="ltr">p = 23, g = 5</span></h3>
+<div class="box formula"><div class="box-head">📐 רשימת שלבים שצריכים להופיע בהגשה</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>מה להראות</th><th>איפה באתר</th></tr>
+<tr><td class="num">0</td><td>(מומלץ) הראה ש־5 יוצר של <span class="ltr">Z23*</span>: פרק את <span class="ltr">22 = 2 · 11</span> ובדוק ש־<span class="ltr">5^11</span> ו־<span class="ltr">5^2</span> אינם 1 מודולו 23.</td><td><a href="ch3.html#cyclic">3.5</a></td></tr>
+<tr><td class="num">1</td><td>אליס בוחרת סוד <bdi dir="ltr">a</bdi>, בוב בוחר סוד <bdi dir="ltr">b</bdi> (בטווח <span class="ltr">2 … 21</span>, שונים זה מזה).</td><td><a href="ch3.html#dh">3.6</a></td></tr>
+<tr><td class="num">2</td><td><span class="ltr">A = 5^a mod 23</span> — בטבלת ריבוע וכפל.</td><td><a href="ch2.html#sam">2.12</a></td></tr>
+<tr><td class="num">3</td><td><span class="ltr">B = 5^b mod 23</span> — בטבלת ריבוע וכפל.</td><td><a href="ch2.html#sam">2.12</a></td></tr>
+<tr><td class="num">4</td><td>אליס: <span class="ltr">K = B^a mod 23</span>; בוב: <span class="ltr">K = A^b mod 23</span>. שני החישובים במלואם.</td><td><a href="ch3.html#dh">3.6</a></td></tr>
+<tr><td class="num">5</td><td>הראה ששני ה־<bdi dir="ltr">K</bdi> שווים, ואמור מה איב רואה ומה לא.</td><td><a href="ch3.html#dlp">3.7</a></td></tr>
+</table></div>
+</div></div>
+<p>הדוגמה המלאה עם <span class="ltr">p = 37, g = 2</span> ב־<a href="ch3.html#dh">3.6</a> בנויה בדיוק במבנה הזה. במעבדה שם אפשר להציב <span class="ltr">p=23, g=5</span> והסודות שבחרת ולהשוות לחישוב שלך.</p>
+
+<h3><span class="sec">ש4</span>(רשות) חזקה מודולרית יעילה — במילים שלכם</h3>
+<div class="box theory"><div class="box-head">📘 מבנה מומלץ לתשובה</div><div class="box-body">
+<ol>
+<li><strong>הבעיה:</strong> חישוב ישיר של <span class="ltr">x^e</span> דורש <span class="ltr">e−1</span> כפלים, והמספר עצמו מתנפח לאלפי ספרות לפני שמצמצמים.</li>
+<li><strong>רעיון 1 — צמצום תוך כדי:</strong> מותר לקחת <bdi dir="ltr">mod n</bdi> אחרי כל כפל, כך שכל תוצאת ביניים קטנה מ־<bdi dir="ltr">n</bdi>.</li>
+<li><strong>רעיון 2 — הייצוג הבינארי:</strong> עוברים על ביטי המעריך משמאל לימין; בכל ביט מעלים בריבוע, ובביט 1 מכפילים גם ב־<bdi dir="ltr">x</bdi>.</li>
+<li><strong>למה זה נכון:</strong> ריבוע מכפיל את המעריך ב־2 (מוסיף ביט 0), כפל מוסיף 1 (הופך אותו לביט 1).</li>
+<li><strong>עלות:</strong> לכל היותר <span class="ltr">2⌊log₂ e⌋</span> כפלים במקום <span class="ltr">e−1</span>; דוגמה מספרית אחת קטנה.</li>
+</ol>
+<p>החומר המלא: <a href="ch2.html#sam">2.11–2.12</a>. כתוב את ההסבר בניסוח שלך — זה מה שהשאלה מבקשת.</p>
+</div></div>
+
+<!-- =============================== QUIZ =============================== -->
+<h3 id="quiz"><span class="sec">✔</span>בוחן עצמי מסכם</h3>
+<p>לחץ על תשובה — תקבל משוב מיד.</p>
+<div id="quiz-box"></div>
+<p id="quiz-score" style="font-weight:700"></p>
+
+
+<div class="pager"><a class="prev" href="ch3.html"><small>▶ הקודם</small>פרק 3 — לוג דיסקרטי ו־<bdi dir="ltr">Diffie-Hellman</bdi></a><span style="flex:1"></span></div>
+</main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

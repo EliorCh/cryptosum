@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>פרק 1 — מבוא לקריפטוגרפיה · קריפטוגרפיה שימושית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code','svg'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
+<div class="layout">
+<nav class="side" id="sidebar">
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–3 + תרגיל בית 1</small></div>
+<div class="progress"><span id="prog"></span></div>
+<a class="chap" href="index.html">דף הבית</a>
+<a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
+<a class="chap here" href="ch1.html">פרק 1 — מבוא לקריפטוגרפיה</a>
+<a class="sub" href="#ch1">פתיחה</a>
+<a class="sub" href="#kerckhoffs">עקרון קרקהוף (Kerckhoffs, 1883)</a>
+<a class="sub" href="#atbash">הצופן העתיק ביותר: אתב״ש</a>
+<a class="sub" href="#caesar">צופן קיסר (Caesar)</a>
+<a class="sub" href="#substitution">צופן החלפה וניתוח תדירויות</a>
+<a class="sub" href="#xor">המפתח הסודי ופעולת XOR</a>
+<a class="sub" href="#otp">פנקס חד־פעמי (One-Time Pad) — סודיות מושלמת</a>
+<a class="sub" href="#attacks">סוגי התקפות קריפטואנליטיות</a>
+<a class="sub" href="#rng">מחוללי מספרים אקראיים (RNG)</a>
+<a class="sub" href="#stream-block">צופן זרם מול צופן בלוקים</a>
+<a class="sub" href="#ecb">מצב ECB והתקפת החלפת הבלוקים</a>
+<a class="sub" href="#modes">מצבי הפעלה (Modes of Operation) והתיקון: CBC</a>
+<a class="sub" href="#ch1-sum">סיכום ותרגול — פרק 1</a>
+<a class="chap" href="ch2.html">פרק 2 — הצפנה אסימטרית ו־RSA</a>
+<a class="chap" href="ch3.html">פרק 3 — לוג דיסקרטי ו־Diffie-Hellman</a>
+<a class="chap" href="hw1.html">תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a>
+</nav>
+<main id="top">
+
+
+<!-- =============================== CHAPTER 1 =============================== -->
+<h2 class="chapter" id="ch1"><span class="num">1</span>מבוא לקריפטוגרפיה</h2>
+<div class="prereq">📚 <strong>לפני הפרק כדאי להכיר:</strong> ביטים ו־<bdi dir="ltr">XOR</bdi> (<a href="ch0.html#bits">0.1</a>), ביטים של ביטחון (<a href="ch0.html#security-bits">0.4</a>).</div>
+<p class="hook">הפרק הזה בונה את אוצר המילים של כל הקורס: מי התוקף, מה הוא יודע, ולמה "מרחב מפתחות ענק" לא מספיק. שאלות מבחן אוהבות כאן הבנה ולא חישוב — "למה <bdi dir="ltr">ECB</bdi> שבור?", "למה לא משתמשים ב־<bdi dir="ltr">OTP</bdi>?".</p>
+
+<h3><span class="sec">1.1</span>התמונה הגדולה: אליס, בוב ואיב</h3>
+<p>שלוש דמויות חוזרות בכל הקורס. <span class="term">Alice</span> שולחת, <span class="term">Bob</span> מקבל, ו־<span class="term">Eve</span> (מלשון <bdi dir="ltr">eavesdropper</bdi> — מצותתת) יושבת על הערוץ ורואה כל מה שעובר בו. הערוץ <strong>לא מאובטח:</strong> אינטרנט, <bdi dir="ltr">Wi-Fi</bdi>, קו טלפון. המטרה: שאיב תראה רק ג׳יבריש.</p>
+<figure>
+<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" font-family="Heebo,sans-serif">
+  <defs><marker id="ar" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker></defs>
+  <rect x="20" y="40" width="190" height="170" rx="14" fill="#eef4ff" stroke="#2563eb"/>
+  <text x="115" y="68" text-anchor="middle" font-weight="700" font-size="18" direction="rtl">Alice (שולחת)</text>
+  <rect x="45" y="85" width="140" height="30" rx="6" fill="#fff" stroke="#999"/><text x="115" y="105" text-anchor="middle" font-size="14">Plaintext</text>
+  <text x="115" y="135" text-anchor="middle" font-size="14" fill="#2563eb">Encrypt (🔑)</text>
+  <rect x="45" y="150" width="140" height="30" rx="6" fill="#14213d"/><text x="115" y="170" text-anchor="middle" font-size="14" fill="#fff">Ciphertext</text>
+  <rect x="550" y="40" width="190" height="170" rx="14" fill="#edf8f0" stroke="#15803d"/>
+  <text x="645" y="68" text-anchor="middle" font-weight="700" font-size="18" direction="rtl">Bob (מקבל)</text>
+  <rect x="575" y="85" width="140" height="30" rx="6" fill="#14213d"/><text x="645" y="105" text-anchor="middle" font-size="14" fill="#fff">Ciphertext</text>
+  <text x="645" y="135" text-anchor="middle" font-size="14" fill="#15803d">Decrypt (🔑)</text>
+  <rect x="575" y="150" width="140" height="30" rx="6" fill="#fff" stroke="#999"/><text x="645" y="170" text-anchor="middle" font-size="14">Plaintext</text>
+  <line x1="210" y1="165" x2="545" y2="100" stroke="#14213d" stroke-width="2.5" stroke-dasharray="8 6" marker-end="url(#ar)"/>
+  <text x="380" y="118" text-anchor="middle" font-size="14" fill="#555" direction="rtl">ערוץ לא מאובטח</text>
+  <circle cx="380" cy="205" r="26" fill="#fde8e8" stroke="#b91c1c"/><text x="380" y="212" text-anchor="middle" font-size="20">👁️</text>
+  <text x="380" y="245" text-anchor="middle" font-size="15" font-weight="700" fill="#b91c1c" direction="rtl">Eve — רואה רק Ciphertext</text>
+  <line x1="380" y1="178" x2="380" y2="140" stroke="#b91c1c" stroke-dasharray="3 4"/>
+</svg>
+<figcaption><bdi dir="ltr">Plaintext</bdi> ← הצפנה ← <bdi dir="ltr">Ciphertext</bdi> ← ערוץ ← פענוח ← <bdi dir="ltr">Plaintext</bdi></figcaption>
+</figure>
+<div class="box theory"><div class="box-head">📘 מה בעצם רוצים להשיג? שלוש מטרות</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>מטרה</th><th>השאלה שהיא עונה עליה</th><th>איפה תפגוש אותה</th></tr>
+<tr><td><strong>סודיות</strong> (<span class="term">confidentiality</span>)</td><td>האם איב יכולה <em>לקרוא</em> את ההודעה?</td><td>כל צופן: קיסר, <bdi dir="ltr">AES, RSA</bdi>.</td></tr>
+<tr><td><strong>שלמות</strong> (<span class="term">integrity</span>)</td><td>האם איב יכולה <em>לשנות</em> את ההודעה בלי שנגלה?</td><td>התקפת החלפת הבלוקים על <bdi dir="ltr">ECB</bdi> (1.11), מצב <bdi dir="ltr">GCM</bdi>.</td></tr>
+<tr><td><strong>אימות</strong> (<span class="term">authentication</span>)</td><td>האם ההודעה באמת הגיעה ממי שנראה ששלח אותה?</td><td>התקפת "אדם בתווך" על <bdi dir="ltr">Diffie-Hellman</bdi> (פרק 3).</td></tr>
+</table></div>
+<p>שימו לב: הצפנה לבדה נותנת רק סודיות. חלק גדול מההתקפות בקורס מנצלות בדיוק את הפער הזה — ההודעה סודית, אבל אפשר לשנות אותה או להתחזות לשולח.</p>
+</div></div>
+<div class="box theory"><div class="box-head">📘 מילון מונחים בסיסי</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>מונח</th><th>אנגלית</th><th>משמעות</th></tr>
+<tr><td>טקסט גלוי</td><td class="mono">Plaintext (P / M)</td><td>ההודעה המקורית, הקריאה.</td></tr>
+<tr><td>טקסט מוצפן</td><td class="mono">Ciphertext (C)</td><td>מה שעובר בערוץ; אמור להיראות אקראי.</td></tr>
+<tr><td>מפתח</td><td class="mono">Key (K)</td><td>הסוד היחיד במערכת. קובע איך ההצפנה מתנהגת.</td></tr>
+<tr><td>הצפנה / פענוח</td><td class="mono">Encrypt / Decrypt</td><td>הפונקציות שהופכות <bdi dir="ltr">P</bdi> ל־<bdi dir="ltr">C</bdi> ולהפך.</td></tr>
+<tr><td>סימטרי</td><td class="mono">Symmetric</td><td>אותו מפתח להצפנה ולפענוח (<bdi dir="ltr">AES, ChaCha20</bdi>).</td></tr>
+<tr><td>אסימטרי</td><td class="mono">Asymmetric</td><td>זוג מפתחות: ציבורי להצפנה, פרטי לפענוח (<bdi dir="ltr">RSA</bdi>) — פרק 2.</td></tr>
+</table></div>
+</div></div>
+
+<h3 id="kerckhoffs"><span class="sec">1.2</span>עקרון קרקהוף (<bdi dir="ltr">Kerckhoffs, 1883</bdi>)</h3>
+<div class="box formula"><div class="box-head">📐 העיקרון</div><div class="box-body">
+<p>מערכת הצפנה צריכה להיות בטוחה <strong>גם אם כל פרטיה ידועים לתוקף — חוץ מהמפתח.</strong></p>
+</div></div>
+<p><strong>למה זה הגיוני?</strong> אלגוריתם מוטמע באלפי מכשירים ותוכנות — מישהו בסוף יפרק אחד מהם וישחזר אותו. לעומת זאת מפתח הוא רק מספר, וקל להחליף אותו אם הוא דלף. לכן מתכננים כך שהדליפה ה"צפויה" (האלגוריתם) לא תזיק, וכל הסוד מרוכז בדבר שקל להגן עליו ולהחליף (המפתח).</p>
+<div class="cards">
+<div class="card"><div class="ic">✅</div><b>תכנון נכון</b>הביטחון נשען רק על המפתח הסודי. את האלגוריתם אפשר לפרסם בקוד פתוח.</div>
+<div class="card"><div class="ic">🔬</div><b>ביקורת עמיתים</b>אלגוריתם ציבורי נבדק על ידי אלפי קריפטוגרפים, כך שבאגים מתגלים מוקדם.</div>
+<div class="card"><div class="ic">🚫</div><b>ביטחון באמצעות הסתרה</b>הסתרת האלגוריתם (<span class="term">security by obscurity</span>) אינה תחליף למפתח חזק. ברגע שהאלגוריתם דולף — הכול נשבר.</div>
+<div class="card"><div class="ic">🌍</div><b>בעולם האמיתי</b><span class="term">AES, RSA, ChaCha20</span> — כולם ציבוריים לחלוטין, וזה בדיוק מה שנותן בהם אמון.</div>
+</div>
+<div class="keypoint">💡 <b>משפט למבחן:</b> אם הביטחון של מערכת תלוי בכך שהתוקף לא יודע <em>איך</em> היא עובדת — היא מתוכננת לא נכון.</div>
+
+<h3 id="atbash"><span class="sec">1.3</span>הצופן העתיק ביותר: אתב״ש</h3>
+<p>האות הראשונה מוחלפת באחרונה, השנייה בלפני־אחרונה, וכן הלאה. בעברית: א↔ת, ב↔ש, ג↔ר… ומכאן השם <strong>את־בש</strong>. באנגלית: <span class="ltr">A↔Z, B↔Y, C↔X</span>.</p>
+<div class="box example"><div class="box-head">✏️ דוגמה מהתנ״ך — ירמיהו כ״ה, כ״ו</div><div class="box-body">
+<p>"וּמֶלֶךְ <strong>שֵׁשַׁךְ</strong> יִשְׁתֶּה אַחֲרֵיהֶם" — <strong>ששך</strong> הוא <strong>בבל</strong> בצופן אתב״ש:</p>
+<div class="tbl-wrap"><table>
+<tr><th>בבל</th><td>ב</td><td>ב</td><td>ל</td></tr>
+<tr><th>ששך</th><td>ש</td><td>ש</td><td>ך (כ)</td></tr>
+</table></div>
+<p>ב↔ש כי ב׳ היא השנייה מההתחלה ו־ש׳ השנייה מהסוף; ל↔כ כי שתיהן ה־11 מכל צד.</p>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ למה זה צופן חלש</div><div class="box-body">
+<p><strong>המפתח הוא האלגוריתם.</strong> אין שום סוד מעבר לשיטה עצמה — מי שמכיר את השיטה מפענח מיד. זו בדיוק הפרה של עקרון קרקהוף.</p>
+</div></div>
+
+<h3 id="caesar"><span class="sec">1.4</span>צופן קיסר (<bdi dir="ltr">Caesar</bdi>)</h3>
+<p>מזיזים כל אות במספר קבוע של מקומות באלף־בית. המפתח הוא גודל ההזזה <span class="ltr">k</span> (קיסר השתמש ב־3).</p>
+<div class="box formula"><div class="box-head">📐 נוסחה <span class="ltr">(A=0, B=1, …, Z=25)</span></div><div class="box-body">
+$$C = (P + k) \bmod 26 \qquad\qquad P = (C - k) \bmod 26$$
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה עם <bdi dir="ltr">k=3</bdi></div><div class="box-body">
+<p class="mathline"><span class="ltr">HELLO WORLD → KHOOR ZRUOG</span></p>
+<p>למשל <span class="ltr">H=7 → 7+3=10 = K</span>, ו־<span class="ltr">W=22 → 25 = Z</span>. מה עם <span class="ltr">Y</span>? <span class="ltr">24+3 = 27 mod 26 = 1 = B</span> — כאן נכנס המודולו ("גלגול" חזרה להתחלה).</p>
+</div></div>
+<div class="lab"><h5>מעבדה: צופן קיסר + תקיפת כוח גס</h5>
+<div class="row"><label>טקסט <input id="cz-in" class="wide" value="HELLO WORLD"></label><label>הזזה <bdi dir="ltr">k</bdi> <input id="cz-k" type="number" value="3" min="0" max="25"></label>
+<button onclick="caesarRun()">הצפן</button><button class="ghost" onclick="caesarBrute()">נסה את כל 25 המפתחות</button></div>
+<div class="out" id="cz-out"></div></div>
+<div class="tbl-wrap"><table>
+<tr><th>🔑 מרחב מפתחות</th><th>⚡ כוח גס</th><th>📊 חולשה</th></tr>
+<tr><td>רק 25 מפתחות אפשריים (הזזה 1–25).</td><td><strong>כוח גס</strong> (<span class="term">brute force</span>) פירושו לנסות כל מפתח אפשרי עד שיוצא טקסט הגיוני. כאן זה 25 ניסיונות — שבריר שנייה (נסה במעבדה למעלה).</td><td>כל אות מוזזת באותו מרחק, כך שהאות הנפוצה ביותר בטקסט המוצפן היא כנראה <span class="ltr">E</span> המוזזת — ומזה מקבלים את <bdi dir="ltr">k</bdi> מיד.</td></tr>
+</table></div>
+
+<h3 id="substitution"><span class="sec">1.5</span>צופן החלפה וניתוח תדירויות</h3>
+<p>במקום הזזה קבועה — כל אות ממופה לאות אחרת לפי טבלה שרירותית (תמורה של האלף־בית). <strong>הטבלה היא המפתח.</strong></p>
+<div class="tbl-wrap"><table>
+<tr><th>Plain</th><td class="num">A</td><td class="num">B</td><td class="num">C</td><td class="num">D</td><td class="num">E</td><td class="num">F</td><td class="num">G</td><td class="num">H</td><td class="num">I</td><td class="num">J</td><td class="num">…</td></tr>
+<tr><th>Cipher</th><td class="num">Q</td><td class="num">W</td><td class="num">E</td><td class="num">R</td><td class="num">T</td><td class="num">Y</td><td class="num">U</td><td class="num">I</td><td class="num">O</td><td class="num">P</td><td class="num">…</td></tr>
+</table></div>
+<div class="box formula"><div class="box-head">📐 גודל מרחב המפתחות</div><div class="box-body">
+$$26! = 403{,}291{,}461{,}126{,}605{,}635{,}584{,}000{,}000 \approx 2^{88}$$
+<p>מאיפה <span class="ltr">26!</span>? לאות <bdi dir="ltr">A</bdi> יש 26 אפשרויות, ל־<bdi dir="ltr">B</bdi> נשארות 25, ל־<bdi dir="ltr">C 24</bdi> וכן הלאה: <span class="ltr">26 · 25 · 24 ⋯ 1</span>. במחשב שבודק טריליון מפתחות בשנייה, לעבור על כולם ייקח כ־10 מיליון שנים (ראו <a href="ch0.html#security-bits">0.4</a>). נשמע בלתי שביר — אבל:</p>
+</div></div>
+<div class="box theory"><div class="box-head">📘 ניתוח תדירויות (אל־כינדי, בערך 850 לספירה)</div><div class="box-body">
+<p>ההחלפה משנה את <em>שם</em> האות אבל לא את <em>כמה פעמים</em> היא מופיעה. באנגלית <span class="ltr">E</span> מופיעה בכ־<bdi dir="ltr">12.7%</bdi> מהאותיות. אם בטקסט המוצפן <span class="ltr">T</span> הכי נפוצה — כנראה <span class="ltr">T = E</span>. משם ממשיכים עם צמדים נפוצים (<span class="ltr">TH, HE</span>) ומילים קצרות (<span class="ltr">THE, AND</span>).</p>
+<figure>
+<svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace">
+  <line x1="40" y1="180" x2="620" y2="180" stroke="#999"/>
+  <g fill="#2563eb">
+    <rect x="50" y="53" width="40" height="127"/><rect x="110" y="89" width="40" height="91"/><rect x="170" y="98" width="40" height="82"/><rect x="230" y="105" width="40" height="75"/><rect x="290" y="110" width="40" height="70"/><rect x="350" y="113" width="40" height="67"/><rect x="410" y="117" width="40" height="63"/><rect x="470" y="119" width="40" height="61"/><rect x="530" y="120" width="40" height="60"/>
+  </g>
+  <g font-size="15" text-anchor="middle" font-weight="600">
+    <text x="70" y="200">E</text><text x="130" y="200">T</text><text x="190" y="200">A</text><text x="250" y="200">O</text><text x="310" y="200">I</text><text x="370" y="200">N</text><text x="430" y="200">S</text><text x="490" y="200">H</text><text x="550" y="200">R</text>
+  </g>
+  <g font-size="12" text-anchor="middle" fill="#333">
+    <text x="70" y="47"><bdi dir="ltr">12.7%</bdi></text><text x="130" y="83"><bdi dir="ltr">9.1%</bdi></text><text x="190" y="92"><bdi dir="ltr">8.2%</bdi></text><text x="250" y="99"><bdi dir="ltr">7.5%</bdi></text><text x="310" y="104"><bdi dir="ltr">7.0%</bdi></text><text x="370" y="107"><bdi dir="ltr">6.7%</bdi></text><text x="430" y="111"><bdi dir="ltr">6.3%</bdi></text><text x="490" y="113"><bdi dir="ltr">6.1%</bdi></text><text x="550" y="114"><bdi dir="ltr">6.0%</bdi></text>
+  </g>
+  <text x="330" y="22" text-anchor="middle" font-size="14" font-family="Heebo" direction="rtl">שכיחות האותיות הנפוצות באנגלית</text>
+</svg>
+</figure>
+</div></div>
+<div class="keypoint">💡 <b>מרחב מפתחות גדול הוא תנאי הכרחי — אבל לא מספיק.</b> צופן החלפה מראה שאם המבנה הסטטיסטי של הטקסט "שורד" את ההצפנה, אפשר לשבור אותו בלי לנסות אף מפתח.</div>
+
+<h3 id="xor"><span class="sec">1.6</span>המפתח הסודי ופעולת <bdi dir="ltr">XOR</bdi></h3>
+<p>עד עכשיו ראינו צפנים שעובדים על אותיות. צפנים מודרניים עובדים על <strong>ביטים</strong> (ראו <a href="ch0.html#bits">0.1</a>), והפעולה הבסיסית שלהם היא <span class="term">XOR</span> (מסומן ⊕, "או בלעדי"): משווים שני ביטים, והתוצאה 1 אם ורק אם הם <strong>שונים</strong>. על רצף ביטים מפעילים <bdi dir="ltr">XOR</bdi> ביט אחרי ביט, כל עמודה בנפרד.</p>
+<p><strong>למה דווקא <bdi dir="ltr">XOR</bdi>?</strong> כי הוא הפיך בקלות (מפעילים אותו שוב ומקבלים את המקור), מהיר מאוד בחומרה, ומשהו מעניין קורה כשהמפתח אקראי: אם ביט המפתח הוא 0 או 1 בהסתברות שווה, גם ביט התוצאה הוא 0 או 1 בהסתברות שווה — לא משנה מה היה ביט ההודעה. כלומר התוצאה לא מסגירה כלום על ההודעה.</p>
+<div class="tbl-wrap"><table style="max-width:320px">
+<tr><th class="num">A</th><th class="num">B</th><th class="num">A⊕B</th></tr>
+<tr><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td class="num">0</td><td class="num">1</td><td class="num">1</td></tr>
+<tr><td class="num">1</td><td class="num">0</td><td class="num">1</td></tr>
+<tr><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+</table></div>
+<div class="box formula"><div class="box-head">📐 שלוש תכונות שכדאי לזכור</div><div class="box-body">
+$$A \oplus A = 0 \qquad A \oplus 0 = A \qquad A \oplus B \oplus B = A$$
+<p>התכונה השלישית היא הקסם: <strong>מצפינים ומפענחים באותה פעולה בדיוק.</strong> מבצעים <bdi dir="ltr">XOR</bdi> עם המפתח — ושוב <bdi dir="ltr">XOR</bdi> עם אותו מפתח מחזיר את המקור.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה מהשקף — האות <bdi dir="ltr">H</bdi></div><div class="box-body">
+<p>האות <bdi dir="ltr">H</bdi> היא המספר 72, שבבינארי הוא <span class="ltr">01001000</span>. מבצעים <bdi dir="ltr">XOR</bdi> עמודה־עמודה עם מפתח של 8 ביטים:</p>
+<pre>Plaintext :  01001000   (H)
+Key       :  11010101
+             --------  XOR
+Ciphertext:  10011101
+Key       :  11010101
+             --------  XOR
+Plaintext :  01001000   (H)  ← back to the original</pre>
+</div></div>
+<div class="lab"><h5>מעבדה: <bdi dir="ltr">XOR</bdi> בין שני בתים</h5>
+<div class="row"><label>תו / בינארי <input id="xr-p" value="H"></label><label>מפתח (8 ביט) <input id="xr-k" value="11010101" class="wide" style="width:160px"></label><button onclick="xorRun()">חשב</button></div>
+<div class="out" id="xr-out"></div></div>
+
+<h3 id="otp"><span class="sec">1.7</span>פנקס חד־פעמי (<bdi dir="ltr">One-Time Pad</bdi>) — סודיות מושלמת</h3>
+<p>מצפינים ב־<bdi dir="ltr">XOR</bdi> עם מפתח אקראי באורך ההודעה: <span class="ltr">C = P ⊕ K</span>. שאנון (<bdi dir="ltr">Shannon</bdi>) הוכיח ב־1949 שזה <strong>בלתי שביר מתמטית</strong> — לא "קשה לשבור", אלא בלתי אפשרי גם עם כוח חישוב אינסופי.</p>
+<div class="box theory"><div class="box-head">📘 למה "בלתי אפשרי" ולא רק "קשה"</div><div class="box-body">
+<p>נניח שאיב יירטה את הטקסט המוצפן <span class="ltr">C = 1011</span>. היא יכולה לנסות כל מפתח. אבל לכל הודעה <bdi dir="ltr">P</bdi> שהיא רק תדמיין יש מפתח <span class="ltr">K = C ⊕ P</span> שהיה מייצר בדיוק את אותו <bdi dir="ltr">C</bdi>:</p>
+<div class="tbl-wrap"><table>
+<tr><th>הודעה <bdi dir="ltr">P</bdi> שאיב מנחשת</th><th>המפתח שמתאים לה</th></tr>
+<tr><td class="num">0000</td><td class="num">1011</td></tr>
+<tr><td class="num">1111</td><td class="num">0100</td></tr>
+<tr><td class="num">0110</td><td class="num">1101</td></tr>
+</table></div>
+<p>כל המפתחות סבירים באותה מידה (המפתח אקראי לגמרי), ולכן כל ההודעות סבירות באותה מידה. איב לא יכולה להעדיף אף אחת — הטקסט המוצפן פשוט לא מכיל מידע על ההודעה. זו "סודיות מושלמת".</p>
+</div></div>
+<div class="cards">
+<div class="card"><div class="ic">1️⃣</div><b>אורך המפתח = אורך ההודעה</b>לפחות. אין קיצורי דרך.</div>
+<div class="card"><div class="ic">2️⃣</div><b>אקראי באמת</b>ממקור פיזיקלי (<bdi dir="ltr">TRNG</bdi>), לא ממחולל פסאודו־אקראי.</div>
+<div class="card"><div class="ic">3️⃣</div><b>לעולם לא לחזור</b>שימוש חוזר במפתח מדליף מידע ושובר את הביטחון.</div>
+</div>
+<div class="box warn"><div class="box-head">⚠️ למה שימוש חוזר הורס הכול</div><div class="box-body">
+<p>אם הוצפנו שתי הודעות באותו מפתח, איב מחשבת <bdi dir="ltr">XOR</bdi> בין שני הטקסטים המוצפנים והמפתח מתבטל:</p>
+$$C_1 \oplus C_2 = (P_1 \oplus K) \oplus (P_2 \oplus K) = P_1 \oplus P_2$$
+<p>קיבלנו <bdi dir="ltr">XOR</bdi> של שתי הודעות טבעיות — ועליו כבר אפשר להפעיל ניתוח סטטיסטי.</p>
+</div></div>
+<details class="reveal"><summary>💬 שאלת השקף: אם <bdi dir="ltr">OTP</bdi> מושלם — למה לא משתמשים בו בכל מקום?</summary><div>
+<p><strong>כי הוא מעביר את הבעיה ולא פותר אותה.</strong> כדי לשלוח <bdi dir="ltr">1GB</bdi> צריך מראש מפתח סודי של <bdi dir="ltr">1GB</bdi>, שהועבר בדרך מאובטחת, שלא ישומש שוב לעולם. אם יש לך ערוץ מאובטח להעביר כזה מפתח — היית יכול להעביר בו את ההודעה עצמה. בנוסף, ייצור כמויות עצומות של אקראיות אמיתית וניהול המפתחות יקרים. זו בדיוק <strong>בעיית הפצת המפתחות</strong> שפרק 2 בא לפתור.</p>
+</div></details>
+
+<h3 id="attacks"><span class="sec">1.8</span>סוגי התקפות קריפטואנליטיות</h3>
+<p>כשאומרים ש"צופן בטוח", חייבים לשאול: בטוח <strong>מול מה</strong>? מודל התקפה מתאר מה התוקף יודע ומה הוא מסוגל לעשות. ככל שהמודל נותן לתוקף יותר, הצופן שעומד בו חזק יותר. הסדר בטבלה הוא מהחלש לחזק — צופן מודרני צריך לעמוד גם במודל החזק ביותר.</p>
+<div class="tbl-wrap"><table>
+<tr><th>מודל</th><th>מה יש לתוקף</th><th>מטרה</th><th>דוגמה</th></tr>
+<tr><td>🔒 <span class="term">Ciphertext-Only</span></td><td>רק טקסט מוצפן.</td><td>לשחזר טקסט גלוי או מפתח.</td><td>ניתוח תדירויות על צופן החלפה.</td></tr>
+<tr><td>📋 <span class="term">Known Plaintext</span></td><td>כמה זוגות של טקסט גלוי והמוצפן שלו.</td><td>לגזור את המפתח.</td><td>כותרת קבועה שידוע שמופיעה בכל הודעה.</td></tr>
+<tr><td>✏️ <span class="term">Chosen Plaintext</span></td><td>יכול להצפין הודעות לבחירתו.</td><td>לשחזר מפתח או לזייף טקסטים מוצפנים.</td><td>ב־<bdi dir="ltr">RSA</bdi> זה תמיד אפשרי — המפתח הציבורי גלוי.</td></tr>
+<tr><td>⚡ <span class="term">Chosen Ciphertext</span></td><td>יכול לפענח טקסטים מוצפנים לבחירתו (חוץ מזה שהוא רוצה לפענח).</td><td>לשחזר טקסט גלוי או מפתח.</td><td>שרת שמחזיר "שגיאת ריפוד" כשמשהו לא תקין בפענוח — התוקף שולח לו טקסטים מוצפנים מעוותים ולומד מהתגובות (<span class="term">padding oracle</span>). המודל החזק ביותר.</td></tr>
+</table></div>
+<h4>טקסונומיה: התקפות קלאסיות מול התקפות מימוש</h4>
+<div class="tbl-wrap"><table>
+<tr><th>קלאסיות (תוקפות את המתמטיקה)</th><th>מימוש (תוקפות את הקוד או החומרה)</th></tr>
+<tr><td><strong>כוח גס:</strong> לנסות את כל המפתחות.</td><td><strong>ערוץ צד:</strong> תזמון, צריכת חשמל, קרינה אלקטרומגנטית (ראו 2.13).</td></tr>
+<tr><td><strong>ניתוח מתמטי:</strong> ניצול חולשות אלגבריות.</td><td><strong>הזרקת תקלות:</strong> גרימת שגיאות שמדליפות מפתח.</td></tr>
+<tr><td><strong>ניתוח תדירויות:</strong> סטטיסטיקה על הטקסט המוצפן.</td><td><strong>הנדסה לאחור:</strong> שחזור האלגוריתם מקובץ בינארי.</td></tr>
+<tr><td><strong><span class="term">Meet-in-the-Middle</span>:</strong> כשמצפינים פעמיים עם שני מפתחות, התוקף מצפין קדימה מצד אחד ומפענח אחורה מהצד השני, ומחפש התאמה באמצע — משלם בזיכרון כדי לחסוך זמן.</td><td><strong><span class="term">Cold Boot</span>:</strong> שליפת מפתחות מזיכרון <bdi dir="ltr">RAM</bdi>.</td></tr>
+<tr><td><strong>יום הולדת:</strong> בקבוצה של 23 אנשים יש סיכוי של מעל <bdi dir="ltr">50%</bdi> ששניים חולקים יום הולדת. באותו אופן, מוצאים שני קלטים עם אותו פלט הרבה יותר מהר משנדמה.</td><td><strong><span class="term">Padding Oracle</span>:</strong> ניצול הודעות שגיאה (למשל <bdi dir="ltr">POODLE</bdi>).</td></tr>
+</table></div>
+<div class="keypoint">💡 <b>אלגוריתם מושלם עדיין יכול להישבר דרך המימוש שלו.</b> זה יחזור בפרק 2 עם התקפת ערוץ הצד על ריבוע וכפל.</div>
+
+<h3 id="rng"><span class="sec">1.9</span>מחוללי מספרים אקראיים (<bdi dir="ltr">RNG</bdi>)</h3>
+<div class="tbl-wrap"><table>
+<tr><th></th><th><span class="term">TRNG</span> — אקראי אמיתי</th><th><span class="term">PRNG</span> — פסאודו־אקראי</th></tr>
+<tr><td><strong>מקור</strong></td><td>אנטרופיה פיזיקלית: רעש תרמי, דעיכה רדיואקטיבית, רעש אטמוספרי, תזמון הקלדה ועכבר, קוביות.</td><td>אלגוריתם דטרמיניסטי שמתחיל מזרע (<span class="term">seed</span>).</td></tr>
+<tr><td><strong>שחזור</strong></td><td>לא ניתן לשחזר.</td><td>אותו זרע ← אותה סדרה בדיוק.</td></tr>
+<tr><td><strong>מהירות</strong></td><td>איטי, דורש חומרה.</td><td>מהיר ונייד.</td></tr>
+<tr><td><strong>ביטחון</strong></td><td>מצוין למפתחות.</td><td>לא בטוח אם הזרע צפוי. הגרסה הבטוחה: <span class="term">CSPRNG</span>.</td></tr>
+</table></div>
+<p><strong>למה בכלל צריך אקראיות?</strong> כל מפתח, כל <bdi dir="ltr">IV</bdi> וכל סוד ב־<bdi dir="ltr">Diffie-Hellman</bdi> חייבים להיות בלתי צפויים. אם התוקף יכול לנחש איך המפתח נוצר — הוא לא צריך לשבור את הצופן בכלל.</p>
+<div class="box formula"><div class="box-head">📐 <bdi dir="ltr">PRNG</bdi> כנוסחת נסיגה</div><div class="box-body">
+<p>מחולל פסאודו־אקראי מתחיל ממספר התחלתי (<strong>זרע</strong>) ומפעיל עליו שוב ושוב פונקציה קבועה. הסדרה נראית אקראית, אבל היא נקבעת לגמרי על ידי הזרע:</p>
+$$S_0 = \text{seed} \qquad S_i = f(S_{i-1})$$
+</div></div>
+<p><strong><span class="term">CSPRNG</span></strong> (מחולל פסאודו־אקראי בטוח קריפטוגרפית) הוא <bdi dir="ltr">PRNG</bdi> שגם מי שרואה חלק מהפלט לא יכול לנחש את ההמשך, והזרע שלו נלקח ממקור אנטרופיה של מערכת ההפעלה.</p>
+<div class="box warn"><div class="box-head">⚠️ לעולם לא <code>rand()</code> לקריפטוגרפיה</div><div class="box-body"><p>אם התוקף מנחש את הזרע (למשל השעה שבה התוכנה עלתה), הוא משחזר את כל "המפתחות האקראיים". בפייתון משתמשים ב־<code>secrets</code> ולא ב־<code>random</code>.</p></div></div>
+
+<h3 id="stream-block"><span class="sec">1.10</span>צופן זרם מול צופן בלוקים</h3>
+<p>צפנים סימטריים מודרניים מתחלקים לשתי משפחות, לפי <em>כמה מידע</em> הם מעבדים בכל פעם:</p>
+<ul>
+<li><strong>צופן זרם</strong> הוא בעצם "<bdi dir="ltr">OTP</bdi> מעשי": במקום מפתח אקראי ענק, לוקחים מפתח קצר (למשל 256 ביט) ומותחים אותו בעזרת מחולל לרצף ביטים ארוך שנראה אקראי — <strong>זרם מפתח</strong> (<span class="term">keystream</span>). מצפינים ב־<bdi dir="ltr">XOR</bdi> של ההודעה עם הזרם.</li>
+<li><strong>צופן בלוקים</strong> הוא פונקציה שמקבלת בלוק בגודל קבוע (ב־<bdi dir="ltr">AES</bdi>: <bdi dir="ltr">128</bdi> ביט = 16 בתים) ומפתח, ומחזירה בלוק מוצפן באותו גודל. הודעה ארוכה מחלקים לבלוקים; אם הבלוק האחרון קצר משלימים אותו (<strong>ריפוד</strong>, <span class="term">padding</span>). השאלה איך מחברים את הבלוקים היא <strong>מצב ההפעלה</strong> — נושא 1.11–1.12.</li>
+</ul>
+<div class="tbl-wrap"><table>
+<tr><th>תכונה</th><th>🌊 צופן זרם (<bdi dir="ltr">Stream</bdi>)</th><th>🧱 צופן בלוקים (<bdi dir="ltr">Block</bdi>)</th></tr>
+<tr><td>יחידת עבודה</td><td>ביט או בית אחד בכל פעם.</td><td>בלוק בגודל קבוע (למשל 128 ביט).</td></tr>
+<tr><td>איך</td><td>מייצר זרם מפתח מהמפתח, ואז <span class="ltr">P ⊕ keystream = C</span>.</td><td>אותו מפתח מצפין כל בלוק; דרוש <strong>מצב הפעלה</strong> וריפוד (<span class="term">padding</span>).</td></tr>
+<tr><td>דוגמאות</td><td class="mono">RC4, ChaCha20, Salsa20</td><td class="mono">AES, DES, 3DES</td></tr>
+<tr><td>שימוש טיפוסי</td><td>סטרימינג, <bdi dir="ltr">VoIP, IoT</bdi>.</td><td>קבצים, <bdi dir="ltr">TLS</bdi>, אחסון.</td></tr>
+<tr><td>מהירות</td><td>מהיר יותר, השהיה נמוכה.</td><td>מעט איטי יותר.</td></tr>
+<tr><td>הדבר הקריטי לביטחון</td><td>זרם המפתח <strong>אסור שיחזור</strong> (כמו <bdi dir="ltr">OTP</bdi>).</td><td><strong>מצב ההפעלה</strong> קובע הכול.</td></tr>
+</table></div>
+
+<h3 id="ecb"><span class="sec">1.11</span>מצב <bdi dir="ltr">ECB</bdi> והתקפת החלפת הבלוקים</h3>
+<p>את <bdi dir="ltr">AES</bdi> עצמו נלמד בהמשך הקורס. כרגע מספיק להתייחס אליו כאל קופסה שחורה: <span class="ltr">E_K</span> מקבלת בלוק של 16 בתים ומחזירה בלוק מוצפן, ו־<span class="ltr">D_K</span> הופכת אותה. בלי <bdi dir="ltr">K</bdi> אי אפשר לחשב אף אחת מהן. השאלה כאן היא לא אם <bdi dir="ltr">AES</bdi> חזק (הוא חזק), אלא מה קורה כשמשתמשים בו לא נכון.</p>
+<p>תרחיש מהכיתה: אליס שולחת לבנק הוראת העברה. הבנק מצפין ב־<span class="term">AES-ECB</span>. ההודעה מחולקת לשלושה בלוקים של 16 בתים, וכל בלוק מוצפן <strong>בנפרד</strong> עם אותו מפתח.</p>
+<div class="box formula"><div class="box-head">📐 ECB — Electronic Codebook</div><div class="box-body">
+$$C_i = E_K(P_i) \qquad P_i = D_K(C_i)$$
+<p>אותו בלוק גלוי נותן <strong>תמיד</strong> אותו בלוק מוצפן, ואין שום קשר בין בלוקים.</p>
+</div></div>
+<figure>
+<svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="14">
+  <text x="380" y="24" text-anchor="middle" font-family="Heebo" font-size="16" font-weight="700" direction="rtl">ההודעה המקורית (מיורטת)</text>
+  <g><rect x="60" y="40" width="200" height="44" rx="6" fill="#14213d"/><text x="160" y="67" text-anchor="middle" fill="#fff">C1 · FROM: Alice</text></g>
+  <g><rect x="280" y="40" width="200" height="44" rx="6" fill="#14213d"/><text x="380" y="67" text-anchor="middle" fill="#fff">C2 · TO: Bob</text></g>
+  <g><rect x="500" y="40" width="200" height="44" rx="6" fill="#14213d"/><text x="600" y="67" text-anchor="middle" fill="#fff">C3 · AMOUNT: 1,000</text></g>
+  <text x="380" y="122" text-anchor="middle" font-family="Heebo" font-size="15" direction="rtl" fill="#b91c1c">איב מקליטה העברה אחרת שלה, על סך 9,000, ולוקחת ממנה את הבלוק השלישי</text>
+  <rect x="500" y="134" width="200" height="40" rx="6" fill="#fde8e8" stroke="#b91c1c" stroke-width="2"/><text x="600" y="159" text-anchor="middle" fill="#b91c1c">C3′ · AMOUNT: 9,000</text>
+  <path d="M600 176 L600 222" stroke="#b91c1c" stroke-width="2.5" marker-end="url(#ar2)"/>
+  <defs><marker id="ar2" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+  <text x="380" y="214" text-anchor="middle" font-family="Heebo" font-size="16" font-weight="700" direction="rtl">מה שנשלח לבנק</text>
+  <rect x="60" y="226" width="200" height="44" rx="6" fill="#14213d"/><text x="160" y="253" text-anchor="middle" fill="#fff">C1 · FROM: Alice</text>
+  <rect x="280" y="226" width="200" height="44" rx="6" fill="#14213d"/><text x="380" y="253" text-anchor="middle" fill="#fff">C2 · TO: Bob</text>
+  <rect x="500" y="226" width="200" height="44" rx="6" fill="#b91c1c"/><text x="600" y="253" text-anchor="middle" fill="#fff">C3′ · AMOUNT: 9,000</text>
+  <text x="380" y="310" text-anchor="middle" font-family="Heebo" font-size="15" direction="rtl">הבנק מפענח: "העבר 9,000 מאליס לבוב" — בלי שאיב נגעה במפתח</text>
+</svg>
+<figcaption>התקפת החלפת בלוקים על <bdi dir="ltr">ECB</bdi>: איב לא שברה את <bdi dir="ltr">AES</bdi>, היא רק סידרה מחדש בלוקים.</figcaption>
+</figure>
+<div class="keypoint">💡 <b><bdi dir="ltr">ECB</bdi> מדליף מבנה ומאפשר "גזור והדבק".</b> כל בלוק מוצפן הוא יחידה עצמאית תקפה — אפשר להחליף, לשכפל ולהזיז בלוקים, והפענוח יצליח. הצפנה טובה לא מבטיחה <strong>שלמות</strong> (integrity).</div>
+
+<h3 id="modes"><span class="sec">1.12</span>מצבי הפעלה (<bdi dir="ltr">Modes of Operation</bdi>) והתיקון: <bdi dir="ltr">CBC</bdi></h3>
+<p>צופן בלוקים לבדו מצפין בלוק אחד. מצב ההפעלה מגדיר איך מצפינים הודעה שלמה.</p>
+<div class="tbl-wrap"><table>
+<tr><th>מצב</th><th>שם מלא</th><th>הרעיון</th><th>בטוח?</th></tr>
+<tr class="bad"><td class="mono">ECB</td><td class="mono">Electronic Codebook</td><td>כל בלוק מוצפן בנפרד.</td><td>❌ שבור</td></tr>
+<tr><td class="mono">CBC</td><td class="mono">Cipher Block Chaining</td><td><bdi dir="ltr">XOR</bdi> עם הבלוק המוצפן הקודם, ואז הצפנה.</td><td>✅</td></tr>
+<tr><td class="mono">CTR</td><td class="mono">Counter Mode</td><td>מצפינים מונה ← זרם מפתח (כמו צופן זרם).</td><td>✅</td></tr>
+<tr class="good"><td class="mono">GCM</td><td class="mono">Galois/Counter Mode</td><td><bdi dir="ltr">CTR</bdi> + תג אימות: סודיות <strong>וגם</strong> שלמות. התג הוא מעין "חתימה" קצרה על הטקסט המוצפן שרק מי שמחזיק במפתח יכול לחשב; המקבל מחשב אותו מחדש, ואם משהו שונה — הוא דוחה את ההודעה.</td><td>✅✅ הכי טוב</td></tr>
+<tr><td class="mono">CFB</td><td class="mono">Cipher Feedback</td><td>מצפינים את הבלוק המוצפן הקודם ועושים <bdi dir="ltr">XOR</bdi> עם הגלוי.</td><td>✅</td></tr>
+<tr><td class="mono">OFB</td><td class="mono">Output Feedback</td><td>זרם מפתח שנוצר ללא תלות בטקסט הגלוי.</td><td>✅</td></tr>
+</table></div>
+<p><span class="term">TLS 1.3</span> משתמש רק במצבים מאומתים: <span class="term">AES-GCM</span> או <span class="term">ChaCha20-Poly1305</span>. אם רואים <bdi dir="ltr">ECB</bdi> בקוד ייצור — זה באג.</p>
+<div class="box formula"><div class="box-head">📐 CBC — Cipher Block Chaining</div><div class="box-body">
+$$C_0 = IV \qquad C_i = E_K(P_i \oplus C_{i-1}) \qquad P_i = D_K(C_i) \oplus C_{i-1}$$
+<p>במילים: לפני שמצפינים בלוק, מערבבים אותו (ב־<bdi dir="ltr">XOR</bdi>) עם הבלוק המוצפן שיצא רגע לפניו. לבלוק הראשון אין "בלוק קודם", ולכן משתמשים ב־<span class="term">IV</span> (וקטור אתחול): ערך אקראי חדש לכל הודעה, שנשלח גלוי יחד איתה. כך גם שתי הודעות זהות לגמרי מוצפנות אחרת, ושני בלוקים זהים באותה הודעה נותנים בלוקים מוצפנים שונים.</p>
+</div></div>
+<figure>
+<svg viewBox="0 0 760 270" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="15">
+  <defs><marker id="ar3" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker></defs>
+  <g text-anchor="middle">
+  <rect x="20" y="105" width="60" height="36" rx="6" fill="#f2b84b"/><text x="50" y="128">IV</text>
+  <!-- blocks -->
+  <rect x="160" y="20" width="110" height="34" rx="6" fill="#fff" stroke="#555"/><text x="215" y="42">P1 (FROM)</text>
+  <rect x="380" y="20" width="110" height="34" rx="6" fill="#fff" stroke="#555"/><text x="435" y="42">P2 (TO)</text>
+  <rect x="600" y="20" width="120" height="34" rx="6" fill="#fff" stroke="#555"/><text x="660" y="42">P3 (1,000)</text>
+  <circle cx="215" cy="123" r="16" fill="#fff" stroke="#14213d" stroke-width="2"/><text x="215" y="129" font-size="18">⊕</text>
+  <circle cx="435" cy="123" r="16" fill="#fff" stroke="#14213d" stroke-width="2"/><text x="435" y="129" font-size="18">⊕</text>
+  <circle cx="660" cy="123" r="16" fill="#fff" stroke="#14213d" stroke-width="2"/><text x="660" y="129" font-size="18">⊕</text>
+  <rect x="165" y="160" width="100" height="36" rx="6" fill="#7c3aed"/><text x="215" y="183" fill="#fff">AES_K</text>
+  <rect x="385" y="160" width="100" height="36" rx="6" fill="#7c3aed"/><text x="435" y="183" fill="#fff">AES_K</text>
+  <rect x="610" y="160" width="100" height="36" rx="6" fill="#7c3aed"/><text x="660" y="183" fill="#fff">AES_K</text>
+  <rect x="175" y="222" width="80" height="34" rx="6" fill="#14213d"/><text x="215" y="244" fill="#fff">C1</text>
+  <rect x="395" y="222" width="80" height="34" rx="6" fill="#14213d"/><text x="435" y="244" fill="#fff">C2</text>
+  <rect x="620" y="222" width="80" height="34" rx="6" fill="#14213d"/><text x="660" y="244" fill="#fff">C3</text>
+  </g>
+  <g stroke="#14213d" stroke-width="2" fill="none" marker-end="url(#ar3)">
+  <path d="M215 54 V105"/><path d="M435 54 V105"/><path d="M660 54 V105"/>
+  <path d="M80 123 H197"/>
+  <path d="M215 139 V158"/><path d="M435 139 V158"/><path d="M660 139 V158"/>
+  <path d="M215 196 V220"/><path d="M435 196 V220"/><path d="M660 196 V220"/>
+  <path d="M255 239 H320 V123 H417"/><path d="M475 239 H545 V123 H642"/>
+  </g>
+</svg>
+<figcaption><bdi dir="ltr">CBC</bdi>: כל בלוק גלוי עובר <bdi dir="ltr">XOR</bdi> עם הבלוק המוצפן הקודם לפני ההצפנה — השרשרת קושרת את הבלוקים.</figcaption>
+</figure>
+<div class="box example"><div class="box-head">✏️ למה התקפת ההחלפה נכשלת ב־<bdi dir="ltr">CBC</bdi></div><div class="box-body">
+<ul>
+<li>נזכור איך <span class="ltr">C3′</span> נוצר בהודעה של איב: לפי נוסחת <bdi dir="ltr">CBC</bdi> הוא ההצפנה של <span class="ltr">P3′ ⊕ C2′</span>, כאשר <span class="ltr">C2′</span> הוא הבלוק השני <em>של ההודעה שלה</em> (שונה מ־<bdi dir="ltr">C2</bdi> של אליס, כי ההודעות שונות).</li>
+<li>הבנק מפענח אותו בעזרת ה־<span class="ltr">C2</span> של אליס: <span class="ltr">D(C3′) ⊕ C2 = P3′ ⊕ C2′ ⊕ C2</span> — זה זבל ולא "<bdi dir="ltr">AMOUNT: 9,000</bdi>".</li>
+<li>כלומר בלוק לא "נושא את המשמעות שלו" לבד; הוא תלוי בשכן שלפניו.</li>
+</ul>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ דיוק חשוב (מעבר לשקף)</div><div class="box-body">
+<p>השקף אומר ש"שינוי בלוק משחית את כל הבלוקים שאחריו". זה נכון ב<strong>הצפנה</strong> (שינוי ב־<span class="ltr">P1</span> משנה את כל <span class="ltr">C1, C2, C3…</span>). ב<strong>פענוח</strong>, מנוסחת הפענוח רואים ששינוי <span class="ltr">C_i</span> משפיע רק על שני בלוקים:</p>
+<ul>
+<li><span class="ltr">P_i</span> — הופך לזבל מלא.</li>
+<li><span class="ltr">P_(i+1)</span> — מקבל היפוך ביטים בדיוק במקומות ששונו ב־<span class="ltr">C_i</span>.</li>
+</ul>
+<p>ובגלל זה <bdi dir="ltr">CBC</bdi> לבדו <strong>לא</strong> מבטיח שלמות: תוקף יכול להפוך ביטים נבחרים ב־<span class="ltr">P_(i+1)</span> במחיר זבל ב־<span class="ltr">P_i</span>. הפתרון המלא הוא מצב מאומת כמו <span class="term">GCM</span>, שבו כל שינוי נתפס על ידי תג האימות.</p>
+</div></div>
+
+<h3 id="ch1-sum"><span class="sec">1.13</span>סיכום ותרגול — פרק 1</h3>
+<div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
+<ul>
+<li><strong>קרקהוף:</strong> הכול ציבורי חוץ מהמפתח.</li>
+<li><strong>אתב״ש:</strong> אין מפתח — השיטה היא הסוד.</li>
+<li><strong>קיסר:</strong> 25 מפתחות ← כוח גס מיידי.</li>
+<li><strong>החלפה:</strong> <span class="ltr">26! ≈ 2^88</span> מפתחות, ועדיין נשבר בניתוח תדירויות.</li>
+<li><strong>XOR:</strong> <span class="ltr">A⊕B⊕B = A</span> ← הצפנה ופענוח זהים.</li>
+<li><strong>OTP:</strong> מושלם רק אם המפתח באורך ההודעה, אקראי באמת וחד־פעמי. לא מעשי בגלל הפצת המפתחות.</li>
+<li><strong>מודלי התקפה:</strong> <bdi dir="ltr">Ciphertext-only</bdi> ← <bdi dir="ltr">Known</bdi> ← <bdi dir="ltr">Chosen plaintext</bdi> ← <bdi dir="ltr">Chosen ciphertext</bdi> (מהחלש לחזק).</li>
+<li><strong>ECB:</strong> בלוקים עצמאיים ← דליפת מבנה והחלפת בלוקים. <strong>CBC</strong> משרשר, <strong>GCM</strong> מוסיף אימות.</li>
+</ul>
+</div></div>
+<div class="box exercise"><div class="box-head">🏋️ תרגול</div><div class="box-body">
+<p><strong>1.</strong> פענח את <span class="ltr">WKLV LV HDVB</span> שהוצפן בקיסר.</p>
+<details class="reveal"><summary>פתרון</summary><div><p>מנסים הזזות. עם <span class="ltr">k=3</span>: <span class="ltr">W→T, K→H, L→I, V→S</span> ← <span class="ltr">THIS IS EASY</span>. (במעבדה: הכנס את הטקסט ולחץ על "נסה את כל 25 המפתחות".)</p></div></details>
+<p><strong>2.</strong> תוקף שומר שני טקסטים מוצפנים שהוצפנו ב־<bdi dir="ltr">OTP</bdi> עם אותו מפתח. מה הוא יכול לחשב בלי לדעת את המפתח?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>את <span class="ltr">C1 ⊕ C2 = P1 ⊕ P2</span>. המפתח מתבטל, ונשאר <bdi dir="ltr">XOR</bdi> של שתי הודעות טבעיות שאפשר לפרק בניחוש מילים נפוצות (<span class="term">crib dragging</span>).</p></div></details>
+<p><strong>3.</strong> תמונה עם רקע לבן אחיד מוצפנת ב־<bdi dir="ltr">AES-ECB</bdi>. מה רואים כשמציגים את הקובץ המוצפן כתמונה?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>את קווי המתאר של התמונה המקורית ("הפינגווין של <bdi dir="ltr">ECB</bdi>"). כל בלוק לבן זהה הופך לאותו בלוק מוצפן, אז אזורים אחידים נשארים אחידים — המבנה דולף.</p></div></details>
+<p><strong>4.</strong> סדר מהחלש לחזק: <bdi dir="ltr">Chosen Plaintext, Ciphertext-Only, Chosen Ciphertext, Known Plaintext</bdi>.</p>
+<details class="reveal"><summary>פתרון</summary><div><p>Ciphertext-Only ← Known Plaintext ← Chosen Plaintext ← Chosen Ciphertext.</p></div></details>
+</div></div>
+
+<div class="pager"><a class="prev" href="ch0.html"><small>▶ הקודם</small>פרק 0 — ידע מקדים וסימונים</a><a class="next" href="ch2.html"><small>הבא ◀</small>פרק 2 — הצפנה אסימטרית ו־<bdi dir="ltr">RSA</bdi></a></div>
+</main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
