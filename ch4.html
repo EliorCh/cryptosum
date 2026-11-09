@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>פרק 4 — הצפנה סימטרית: DES · קריפטוגרפיה שימושית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code','svg'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
+<div class="layout">
+<nav class="side" id="sidebar">
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–4 + תרגיל בית 1</small></div>
+<div class="progress"><span id="prog"></span></div>
+<a class="chap" href="index.html">דף הבית</a>
+<a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
+<a class="chap" href="ch1.html">פרק 1 — מבוא לקריפטוגרפיה</a>
+<a class="chap" href="ch2.html">פרק 2 — הצפנה אסימטרית ו־RSA</a>
+<a class="chap" href="ch3.html">פרק 3 — לוג דיסקרטי ו־Diffie-Hellman</a>
+<a class="chap" href="hw1.html">תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a>
+<a class="chap here" href="ch4.html">פרק 4 — הצפנה סימטרית: DES</a>
+<a class="sub" href="#ch4">פתיחה</a>
+<a class="sub" href="#why-symmetric">למה חוזרים להצפנה סימטרית?</a>
+<a class="sub" href="#des-intro">DES — היסטוריה ופרמטרים</a>
+<a class="sub" href="#confusion-diffusion">בלבול ופיזור (שאנון, 1949)</a>
+<a class="sub" href="#des-overview">התמונה הגדולה — מבנה DES מלמעלה</a>
+<a class="sub" href="#ip">שלב 1: התמורה ההתחלתית והסופית <span class="term">(IP, IP⁻¹)</span></a>
+<a class="sub" href="#feistel">שלב 2: סבב פייסטל (Feistel)</a>
+<a class="sub" href="#f-function">שלב 3: הפונקציה f — מבפנים</a>
+<a class="sub" href="#sbox">שלב 4: תיבות ההחלפה (S-boxes)</a>
+<a class="sub" href="#key-schedule">שלב 5: תזמון המפתחות (Key Schedule)</a>
+<a class="sub" href="#des-decrypt">שלב 6: פענוח — ולמה הוא עובד</a>
+<a class="sub" href="#des-attacks">התקפות על DES</a>
+<a class="sub" href="#double-des">2-DES והתקפת Meet-in-the-Middle</a>
+<a class="sub" href="#triple-des">3-DES — הצפנה משולשת</a>
+<a class="sub" href="#ch4-sum">סיכום ותרגול — פרק 4</a>
+</nav>
+<main id="top">
+<!-- =============================== CHAPTER 4 =============================== -->
+<h2 class="chapter" id="ch4"><span class="num">4</span>הצפנה סימטרית: <bdi dir="ltr">DES</bdi></h2>
+<div class="prereq">📚 <strong>לפני הפרק כדאי להכיר:</strong> XOR (<a href="ch1.html#xor">1.6</a>), צופן זרם מול בלוקים (<a href="ch1.html#stream-block">1.10</a>), מודלי התקפה (<a href="ch1.html#attacks">1.8</a>), בינארי (<a href="ch0.html#bits">0.1</a>), ביטים של ביטחון (<a href="ch0.html#security-bits">0.4</a>).</div>
+<p class="hook">עד עכשיו עסקנו בהצפנה אסימטרית — מתמטיקה של מספרים גדולים. כאן חוזרים לעולם הסימטרי, ופותחים את "הקופסה השחורה" של צופן בלוקים אמיתי: <bdi dir="ltr">DES</bdi>. במבחן שואלים בעיקר על המבנה (רשת פייסטל, תפקיד כל רכיב), קריאת <bdi dir="ltr">S-box</bdi>, למה הפענוח עובד, ולמה <bdi dir="ltr">2-DES</bdi> לא נותן 112 ביט ביטחון.</p>
+
+<h3 id="why-symmetric"><span class="sec">4.1</span>למה חוזרים להצפנה סימטרית?</h3>
+<p>בהצפנה סימטרית שני הצדדים משתמשים <strong>באותו מפתח</strong> להצפנה ולפענוח (פרק 1). אם <bdi dir="ltr">RSA</bdi> ו־<bdi dir="ltr">Diffie-Hellman</bdi> פותרים את בעיית הפצת המפתחות, למה צריך גם צפנים סימטריים?</p>
+<div class="tbl-wrap"><table>
+<tr><th></th><th>אסימטרי (<bdi dir="ltr">RSA, DH</bdi>)</th><th>סימטרי (<bdi dir="ltr">DES, AES</bdi>)</th></tr>
+<tr><td><strong>מפתחות</strong></td><td>זוג: ציבורי ופרטי</td><td>מפתח אחד משותף</td></tr>
+<tr><td><strong>מהירות</strong></td><td>איטי — חזקות של מספרים בני אלפי ביטים</td><td>מהיר פי מאות עד אלפים — רק פעולות ביטים פשוטות</td></tr>
+<tr><td><strong>גודל מפתח לביטחון של 128 ביט</strong></td><td>3,072 ביט</td><td>128 ביט</td></tr>
+<tr><td><strong>תפקיד בפועל</strong></td><td>להסכים על מפתח / לחתום</td><td>להצפין את כל המידע עצמו</td></tr>
+</table></div>
+<div class="keypoint">💡 <b>בעולם האמיתי משתמשים בשניהם יחד:</b> בתחילת חיבור <bdi dir="ltr">TLS</bdi> הצדדים מריצים <bdi dir="ltr">Diffie-Hellman</bdi> (פרק 3) כדי להסכים על מפתח סודי משותף, ומשם כל התעבורה מוצפנת בצופן סימטרי מהיר עם המפתח הזה. זה נקרא <strong>הצפנה היברידית</strong>.</div>
+
+<h3 id="des-intro"><span class="sec">4.2</span><bdi dir="ltr">DES</bdi> — היסטוריה ופרמטרים</h3>
+<div class="cards">
+<div class="card"><div class="ic">🏢</div><b>מקור — 1974</b><bdi dir="ltr">IBM</bdi> הציעה אותו על בסיס צופן קודם שלה בשם <span class="term">Lucifer</span>, עם מעורבות של ה־<bdi dir="ltr">NSA</bdi>.</div>
+<div class="card"><div class="ic">📜</div><b>תקן — 1977 עד ~1998</b>התקן האמריקאי הרשמי (<span class="term">FIPS 46</span>). הצופן הנחקר ביותר בעולם.</div>
+<div class="card"><div class="ic">⚠️</div><b>היום</b>שבור בכוח גס בגלל מפתח קצר מדי (4.11). הוחלף ב־<bdi dir="ltr">AES</bdi>. אבל המבנה שלו הוא הבסיס להבנת צפני בלוקים.</div>
+</div>
+<div class="box formula"><div class="box-head">📐 הפרמטרים של <bdi dir="ltr">DES</bdi></div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>פרמטר</th><th>ערך</th><th>הסבר</th></tr>
+<tr><td>גודל בלוק</td><td class="num">64 bits</td><td>מצפינים 8 בתים בכל פעם (טקסט גלוי <bdi dir="ltr">x</bdi> ← טקסט מוצפן <bdi dir="ltr">y</bdi>, שניהם 64 ביט).</td></tr>
+<tr><td>גודל מפתח</td><td class="num">56 bits</td><td>המפתח נשמר כ־64 ביט, אבל 8 מהם הם <strong>ביטי זוגיות</strong> (ביט אחד בכל בית, לבדיקת שגיאות) — הם לא תורמים לביטחון.</td></tr>
+<tr><td>מספר סבבים</td><td class="num">16</td><td>אותה פעולה בסיסית ("סבב") חוזרת 16 פעמים, כל פעם עם מפתח־סבב אחר.</td></tr>
+<tr><td>מבנה</td><td>רשת פייסטל</td><td>מבנה שבו כל סבב מצפין רק חצי מהבלוק (4.6).</td></tr>
+</table></div>
+</div></div>
+
+<h3 id="confusion-diffusion"><span class="sec">4.3</span>בלבול ופיזור (שאנון, 1949)</h3>
+<p>איך בונים צופן בלוקים טוב? קלוד שאנון (אבי תורת האינפורמציה — אותו אחד שהוכיח ש־<bdi dir="ltr">OTP</bdi> מושלם) הגדיר שתי תכונות שכל צופן חזק צריך:</p>
+<div class="tbl-wrap"><table>
+<tr><th></th><th>🌀 בלבול (<span class="term">Confusion</span>)</th><th>🌊 פיזור (<span class="term">Diffusion</span>)</th></tr>
+<tr><td><strong>המטרה</strong></td><td>להפוך את הקשר בין <strong>המפתח</strong> לטקסט המוצפן למסובך ככל האפשר.</td><td>לפזר את ההשפעה של כל ביט בטקסט הגלוי על פני <strong>הרבה</strong> ביטים בטקסט המוצפן.</td></tr>
+<tr><td><strong>מה רואים מבחוץ</strong></td><td>שינוי ביט אחד במפתח משנה את הפלט באופן לא צפוי.</td><td>שינוי קטן בקלט משנה ביטים רבים בפלט.</td></tr>
+<tr><td><strong>הכלי</strong></td><td>טבלת החלפה (<bdi dir="ltr">S-box</bdi>) — פעולה <strong>לא ליניארית</strong>.</td><td>פרמוטציה של ביטים — ערבוב המיקומים.</td></tr>
+<tr><td><strong>מה הולך לא טוב בלעדיו</strong></td><td>צופן החלפה פשוט: רק החלפה, בלי פיזור ← ניתוח תדירויות שובר אותו (1.5).</td><td>פרמוטציה בלבד: הביטים רק זזים, ואפשר לשחזר את המיקומים.</td></tr>
+</table></div>
+<div class="box theory"><div class="box-head">📘 צופן מכפלה (<bdi dir="ltr">Product Cipher</bdi>) ואפקט המפולת</div><div class="box-body">
+<p>אף אחת מהפעולות לבדה לא בטוחה. הרעיון: לשלב אותן ולחזור על השילוב שוב ושוב — <strong>בלבול ← פיזור ← בלבול ← פיזור ←</strong> … כל סבב לוקח את ההשפעה של ביט אחד ומגדיל אותה, עד שאחרי מספיק סבבים כל ביט בפלט תלוי בכל ביט בקלט ובכל ביט במפתח. <bdi dir="ltr">DES</bdi> הוא בדיוק זה: 16 סבבים.</p>
+<p>המטרה המדידה היא <strong>אפקט המפולת</strong> (<span class="term">avalanche effect</span>): הפיכת ביט <strong>אחד</strong> בטקסט הגלוי צריכה לשנות בממוצע <strong>חצי</strong> מביטי הפלט (כ־32 מתוך 64), ובאופן שנראה אקראי. אם ישתנו רק מעט ביטים, התוקף לומד על הקשר בין קלט לפלט.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: אפקט המפולת ב־<bdi dir="ltr">DES</bdi> אמיתי</h5>
+<div class="row"><label>טקסט גלוי (<bdi dir="ltr">hex</bdi>) <input id="av-x" class="wide" value="0000000000000000"></label><label>מפתח (<bdi dir="ltr">hex</bdi>) <input id="av-k" class="wide" value="133457799BBCDFF1"></label><label>ביט להפוך (1–64) <input id="av-b" type="number" value="64" min="1" max="64"></label><button onclick="avalancheRun()">השווה</button></div>
+<div id="av-out"></div></div>
+
+<h3 id="des-overview"><span class="sec">4.4</span>התמונה הגדולה — מבנה <bdi dir="ltr">DES</bdi> מלמעלה</h3>
+<p>נפרק את <bdi dir="ltr">DES</bdi> "מלמעלה למטה": קודם המבנה הכללי, ואז נפתח כל קופסה. המבנה הכללי הוא שלושה חלקים:</p>
+<figure>
+<svg viewBox="0 0 760 470" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="14">
+  <defs><marker id="d1" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker></defs>
+  <g text-anchor="middle">
+  <rect x="200" y="10" width="260" height="34" rx="6" fill="#fff" stroke="#555"/><text x="330" y="32">plaintext x (64)</text>
+  <rect x="230" y="66" width="200" height="34" rx="6" fill="#f2b84b"/><text x="330" y="88">IP</text>
+  <rect x="180" y="122" width="140" height="30" rx="6" fill="#eef4ff" stroke="#2563eb"/><text x="250" y="142">L0 (32)</text>
+  <rect x="340" y="122" width="140" height="30" rx="6" fill="#eef4ff" stroke="#2563eb"/><text x="410" y="142">R0 (32)</text>
+  <rect x="180" y="174" width="300" height="40" rx="8" fill="#7c3aed"/><text x="330" y="199" fill="#fff">round 1  (K1)</text>
+  <rect x="180" y="226" width="300" height="40" rx="8" fill="#7c3aed"/><text x="330" y="251" fill="#fff">round 2  (K2)</text>
+  <text x="330" y="288" font-size="20">⋮</text>
+  <rect x="180" y="298" width="300" height="40" rx="8" fill="#7c3aed"/><text x="330" y="323" fill="#fff">round 16  (K16)</text>
+  <rect x="230" y="350" width="200" height="30" rx="6" fill="#fde8e8" stroke="#b91c1c"/><text x="330" y="370">swap halves</text>
+  <rect x="230" y="392" width="200" height="30" rx="6" fill="#f2b84b"/><text x="330" y="412">IP⁻¹</text>
+  <rect x="200" y="432" width="260" height="32" rx="6" fill="#14213d"/><text x="330" y="453" fill="#fff">ciphertext y (64)</text>
+  <rect x="560" y="174" width="170" height="164" rx="10" fill="#edf8f0" stroke="#15803d"/><text x="645" y="200" font-weight="700">key schedule</text>
+  <text x="645" y="228">key k (64)</text><text x="645" y="252">→ PC-1 → 56</text><text x="645" y="276">→ K1 … K16</text><text x="645" y="300">(48 bits each)</text>
+  </g>
+  <g stroke="#14213d" stroke-width="2" marker-end="url(#d1)" fill="none">
+  <path d="M330 44 V64"/><path d="M330 100 V120"/><path d="M330 152 V172"/><path d="M330 214 V224"/><path d="M330 338 V348"/><path d="M330 380 V390"/><path d="M330 422 V430"/>
+  <path d="M560 194 H484" stroke="#15803d"/><path d="M560 246 H484" stroke="#15803d"/><path d="M560 318 H484" stroke="#15803d"/>
+  </g>
+</svg>
+<figcaption><bdi dir="ltr">DES</bdi>: תמורה התחלתית ← 16 סבבי פייסטל (כל אחד עם מפתח־סבב משלו) ← החלפת החצאים ← תמורה סופית.</figcaption>
+</figure>
+<ol>
+<li><strong>תמורה התחלתית (<bdi dir="ltr">IP</bdi>)</strong> — ערבוב קבוע של סדר 64 הביטים, ואז חלוקה לחצי שמאלי <span class="ltr">L0</span> וחצי ימני <span class="ltr">R0</span>, 32 ביט כל אחד.</li>
+<li><strong>16 סבבים</strong> — כל סבב מקבל <span class="ltr">(L, R)</span> ומפתח־סבב של 48 ביט, ומחזיר <span class="ltr">(L, R)</span> חדשים. מפתחות הסבבים נגזרים מהמפתח הראשי ב<strong>תזמון המפתחות</strong> (4.9).</li>
+<li><strong>החלפה ותמורה סופית</strong> — מחליפים בין החצאים ומפעילים <span class="ltr">IP⁻¹</span>.</li>
+</ol>
+
+<h3 id="ip"><span class="sec">4.5</span>שלב 1: התמורה ההתחלתית והסופית <span class="term">(IP, IP⁻¹)</span></h3>
+<div class="box theory"><div class="box-head">📘 איך קוראים טבלת תמורה</div><div class="box-body">
+<p>תמורה (<span class="term">permutation</span>) רק <strong>מסדרת מחדש</strong> ביטים — לא מוסיפה ולא מוחקת. הטבלה נקראת כך: <strong>במקום ה־<bdi dir="ltr">k</bdi> בפלט שמים את הביט שמספרו כתוב בתא ה־<bdi dir="ltr">k</bdi> בטבלה.</strong> קוראים את הטבלה שורה אחרי שורה, משמאל לימין.</p>
+<p>בטבלת <bdi dir="ltr">IP</bdi> למטה התא הראשון הוא 58: ביט מספר 1 בפלט הוא ביט מספר 58 של הקלט. התא השני הוא 50: ביט 2 בפלט הוא ביט 50 בקלט, וכן הלאה.</p>
+</div></div>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="max-width:640px">
+<tr><th colspan="8">IP — output bit k ← input bit IP[k]</th></tr>
+<tr><td class="num">58</td><td class="num">50</td><td class="num">42</td><td class="num">34</td><td class="num">26</td><td class="num">18</td><td class="num">10</td><td class="num">2</td></tr>
+<tr><td class="num">60</td><td class="num">52</td><td class="num">44</td><td class="num">36</td><td class="num">28</td><td class="num">20</td><td class="num">12</td><td class="num">4</td></tr>
+<tr><td class="num">62</td><td class="num">54</td><td class="num">46</td><td class="num">38</td><td class="num">30</td><td class="num">22</td><td class="num">14</td><td class="num">6</td></tr>
+<tr><td class="num">64</td><td class="num">56</td><td class="num">48</td><td class="num">40</td><td class="num">32</td><td class="num">24</td><td class="num">16</td><td class="num">8</td></tr>
+<tr><td class="num">57</td><td class="num">49</td><td class="num">41</td><td class="num">33</td><td class="num">25</td><td class="num">17</td><td class="num">9</td><td class="num">1</td></tr>
+<tr><td class="num">59</td><td class="num">51</td><td class="num">43</td><td class="num">35</td><td class="num">27</td><td class="num">19</td><td class="num">11</td><td class="num">3</td></tr>
+<tr><td class="num">61</td><td class="num">53</td><td class="num">45</td><td class="num">37</td><td class="num">29</td><td class="num">21</td><td class="num">13</td><td class="num">5</td></tr>
+<tr><td class="num">63</td><td class="num">55</td><td class="num">47</td><td class="num">39</td><td class="num">31</td><td class="num">23</td><td class="num">15</td><td class="num">7</td></tr>
+</table></div>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="max-width:640px">
+<tr><th colspan="8">IP⁻¹ (final permutation)</th></tr>
+<tr><td class="num">40</td><td class="num">8</td><td class="num">48</td><td class="num">16</td><td class="num">56</td><td class="num">24</td><td class="num">64</td><td class="num">32</td></tr>
+<tr><td class="num">39</td><td class="num">7</td><td class="num">47</td><td class="num">15</td><td class="num">55</td><td class="num">23</td><td class="num">63</td><td class="num">31</td></tr>
+<tr><td class="num">38</td><td class="num">6</td><td class="num">46</td><td class="num">14</td><td class="num">54</td><td class="num">22</td><td class="num">62</td><td class="num">30</td></tr>
+<tr><td class="num">37</td><td class="num">5</td><td class="num">45</td><td class="num">13</td><td class="num">53</td><td class="num">21</td><td class="num">61</td><td class="num">29</td></tr>
+<tr><td class="num">36</td><td class="num">4</td><td class="num">44</td><td class="num">12</td><td class="num">52</td><td class="num">20</td><td class="num">60</td><td class="num">28</td></tr>
+<tr><td class="num">35</td><td class="num">3</td><td class="num">43</td><td class="num">11</td><td class="num">51</td><td class="num">19</td><td class="num">59</td><td class="num">27</td></tr>
+<tr><td class="num">34</td><td class="num">2</td><td class="num">42</td><td class="num">10</td><td class="num">50</td><td class="num">18</td><td class="num">58</td><td class="num">26</td></tr>
+<tr><td class="num">33</td><td class="num">1</td><td class="num">41</td><td class="num">9</td><td class="num">49</td><td class="num">17</td><td class="num">57</td><td class="num">25</td></tr>
+</table></div>
+<div class="box example"><div class="box-head">✏️ בדיקה ש־<bdi dir="ltr">IP</bdi>⁻¹ מבטלת את <bdi dir="ltr">IP</bdi></div><div class="box-body">
+<p><bdi dir="ltr">IP</bdi> לוקחת את ביט 58 של הקלט ושמה אותו במקום 1. כדי לבטל, <bdi dir="ltr">IP</bdi>⁻¹ צריכה להחזיר את מה שבמקום 1 למקום 58. ואכן בטבלת <bdi dir="ltr">IP</bdi>⁻¹, התא במקום 58 (שורה 8, עמודה 2) הוא 1 — "במקום 58 שים את ביט 1". ✓</p>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ אין להן שום ערך ביטחוני</div><div class="box-body"><p><bdi dir="ltr">IP</bdi> ו־<bdi dir="ltr">IP</bdi>⁻¹ הן תמורות קבועות וציבוריות, ואחת מבטלת את השנייה. תוקף פשוט מפעיל אותן בעצמו. הן נוספו בשנות ה־70 מסיבות של נוחות בחומרה (חיווט ל־<bdi dir="ltr">bus</bdi> של 8 ביט). במבחן: "האם <bdi dir="ltr">IP</bdi> מוסיפה ביטחון?" — <strong>לא.</strong></p></div></div>
+
+<h3 id="feistel"><span class="sec">4.6</span>שלב 2: סבב פייסטל (<bdi dir="ltr">Feistel</bdi>)</h3>
+<div class="box formula"><div class="box-head">📐 סבב <bdi dir="ltr">i</bdi></div><div class="box-body">
+$$L_i = R_{i-1} \qquad\qquad R_i = L_{i-1} \oplus f(R_{i-1}, K_i)$$
+<p>במילים: החצי הימני הישן עובר כמו שהוא לשמאל. החצי השמאלי הישן עובר <bdi dir="ltr">XOR</bdi> עם <span class="ltr">f(R, K)</span> — פונקציה שמערבבת את החצי הימני עם מפתח הסבב — והתוצאה הופכת לחצי הימני החדש.</p>
+</div></div>
+<figure>
+<svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="15">
+  <defs><marker id="d2" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker></defs>
+  <g text-anchor="middle">
+  <rect x="90" y="16" width="130" height="34" rx="6" fill="#eef4ff" stroke="#2563eb"/><text x="155" y="38">L(i−1)</text>
+  <rect x="420" y="16" width="130" height="34" rx="6" fill="#eef4ff" stroke="#2563eb"/><text x="485" y="38">R(i−1)</text>
+  <circle cx="155" cy="128" r="17" fill="#fff" stroke="#14213d" stroke-width="2"/><text x="155" y="134" font-size="20">⊕</text>
+  <rect x="300" y="108" width="80" height="40" rx="8" fill="#7c3aed"/><text x="340" y="133" fill="#fff" font-size="18">f</text>
+  <rect x="560" y="111" width="70" height="34" rx="6" fill="#edf8f0" stroke="#15803d"/><text x="595" y="133">Ki</text>
+  <rect x="90" y="250" width="130" height="34" rx="6" fill="#eef4ff" stroke="#2563eb"/><text x="155" y="272">L(i)</text>
+  <rect x="420" y="250" width="130" height="34" rx="6" fill="#eef4ff" stroke="#2563eb"/><text x="485" y="272">R(i)</text>
+  </g>
+  <g stroke="#14213d" stroke-width="2" fill="none">
+  <path d="M155 50 V109" marker-end="url(#d2)"/>
+  <path d="M485 50 V128 H382" marker-end="url(#d2)"/>
+  <path d="M298 128 H174" marker-end="url(#d2)"/>
+  <path d="M560 128 H520" stroke="#15803d" stroke-dasharray="4 3"/><path d="M520 128 V150 H340 V150" stroke="#15803d" stroke-dasharray="4 3" fill="none"/>
+  <path d="M155 145 V190 L485 230 V248" marker-end="url(#d2)"/>
+  <path d="M485 128 V160 L155 230 V248" marker-end="url(#d2)"/>
+  </g>
+</svg>
+<figcaption>סבב פייסטל: הימני נכנס ל־<bdi dir="ltr">f</bdi> ועובר שמאלה ללא שינוי; השמאלי מוצפן ב־<bdi dir="ltr">XOR</bdi> עם הפלט של <bdi dir="ltr">f</bdi> ועובר ימינה.</figcaption>
+</figure>
+<div class="box exercise"><div class="box-head">🧭 שתי השאלות מהשקף</div><div class="box-body">
+<p><strong>1. איזה חלק של הטקסט מוצפן בסבב?</strong></p>
+<details class="reveal"><summary>תשובה</summary><div><p>רק החצי <strong>השמאלי</strong>. הוא עובר <bdi dir="ltr">XOR</bdi> עם <span class="ltr">f(R, K)</span>. החצי הימני רק משמש "חומר גלם" ל־<bdi dir="ltr">f</bdi> ועובר הלאה כמו שהוא.</p></div></details>
+<p><strong>2. מה זה אומר על החלק השני?</strong></p>
+<details class="reveal"><summary>תשובה</summary><div><p>הוא עובר לצד השמאלי <strong>גלוי</strong> — ולכן בסבב הבא הוא זה שיוצפן. החצאים מתחלפים בכל סבב, כך שאחרי שני סבבים שני החצאים כבר הוצפנו, ואחרי 16 סבבים כל חצי הוצפן 8 פעמים.</p></div></details>
+</div></div>
+<div class="box theory"><div class="box-head">📘 למה פענוח לא דורש להפוך את <bdi dir="ltr">f</bdi></div><div class="box-body">
+<p>זה הרעיון החכם של פייסטל. תסתכלו על <span class="ltr">f(R, K)</span> כאל <strong>זרם מפתח</strong> שמצפין את <bdi dir="ltr">L</bdi> ב־<bdi dir="ltr">XOR</bdi> — בדיוק כמו בצופן זרם (1.10). כדי לפענח צריך רק לחשב שוב את אותו ערך ולעשות <bdi dir="ltr">XOR</bdi> שוב, כי <span class="ltr">A ⊕ B ⊕ B = A</span> (1.6):</p>
+$$R_i \oplus f(R_{i-1}, K_i) = L_{i-1} \oplus f \oplus f = L_{i-1}$$
+<p>ומה צריך כדי לחשב את <span class="ltr">f(R(i−1), K)</span>? את <span class="ltr">R(i−1)</span> — שעבר גלוי והוא בדיוק <span class="ltr">L(i)</span> — ואת המפתח. <strong>לכן <bdi dir="ltr">f</bdi> לא צריכה להיות הפיכה בכלל</strong>, ויכולה להיות פונקציה מסובכת ובלתי הפיכה כמה שרוצים.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ פייסטל צעצוע: חצאים של 4 ביט, <bdi dir="ltr">f</bdi> לא הפיכה</div><div class="box-body">
+<p>נגדיר <span class="ltr">f(R, K) = (R · K) mod 16</span>. היא בכוונה <strong>לא</strong> הפיכה: למשל <span class="ltr">f(1, 2) = f(9, 2) = 2</span>, כך שמהפלט אי אפשר לדעת מה היה הקלט. נצפין <span class="ltr">L0 = 1011, R0 = 0110</span> עם <span class="ltr">K1 = 0011 (3), K2 = 0101 (5)</span>:</p>
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>חישוב</th><th>(L, R)</th></tr>
+<tr><td>התחלה</td><td>—</td><td class="num">(1011, 0110)</td></tr>
+<tr><td>סבב 1</td><td class="num">f(0110, 3) = 6·3 = 18 mod 16 = 2 = 0010 ;  1011 ⊕ 0010 = 1001</td><td class="num">(0110, 1001)</td></tr>
+<tr class="hl"><td>סבב 2</td><td class="num">f(1001, 5) = 9·5 = 45 mod 16 = 13 = 1101 ;  0110 ⊕ 1101 = 1011</td><td class="num">(1001, 1011)</td></tr>
+</table></div>
+<p><strong>פענוח:</strong> מחליפים את החצאים ← <span class="ltr">(1011, 1001)</span>, ומריצים <strong>אותו מבנה</strong> עם המפתחות בסדר הפוך (קודם <bdi dir="ltr">K2</bdi>):</p>
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>חישוב</th><th>(L, R)</th></tr>
+<tr><td>סבב עם <bdi dir="ltr">K2</bdi></td><td class="num">f(1001, 5) = 1101 ;  1011 ⊕ 1101 = 0110</td><td class="num">(1001, 0110)</td></tr>
+<tr><td>סבב עם <bdi dir="ltr">K1</bdi></td><td class="num">f(0110, 3) = 0010 ;  1001 ⊕ 0010 = 1011</td><td class="num">(0110, 1011)</td></tr>
+<tr class="hl"><td>החלפה</td><td>—</td><td class="num">(1011, 0110) ✓</td></tr>
+</table></div>
+<p>חזרנו לטקסט המקורי, ואף פעם לא היינו צריכים "להפוך" את <bdi dir="ltr">f</bdi>.</p>
+</div></div>
+
+<h3 id="f-function"><span class="sec">4.7</span>שלב 3: הפונקציה <bdi dir="ltr">f</bdi> — מבפנים</h3>
+<p><bdi dir="ltr">f</bdi> מקבלת את החצי הימני (32 ביט) ומפתח סבב (48 ביט) ומחזירה 32 ביט. היא עוברת ארבעה שלבים:</p>
+<figure>
+<svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="14">
+  <defs><marker id="d3" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker></defs>
+  <g text-anchor="middle">
+  <rect x="230" y="10" width="200" height="32" rx="6" fill="#eef4ff" stroke="#2563eb"/><text x="330" y="31">R (32 bits)</text>
+  <rect x="230" y="64" width="200" height="34" rx="6" fill="#f2b84b"/><text x="330" y="86">E  expansion → 48</text>
+  <circle cx="330" cy="138" r="17" fill="#fff" stroke="#14213d" stroke-width="2"/><text x="330" y="144" font-size="20">⊕</text>
+  <rect x="520" y="121" width="150" height="34" rx="6" fill="#edf8f0" stroke="#15803d"/><text x="595" y="143">Ki (48 bits)</text>
+  <text x="350" y="176" font-size="13" text-anchor="start">48 bits → 8 groups of 6</text>
+  <g font-size="13"></g>
+  </g>
+  <rect x="40" y="200" width="64" height="48" rx="6" fill="#7c3aed"/><text x="72" y="229" fill="#fff" text-anchor="middle">S1</text><path d="M72 182 V198" stroke="#14213d" stroke-width="1.5"/><path d="M72 248 V266" stroke="#14213d" stroke-width="1.5"/><rect x="120" y="200" width="64" height="48" rx="6" fill="#7c3aed"/><text x="152" y="229" fill="#fff" text-anchor="middle">S2</text><path d="M152 182 V198" stroke="#14213d" stroke-width="1.5"/><path d="M152 248 V266" stroke="#14213d" stroke-width="1.5"/><rect x="200" y="200" width="64" height="48" rx="6" fill="#7c3aed"/><text x="232" y="229" fill="#fff" text-anchor="middle">S3</text><path d="M232 182 V198" stroke="#14213d" stroke-width="1.5"/><path d="M232 248 V266" stroke="#14213d" stroke-width="1.5"/><rect x="280" y="200" width="64" height="48" rx="6" fill="#7c3aed"/><text x="312" y="229" fill="#fff" text-anchor="middle">S4</text><path d="M312 182 V198" stroke="#14213d" stroke-width="1.5"/><path d="M312 248 V266" stroke="#14213d" stroke-width="1.5"/><rect x="360" y="200" width="64" height="48" rx="6" fill="#7c3aed"/><text x="392" y="229" fill="#fff" text-anchor="middle">S5</text><path d="M392 182 V198" stroke="#14213d" stroke-width="1.5"/><path d="M392 248 V266" stroke="#14213d" stroke-width="1.5"/><rect x="440" y="200" width="64" height="48" rx="6" fill="#7c3aed"/><text x="472" y="229" fill="#fff" text-anchor="middle">S6</text><path d="M472 182 V198" stroke="#14213d" stroke-width="1.5"/><path d="M472 248 V266" stroke="#14213d" stroke-width="1.5"/><rect x="520" y="200" width="64" height="48" rx="6" fill="#7c3aed"/><text x="552" y="229" fill="#fff" text-anchor="middle">S7</text><path d="M552 182 V198" stroke="#14213d" stroke-width="1.5"/><path d="M552 248 V266" stroke="#14213d" stroke-width="1.5"/><rect x="600" y="200" width="64" height="48" rx="6" fill="#7c3aed"/><text x="632" y="229" fill="#fff" text-anchor="middle">S8</text><path d="M632 182 V198" stroke="#14213d" stroke-width="1.5"/><path d="M632 248 V266" stroke="#14213d" stroke-width="1.5"/><text x="680" y="229" font-size="12" text-anchor="end"></text><text x="350" y="282" text-anchor="start" font-size="13">8 × 4 = 32 bits</text>
+  <g text-anchor="middle">
+  <rect x="230" y="290" width="200" height="34" rx="6" fill="#f2b84b"/><text x="330" y="312">P  permutation</text>
+  <rect x="230" y="342" width="200" height="32" rx="6" fill="#14213d"/><text x="330" y="363" fill="#fff">f(R, K) (32 bits)</text>
+  </g>
+  <g stroke="#14213d" stroke-width="2" fill="none" marker-end="url(#d3)">
+  <path d="M330 42 V62"/><path d="M330 98 V119"/><path d="M518 138 H349" stroke="#15803d"/><path d="M330 155 V180"/><path d="M330 266 V288"/><path d="M330 324 V340"/>
+  </g>
+</svg>
+<figcaption>הפונקציה <bdi dir="ltr">f</bdi>: הרחבה ← <bdi dir="ltr">XOR</bdi> עם מפתח הסבב ← שמונה תיבות <bdi dir="ltr">S</bdi> (כל אחת 6 ← 4 ביט) ← תמורה <bdi dir="ltr">P</bdi>.</figcaption>
+</figure>
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>ביטים</th><th>מה קורה</th><th>תפקיד</th></tr>
+<tr><td><strong>א. הרחבה <bdi dir="ltr">E</bdi></strong></td><td class="num">32 → 48</td><td>מחלקים את <bdi dir="ltr">R</bdi> ל־8 קבוצות של 4 ביט. לכל קבוצה מוסיפים את הביט האחרון של הקבוצה משמאלה ואת הביט הראשון של הקבוצה מימינה (באופן מעגלי) ← 8 קבוצות של 6. 16 מהביטים מופיעים פעמיים.</td><td>פיזור: כל ביט משפיע על שתי <bdi dir="ltr">S-boxes</bdi>. וגם התאמת אורך ל־48 ביט של המפתח.</td></tr>
+<tr><td><strong>ב. ערבוב מפתח</strong></td><td class="num">48 ⊕ 48 → 48</td><td><span class="ltr">E(R) ⊕ Ki</span></td><td><strong>המקום היחיד שבו המפתח נכנס ל־<bdi dir="ltr">f</bdi>.</strong> <bdi dir="ltr">XOR</bdi> זול והפיך — אבל ליניארי.</td></tr>
+<tr><td><strong>ג. שמונה <bdi dir="ltr">S-boxes</bdi></strong></td><td class="num">48 → 32</td><td>כל קבוצת 6 ביט נכנסת לתיבה משלה ויוצאים 4 ביט (4.8).</td><td>בלבול — <strong>הרכיב הלא־ליניארי היחיד</strong>. הלב של <bdi dir="ltr">DES</bdi>.</td></tr>
+<tr><td><strong>ד. תמורה <bdi dir="ltr">P</bdi></strong></td><td class="num">32 → 32</td><td>ערבוב קבוע של סדר הביטים.</td><td>פיזור: 4 ביטי הפלט של כל <bdi dir="ltr">S-box</bdi> נשלחים ל־<bdi dir="ltr">4 S-boxes</bdi> <strong>שונות</strong> בסבב הבא.</td></tr>
+</table></div>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="max-width:520px">
+<tr><th colspan="6">E — expansion table (8 groups × 6)</th></tr>
+<tr><td class="num">32</td><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num">5</td></tr>
+<tr><td class="num">4</td><td class="num">5</td><td class="num">6</td><td class="num">7</td><td class="num">8</td><td class="num">9</td></tr>
+<tr><td class="num">8</td><td class="num">9</td><td class="num">10</td><td class="num">11</td><td class="num">12</td><td class="num">13</td></tr>
+<tr><td class="num">12</td><td class="num">13</td><td class="num">14</td><td class="num">15</td><td class="num">16</td><td class="num">17</td></tr>
+<tr><td class="num">16</td><td class="num">17</td><td class="num">18</td><td class="num">19</td><td class="num">20</td><td class="num">21</td></tr>
+<tr><td class="num">20</td><td class="num">21</td><td class="num">22</td><td class="num">23</td><td class="num">24</td><td class="num">25</td></tr>
+<tr><td class="num">24</td><td class="num">25</td><td class="num">26</td><td class="num">27</td><td class="num">28</td><td class="num">29</td></tr>
+<tr><td class="num">28</td><td class="num">29</td><td class="num">30</td><td class="num">31</td><td class="num">32</td><td class="num">1</td></tr>
+</table></div>
+<p>בטבלה רואים את ההרחבה: השורה הראשונה היא הקבוצה <span class="ltr">1,2,3,4</span> עם השכן 32 משמאל (מעגלי) ו־5 מימין; השורה השנייה היא <span class="ltr">5,6,7,8</span> עם 4 ו־9, וכן הלאה.</p>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="max-width:640px">
+<tr><th colspan="8">P — output position k ← input bit P[k]</th></tr>
+<tr><td class="num">16</td><td class="num">7</td><td class="num">20</td><td class="num">21</td><td class="num">29</td><td class="num">12</td><td class="num">28</td><td class="num">17</td></tr>
+<tr><td class="num">1</td><td class="num">15</td><td class="num">23</td><td class="num">26</td><td class="num">5</td><td class="num">18</td><td class="num">31</td><td class="num">10</td></tr>
+<tr><td class="num">2</td><td class="num">8</td><td class="num">24</td><td class="num">14</td><td class="num">32</td><td class="num">27</td><td class="num">3</td><td class="num">9</td></tr>
+<tr><td class="num">19</td><td class="num">13</td><td class="num">30</td><td class="num">6</td><td class="num">22</td><td class="num">11</td><td class="num">4</td><td class="num">25</td></tr>
+</table></div>
+<div class="keypoint">💡 <b>למה "ליניארי" זה רע?</b> פעולות כמו <bdi dir="ltr">XOR</bdi> ותמורות מקיימות <span class="ltr">g(a ⊕ b) = g(a) ⊕ g(b)</span>. אם <strong>כל</strong> הצופן היה בנוי רק מהן, הוא כולו היה מערכת משוואות ליניאריות בביטי המפתח — ואת זה פותרים בקלות באלגברה ליניארית (כמו שפותרים מערכת משוואות בבית ספר). ה־<bdi dir="ltr">S-boxes</bdi> הן מה ששובר את הליניאריות.</div>
+
+<h3 id="sbox"><span class="sec">4.8</span>שלב 4: תיבות ההחלפה (<bdi dir="ltr">S-boxes</bdi>)</h3>
+<p>יש 8 תיבות שונות, <span class="ltr">S1 … S8</span>. כל אחת היא טבלה קבועה של 4 שורות על 16 עמודות, עם מספרים בין 0 ל־15. היא מקבלת 6 ביט ומחזירה 4 ביט.</p>
+<div class="box formula"><div class="box-head">📐 איך קוראים <bdi dir="ltr">S-box</bdi></div><div class="box-body">
+<p>מתוך 6 ביטי הקלט <span class="ltr">b1 b2 b3 b4 b5 b6</span>:</p>
+<ul>
+<li><strong>השורה</strong> = שני הביטים <strong>החיצוניים</strong> <span class="ltr">b1 b6</span> כמספר בינארי (0–3).</li>
+<li><strong>העמודה</strong> = ארבעת הביטים <strong>הפנימיים</strong> <span class="ltr">b2 b3 b4 b5</span> כמספר בינארי (0–15).</li>
+<li><strong>הפלט</strong> = המספר בתא, כתוב ב־4 ביטים.</li>
+</ul>
+</div></div>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table">
+<tr><th>S1</th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th><th class="num">7</th><th class="num">8</th><th class="num">9</th><th class="num">10</th><th class="num">11</th><th class="num">12</th><th class="num">13</th><th class="num">14</th><th class="num">15</th></tr>
+<tr><th class="num">0</th><td class="num">14</td><td class="num">4</td><td class="num">13</td><td class="num">1</td><td class="num">2</td><td class="num">15</td><td class="num">11</td><td class="num">8</td><td class="num">3</td><td class="num">10</td><td class="num">6</td><td class="num">12</td><td class="num">5</td><td class="num">9</td><td class="num">0</td><td class="num">7</td></tr>
+<tr><th class="num">1</th><td class="num">0</td><td class="num">15</td><td class="num">7</td><td class="num">4</td><td class="num">14</td><td class="num">2</td><td class="num">13</td><td class="num">1</td><td class="num">10</td><td class="num">6</td><td class="num">12</td><td class="num">11</td><td class="num">9</td><td class="num">5</td><td class="num">3</td><td class="num">8</td></tr>
+<tr><th class="num">2</th><td class="num">4</td><td class="num">1</td><td class="num">14</td><td class="num">8</td><td class="num">13</td><td class="num">6</td><td class="num">2</td><td class="num">11</td><td class="num">15</td><td class="num">12</td><td class="num">9</td><td class="num">7</td><td class="num">3</td><td class="num">10</td><td class="num">5</td><td class="num">0</td></tr>
+<tr><th class="num">3</th><td class="num">15</td><td class="num">12</td><td class="num" style="background:#fff3cf;font-weight:700">8</td><td class="num">2</td><td class="num">4</td><td class="num">9</td><td class="num">1</td><td class="num">7</td><td class="num">5</td><td class="num">11</td><td class="num">3</td><td class="num">14</td><td class="num">10</td><td class="num">0</td><td class="num">6</td><td class="num">13</td></tr>
+</table></div>
+<div class="box example"><div class="box-head">✏️ <span class="ltr">S1(100101)</span></div><div class="box-body">
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="max-width:420px">
+<tr><th>b1</th><th>b2</th><th>b3</th><th>b4</th><th>b5</th><th>b6</th></tr>
+<tr><td class="num" style="background:#fde8e8">1</td><td class="num" style="background:#eef4ff">0</td><td class="num" style="background:#eef4ff">0</td><td class="num" style="background:#eef4ff">1</td><td class="num" style="background:#eef4ff">0</td><td class="num" style="background:#fde8e8">1</td></tr>
+</table></div>
+<p>שורה: הביטים החיצוניים (באדום) <span class="ltr">11₂ = 3</span>. עמודה: הביטים הפנימיים (בכחול) <span class="ltr">0010₂ = 2</span>. בטבלה, שורה 3 עמודה 2: <strong>8</strong>, ובבינארי <span class="ltr">1000</span>.</p>
+<p class="mathline"><span class="ltr">S1(100101) = 8 = 1000</span></p>
+<p>עוד שתי בדיקות קצה מהשקף: <span class="ltr">S1(000000)</span> ← שורה 0, עמודה 0 ← 14. <span class="ltr">S1(111111)</span> ← שורה 3, עמודה 15 ← 13.</p>
+</div></div>
+<div class="box exercise"><div class="box-head">🏋️ "תורכם על הלוח" — מהשקף</div><div class="box-body">
+<p><strong>א.</strong> <span class="ltr">S1(110010) = ?</span></p>
+<details class="reveal"><summary>פתרון</summary><div><p>שורה: <span class="ltr">b1 b6 = 1 0 = 2</span>. עמודה: <span class="ltr">1001₂ = 9</span>. שורה 2 עמודה 9: <strong>12</strong> = <span class="ltr">1100</span>.</p></div></details>
+<p><strong>ב.</strong> <span class="ltr">S1(011011) = ?</span></p>
+<details class="reveal"><summary>פתרון</summary><div><p>שורה: <span class="ltr">b1 b6 = 0 1 = 1</span>. עמודה: <span class="ltr">1101₂ = 13</span>. שורה 1 עמודה 13: <strong>5</strong> = <span class="ltr">0101</span>.</p></div></details>
+</div></div>
+<div class="lab"><h5>מעבדה: קריאת <bdi dir="ltr">S-box</bdi> (כל 8 התיבות)</h5>
+<div class="row"><label>תיבה <select id="sb-i"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label><label>6 ביטים <input id="sb-x" value="100101"></label><button onclick="sboxRun()">חשב</button></div>
+<div id="sb-out"></div></div>
+<div class="box warn"><div class="box-head">⚠️ מלכודות בקריאת <bdi dir="ltr">S-box</bdi></div><div class="box-body">
+<ul>
+<li>השורה היא הביט <strong>הראשון והאחרון</strong> — לא שני הביטים הראשונים.</li>
+<li>מספור השורות והעמודות מתחיל מ־0, לא מ־1.</li>
+<li>הפלט תמיד 4 ביטים: 5 נכתב <span class="ltr">0101</span>, לא <span class="ltr">101</span>.</li>
+</ul>
+</div></div>
+
+<h3 id="key-schedule"><span class="sec">4.9</span>שלב 5: תזמון המפתחות (<bdi dir="ltr">Key Schedule</bdi>)</h3>
+<p>מהמפתח של 64 ביט צריך לייצר 16 מפתחות־סבב של 48 ביט כל אחד. התהליך:</p>
+<div class="tbl-wrap"><table>
+<tr><th>#</th><th>שלב</th><th>ביטים</th><th>מה קורה</th></tr>
+<tr><td class="num">1</td><td><strong>PC-1</strong></td><td class="num">64 → 56</td><td>זורקים את ביטי הזוגיות (8, 16, 24, …, 64) ומסדרים מחדש את השאר. מכאן אורך המפתח האפקטיבי: <span class="ltr">64 − 8 = 56</span>.</td></tr>
+<tr><td class="num">2</td><td><strong>פיצול</strong></td><td class="num">56 → 28 + 28</td><td>שני חצאים <span class="ltr">C0</span> ו־<span class="ltr">D0</span>.</td></tr>
+<tr><td class="num">3</td><td><strong>סיבוב <span class="ltr">LSi</span></strong></td><td class="num">28, 28</td><td>בכל סבב מסובבים את שני החצאים שמאלה ב־1 או 2 מקומות. זו <strong>רוטציה</strong> — הביטים שיוצאים משמאל חוזרים מימין, שום ביט לא הולך לאיבוד.</td></tr>
+<tr><td class="num">4</td><td><strong>PC-2</strong></td><td class="num">56 → 48</td><td>מתוך <span class="ltr">Ci‖Di</span> בוחרים 48 ביט ומסדרים אותם ← <span class="ltr">Ki</span>. 8 ביטים לא נבחרים: 9, 18, 22, 25, 35, 38, 43, 54.</td></tr>
+</table></div>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table">
+<tr><th>round i</th><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num">5</td><td class="num">6</td><td class="num">7</td><td class="num">8</td><td class="num">9</td><td class="num">10</td><td class="num">11</td><td class="num">12</td><td class="num">13</td><td class="num">14</td><td class="num">15</td><td class="num">16</td></tr>
+<tr><th>left shifts</th><td class="num" style="background:#fff3cf">1</td><td class="num" style="background:#fff3cf">1</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num" style="background:#fff3cf">1</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num">2</td><td class="num" style="background:#fff3cf">1</td></tr>
+</table></div>
+<div class="box formula"><div class="box-head">📐 הסיבובים מסתכמים בסיבוב שלם</div><div class="box-body">
+<p>סבבים 1, 2, 9, 16 מסובבים ב־1; כל השאר ב־2:</p>
+$$\sum S_i = 4 \cdot 1 + 12 \cdot 2 = 28$$
+<p>וזה בדיוק אורך כל חצי. כלומר אחרי 16 סבבים כל חצי חזר למקומו המקורי: <span class="ltr">C16 = C0</span> ו־<span class="ltr">D16 = D0</span>. זה מה שהופך את תזמון המפתחות של הפענוח לפשוט (4.10).</p>
+</div></div>
+<div class="keypoint">💡 <b>תצפית:</b> כל מפתח־סבב <span class="ltr">Ki</span> הוא פשוט <strong>בחירה של 48 ביטים</strong> מתוך 56 ביטי המפתח, בסדר אחר. אין שם שום חישוב "מסובך" — רק סידור מחדש.</div>
+<div class="box example"><div class="box-head">✏️ דוגמה: המפתח <span class="ltr">133457799BBCDFF1</span></div><div class="box-body">
+<pre>C0 = 1111000011001100101010101111      D0 = 0101010101100110011110001111
+LS1 (rotate left by 1):
+C1 = 1110000110011001010101011111      D1 = 1010101011001100111100011110
+K1 = PC-2(C1‖D1) = 000110 110000 001011 101111 111111 000111 000001 110010
+   = 1B02EFFC7072 (hex)</pre>
+<p>שימו לב שב־<span class="ltr">C1</span> הביט 1 הראשון של <span class="ltr">C0</span> "עבר" לסוף.</p>
+</div></div>
+
+<h3 id="des-decrypt"><span class="sec">4.10</span>שלב 6: פענוח — ולמה הוא עובד</h3>
+<div class="box theory"><div class="box-head">📘 הכלל</div><div class="box-body">
+<p><strong>פענוח <bdi dir="ltr">DES</bdi> = אותו אלגוריתם בדיוק, עם מפתחות הסבבים בסדר הפוך:</strong> <span class="ltr">K16, K15, …, K1</span>. סבב <bdi dir="ltr">i</bdi> של הפענוח מבטל את סבב <span class="ltr">17 − i</span> של ההצפנה. <bdi dir="ltr">f</bdi> אף פעם לא מתהפכת.</p>
+<p>זו תכונה מצוינת לחומרה: אותו שבב מצפין ומפענח, רק מזינים את המפתחות בסדר הפוך.</p>
+</div></div>
+<div class="box formula"><div class="box-head">📐 ההוכחה לסבב 1 של הפענוח</div><div class="box-body">
+<p>נסמן ב־<bdi dir="ltr">e</bdi> ערכים מההצפנה וב־<bdi dir="ltr">d</bdi> ערכים מהפענוח. סוף ההצפנה (סבב 16 עם <span class="ltr">K16</span>):</p>
+$$L_{16}^e = R_{15}^e \qquad R_{16}^e = L_{15}^e \oplus f(R_{15}^e, K_{16}) \qquad y = IP^{-1}(R_{16}^e, L_{16}^e)$$
+<p>תחילת הפענוח: <bdi dir="ltr">IP</bdi> מבטלת את <span class="ltr">IP⁻¹</span>, ובגלל ההחלפה שלפני <span class="ltr">IP⁻¹</span> מקבלים:</p>
+$$(L_0^d, R_0^d) = IP(y) = (R_{16}^e, L_{16}^e)$$
+<p>סבב 1 של הפענוח, עם <span class="ltr">K16</span>. רוצים להראות שהוא מחזיר <span class="ltr">(R15, L15)</span> — כלומר את המצב שלפני הסבב האחרון של ההצפנה:</p>
+$$L_1^d = R_0^d = L_{16}^e = R_{15}^e \;\checkmark$$
+$$R_1^d = L_0^d \oplus f(R_0^d, K_{16}) = R_{16}^e \oplus f(R_{15}^e, K_{16}) = L_{15}^e \oplus f \oplus f = L_{15}^e \;\checkmark$$
+<p>אותו טיעון בדיוק לכל סבב, ובסוף ההחלפה ו־<span class="ltr">IP⁻¹</span> מחזירות את <bdi dir="ltr">x</bdi>.</p>
+</div></div>
+<div class="box theory"><div class="box-head">📘 תזמון המפתחות לפענוח</div><div class="box-body">
+<p>סבב 1 של הפענוח צריך את <span class="ltr">K16 = PC-2(C16, D16) = PC-2(C0, D0)</span> — כי <span class="ltr">C16 = C0</span> (4.9). לכן בסבב הראשון <strong>לא מסובבים בכלל</strong>, ואחר כך מסובבים <strong>ימינה</strong> לפי:</p>
+<p class="mathline"><span class="ltr">0, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1</span></p>
+</div></div>
+<div class="lab"><h5>מעבדה: <bdi dir="ltr">DES</bdi> מלא, סבב אחרי סבב</h5>
+<div class="row"><label>בלוק (<bdi dir="ltr">hex</bdi>) <input id="des-x" class="wide" value="0123456789ABCDEF"></label><label>מפתח (<bdi dir="ltr">hex</bdi>) <input id="des-k" class="wide" value="133457799BBCDFF1"></label><button onclick="desRun(false)">הצפן</button><button class="ghost" onclick="desRun(true)">פענח</button></div>
+<div id="des-out"></div>
+<p style="font-size:14px;color:var(--muted);margin:8px 0 0">ערכי ברירת המחדל הם וקטור הבדיקה הקלאסי של <bdi dir="ltr">DES</bdi>. אחרי הצפנה, העתק את הפלט לשדה הבלוק ולחץ "פענח" — תקבל בחזרה את המקור.</p>
+</div>
+<div class="box example"><div class="box-head">✏️ סבב 1 על וקטור הבדיקה, צעד אחר צעד</div><div class="box-body">
+<pre>x        = 0123456789ABCDEF
+IP(x)    = CC00CCFF F0AAF0AA        → L0 = CC00CCFF , R0 = F0AAF0AA
+E(R0)    = 011110 100001 010101 010101 011110 100001 010101 010101
+K1       = 000110 110000 001011 101111 111111 000111 000001 110010
+E ⊕ K1   = 011000 010001 011110 111010 100001 100110 010100 100111
+S-boxes  : S1(011000)=5  S2(010001)=12 S3(011110)=8  S4(111010)=2
+           S5(100001)=11 S6(100110)=5  S7(010100)=9  S8(100111)=7
+         = 0101 1100 1000 0010 1011 0101 1001 0111
+P(...)   = 234AA9BB                 = f(R0, K1)
+R1 = L0 ⊕ f = CC00CCFF ⊕ 234AA9BB = EF4A6544
+L1 = R0     = F0AAF0AA</pre>
+<p>אחרי 16 סבבים: <span class="ltr">y = 85E813540F0AB405</span>.</p>
+</div></div>
+
+<h3 id="des-attacks"><span class="sec">4.11</span>התקפות על <bdi dir="ltr">DES</bdi></h3>
+<h4>הסיפור של ה־<bdi dir="ltr">NSA</bdi></h4>
+<div class="tbl-wrap"><table>
+<tr><th>🔧 ה־<bdi dir="ltr">NSA</bdi> שינתה את ה־<bdi dir="ltr">S-boxes</bdi></th><th>✂️ ה־<bdi dir="ltr">NSA</bdi> קיצרה את המפתח</th></tr>
+<tr><td>בשנות ה־70 חשדו שהוסתרה "דלת אחורית". ב־1990 פורסמה הקריפטואנליזה הדיפרנציאלית — ומתברר שה־<bdi dir="ltr">S-boxes</bdi> של <bdi dir="ltr">DES</bdi> עמידות לה במיוחד. ב־1994 חשף קופרסמית (<bdi dir="ltr">IBM</bdi>) שההתקפה הייתה ידועה להם כבר ב־1974. <strong>השינויים חיזקו את <bdi dir="ltr">DES</bdi>.</strong></td><td>ל־<bdi dir="ltr">Lucifer</bdi> של <bdi dir="ltr">IBM</bdi> היה מפתח של 128 ביט. <bdi dir="ltr">DES</bdi> תוקנן עם 56 ביט (+8 ביטי זוגיות). דיפי והלמן העריכו ב־1977 שמכונה של כ־20 מיליון דולר תמצא מפתח ביום. <strong>המפתח הקצר הוא מה שהרג את <bdi dir="ltr">DES</bdi>.</strong></td></tr>
+</table></div>
+<h4>התקפות אנליטיות</h4>
+<div class="tbl-wrap"><table>
+<tr><th>התקפה</th><th>ממציאים</th><th>שנה</th><th>מה צריך</th><th>מודל</th></tr>
+<tr><td>קריפטואנליזה דיפרנציאלית</td><td>אלי ביהם ועדי שמיר</td><td class="num">1990</td><td class="num">2^47</td><td><span class="term">Chosen plaintext</span> — התוקף בוחר טקסטים גלויים ומקבל את ההצפנה שלהם.</td></tr>
+<tr><td>קריפטואנליזה ליניארית</td><td>מיצורו מאטסוי</td><td class="num">1993</td><td class="num">2^43</td><td><span class="term">Known plaintext</span> — התוקף רק רואה זוגות.</td></tr>
+</table></div>
+<p>שתיהן "שוברות" את <bdi dir="ltr">DES</bdi> תיאורטית (פחות מ־<span class="ltr">2^56</span>), אבל להשיג <span class="ltr">2^43</span> זוגות של טקסט גלוי ומוצפן עם אותו מפתח לא מעשי (ראו את מודלי ההתקפה ב־1.8). <strong>בפועל, האיום האמיתי על <bdi dir="ltr">DES</bdi> הוא כוח גס.</strong></p>
+<h4>כוח גס</h4>
+<div class="box formula"><div class="box-head">📐 חיפוש ממצה</div><div class="box-body">
+<p>בהינתן זוג אחד <span class="ltr">(x0, y0)</span>, מנסים כל מפתח:</p>
+$$DES_{k_i}(x_0) \overset{?}{=} y_0 \qquad i = 0, 1, \dots, 2^{56}-1$$
+<p>יש <span class="ltr">2^56 ≈ 7.2 × 10^16</span> מפתחות. בממוצע מוצאים את הנכון אחרי חצי מהם — <span class="ltr">2^55</span> ניסיונות.</p>
+<p><strong>הערה:</strong> מכיוון שיש <span class="ltr">2^56</span> מפתחות ו־<span class="ltr">2^64</span> בלוקים אפשריים, מפתח שגוי יתאים במקרה לזוג אחד בהסתברות קטנה (בערך <span class="ltr">2^56 / 2^64 = 2^−8</span> מפתחות שגויים צפויים). לכן מאמתים עם זוג שני.</p>
+</div></div>
+<div class="tbl-wrap"><table>
+<tr><th>שנה</th><th>פרויקט</th><th>עלות</th><th>זמן</th></tr>
+<tr><td class="num">1997</td><td><bdi dir="ltr">DESCHALL</bdi> (מחשבים מבוזרים)</td><td>—</td><td>96 ימים</td></tr>
+<tr><td class="num">1998</td><td>distributed.net</td><td>—</td><td>39 ימים</td></tr>
+<tr><td class="num">1998</td><td><bdi dir="ltr">EFF "Deep Crack</bdi>" (חומרה ייעודית)</td><td class="num">~$250,000</td><td>56 שעות</td></tr>
+<tr><td class="num">1999</td><td>Deep Crack + distributed.net</td><td>—</td><td>22 שעות ו־15 דקות</td></tr>
+<tr><td class="num">2006</td><td>COPACOBANA (120 FPGA)</td><td class="num">~$10,000</td><td>כ־6.4 ימים</td></tr>
+<tr><td class="num">2012</td><td>crack.sh (48 FPGA)</td><td>שירות</td><td>כ־26 שעות</td></tr>
+</table></div>
+
+<h3 id="double-des"><span class="sec">4.12</span><bdi dir="ltr">2-DES</bdi> והתקפת <bdi dir="ltr">Meet-in-the-Middle</bdi></h3>
+<p>אם 56 ביט קצר מדי, הרעיון הטבעי: להצפין <strong>פעמיים</strong> עם שני מפתחות בלתי תלויים. נראה שזה נותן מפתח של <span class="ltr">56 + 56 = 112</span> ביט:</p>
+$$C = E_{K_2}(E_{K_1}(P)) \qquad\qquad P = D_{K_1}(D_{K_2}(C))$$
+<p>כוח גס על שני המפתחות יחד יעלה <span class="ltr">2^112</span>. אבל יש קיצור דרך.</p>
+<figure>
+<svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="15">
+  <defs><marker id="d4" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker>
+  <marker id="d5" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/></marker></defs>
+  <g text-anchor="middle">
+  <rect x="20" y="70" width="70" height="40" rx="6" fill="#fff" stroke="#555"/><text x="55" y="95">P</text>
+  <rect x="150" y="70" width="100" height="40" rx="6" fill="#7c3aed"/><text x="200" y="95" fill="#fff">E_K1</text>
+  <rect x="320" y="66" width="80" height="48" rx="24" fill="#fde8e8" stroke="#b91c1c" stroke-width="2"/><text x="360" y="95" fill="#b91c1c" font-weight="700">X</text>
+  <rect x="470" y="70" width="100" height="40" rx="6" fill="#7c3aed"/><text x="520" y="95" fill="#fff">D_K2</text>
+  <rect x="630" y="70" width="70" height="40" rx="6" fill="#14213d"/><text x="665" y="95" fill="#fff">C</text>
+  <text x="200" y="40" fill="#2563eb">→ forward from P</text>
+  <text x="520" y="40" fill="#15803d">backward from C ←</text>
+  <text x="360" y="150" fill="#b91c1c" font-family="Heebo" direction="rtl">נפגשים באמצע</text>
+  <text x="200" y="150" font-size="13">table: E_K1(P) for all K1</text>
+  <text x="520" y="150" font-size="13">lookup: D_K2(C) for all K2</text>
+  <text x="360" y="190" font-size="13">cost ≈ 2^56 + 2^56 = 2^57</text>
+  </g>
+  <g stroke-width="2" fill="none">
+  <path d="M90 90 H148" stroke="#2563eb" marker-end="url(#d4)"/><path d="M250 90 H318" stroke="#2563eb" marker-end="url(#d4)"/>
+  <path d="M630 90 H572" stroke="#15803d" marker-end="url(#d4)"/><path d="M470 90 H402" stroke="#15803d" marker-end="url(#d4)"/>
+  </g>
+</svg>
+<figcaption><bdi dir="ltr">2-DES</bdi>: הערך האמצעי <bdi dir="ltr">X</bdi> הוא גם <span class="ltr">E_K1(P)</span> וגם <span class="ltr">D_K2(C)</span> — אפשר לחפש כל מפתח בנפרד.</figcaption>
+</figure>
+<div class="box formula"><div class="box-head">📐 ההתקפה</div><div class="box-body">
+<p>התובנה: הערך האמצעי <bdi dir="ltr">X</bdi> מקיים <span class="ltr">X = E_K1(P)</span> וגם <span class="ltr">X = D_K2(C)</span>. הראשון תלוי רק ב־<bdi dir="ltr">K1</bdi>, השני רק ב־<bdi dir="ltr">K2</bdi> — אז אפשר לחפש אותם <strong>בנפרד</strong>, כמו ב־<bdi dir="ltr">BSGS</bdi> (פרק 3).</p>
+<ol>
+<li>לכל <span class="ltr">2^56</span> המפתחות <bdi dir="ltr">K1</bdi>: מחשבים <span class="ltr">E_K1(P)</span> ושומרים <span class="ltr">(ערך, K1)</span> בטבלה ממוינת.</li>
+<li>לכל <span class="ltr">2^56</span> המפתחות <bdi dir="ltr">K2</bdi>: מחשבים <span class="ltr">D_K2(C)</span> ומחפשים בטבלה.</li>
+<li>כל התאמה נותנת זוג מועמד <span class="ltr">(K1, K2)</span>. מאמתים עם זוג <span class="ltr">(P, C)</span> שני.</li>
+</ol>
+$$\text{cost} = 2^{56} + 2^{56} = 2^{57} \text{ encryptions} \;+\; 2^{56} \text{ memory}$$
+<p><strong><bdi dir="ltr">2-DES</bdi> נותן בערך 57 ביט ביטחון, לא 112.</strong> כמעט כלום מעבר ל־<bdi dir="ltr">DES</bdi> רגיל.</p>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ למה צריך זוג שני (פירוט שלא בשקף)</div><div class="box-body">
+<p>יש <span class="ltr">2^112</span> זוגות מפתחות, אבל רק <span class="ltr">2^64</span> ערכים אפשריים של בלוק. לכן עם זוג <span class="ltr">(P, C)</span> אחד צפויות בערך <span class="ltr">2^112 / 2^64 = 2^48</span> התאמות מקריות. בודקים כל מועמד מול זוג שני: הסיכוי שמועמד שגוי יעבור גם אותו הוא <span class="ltr">2^−64</span>, כך שנשארים בערך <span class="ltr">2^48 · 2^−64 = 2^−16</span> מועמדים שגויים — כלומר בפועל רק הנכון.</p>
+</div></div>
+
+<h3 id="triple-des"><span class="sec">4.13</span><bdi dir="ltr">3-DES</bdi> — הצפנה משולשת</h3>
+<div class="box formula"><div class="box-head">📐 מצב <bdi dir="ltr">EDE</bdi>: הצפנה ← פענוח ← הצפנה</div><div class="box-body">
+$$C = E_{K_3}\big(D_{K_2}(E_{K_1}(P))\big) \qquad\qquad P = D_{K_1}\big(E_{K_2}(D_{K_3}(C))\big)$$
+</div></div>
+<div class="box theory"><div class="box-head">📘 למה דווקא "פענוח" באמצע?</div><div class="box-body">
+<p><strong>תאימות לאחור.</strong> אם בוחרים <span class="ltr">K1 = K2 = K3 = K</span>, הפענוח האמצעי מבטל את ההצפנה הראשונה, ונשאר <span class="ltr">C = E_K(P)</span> — <bdi dir="ltr">DES</bdi> רגיל. כך מערכת <bdi dir="ltr">3-DES</bdi> יכולה לתקשר עם מערכות <bdi dir="ltr">DES</bdi> ישנות בלי חומרה נוספת. מבחינת ביטחון, <bdi dir="ltr">D</bdi> עם מפתח אחר הוא "צופן אחר" כמו <bdi dir="ltr">E</bdi> — זה לא מחליש כלום.</p>
+</div></div>
+<div class="tbl-wrap"><table>
+<tr><th>אפשרות מפתחות</th><th>אורך מפתח</th><th>ביטחון בפועל</th></tr>
+<tr><td><span class="ltr">K1 = K2 = K3</span></td><td class="num">56</td><td><bdi dir="ltr">DES</bdi> רגיל — רק לתאימות לאחור.</td></tr>
+<tr><td>שני מפתחות (<span class="ltr">K1 = K3</span>)</td><td class="num">112</td><td>פחות מ־112 (<bdi dir="ltr">NIST</bdi> מעריך כ־80 ביט).</td></tr>
+<tr><td>שלושה מפתחות</td><td class="num">168</td><td>בערך 112 — <bdi dir="ltr">MITM</bdi> "חותך" שכבה אחת: מצפינים קדימה עם <bdi dir="ltr">K1</bdi> ומפענחים אחורה עם <bdi dir="ltr">K2</bdi> ו־<bdi dir="ltr">K3</bdi> יחד (<span class="ltr">2^112</span>).</td></tr>
+</table></div>
+<div class="box warn"><div class="box-head">⚠️ מצב היום</div><div class="box-body"><p><bdi dir="ltr">NIST</bdi> הוציאה את <bdi dir="ltr">3-DES</bdi> משימוש; מאז 2023 אסור להשתמש בו להצפנה. מעבר לאיטיות (פי 3 מ־<bdi dir="ltr">DES</bdi>), יש לו בעיה נוספת: בלוק של 64 ביט בלבד, שהופך התנגשויות לסבירות כשמצפינים כמויות גדולות של מידע. היורש: <strong>AES</strong> — בלוק 128 ביט, מפתח 128/192/256 ביט.</p></div></div>
+
+<h3 id="ch4-sum"><span class="sec">4.14</span>סיכום ותרגול — פרק 4</h3>
+<div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>רכיב</th><th>ביטים</th><th>תפקיד</th></tr>
+<tr><td>IP / IP⁻¹</td><td class="num">64 → 64</td><td>תמורה קבועה, ללא ערך ביטחוני.</td></tr>
+<tr><td>סבב פייסטל</td><td class="num">(32, 32)</td><td><span class="ltr">L' = R , R' = L ⊕ f(R, K)</span>. מצפין חצי בכל סבב, <bdi dir="ltr">f</bdi> לא צריכה להיות הפיכה.</td></tr>
+<tr><td>E</td><td class="num">32 → 48</td><td>הרחבה, פיזור.</td></tr>
+<tr><td>⊕ Ki</td><td class="num">48</td><td>המקום היחיד שהמפתח נכנס ל־<bdi dir="ltr">f</bdi>.</td></tr>
+<tr><td>S-boxes</td><td class="num">8 × (6 → 4)</td><td>בלבול; הרכיב הלא־ליניארי היחיד. שורה = ביט ראשון ואחרון.</td></tr>
+<tr><td>P</td><td class="num">32 → 32</td><td>פיזור בין <bdi dir="ltr">S-boxes</bdi>.</td></tr>
+<tr><td>Key schedule</td><td class="num">64 → 56 → 16 × 48</td><td><bdi dir="ltr">PC-1</bdi>, רוטציות (סה״כ 28), <bdi dir="ltr">PC-2</bdi>.</td></tr>
+<tr><td>פענוח</td><td>—</td><td>אותו אלגוריתם, מפתחות בסדר הפוך.</td></tr>
+<tr><td>ביטחון</td><td>—</td><td>כוח גס <span class="ltr">2^56</span>; 2-DES ≈ <span class="ltr">2^57</span> (MITM); 3-DES ≈ <span class="ltr">2^112</span>.</td></tr>
+</table></div>
+</div></div>
+<div class="box exercise"><div class="box-head">🏋️ תרגול</div><div class="box-body">
+<p><strong>1.</strong> סבב פייסטל עם <span class="ltr">L0 = 1100, R0 = 1010, K = 0111</span> ו־<span class="ltr">f(R, K) = R ⊕ K</span>. חשב <span class="ltr">(L1, R1)</span>, ואז פענח בחזרה.</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">f(1010, 0111) = 1101</span>. <span class="ltr">L1 = R0 = 1010</span>, <span class="ltr">R1 = 1100 ⊕ 1101 = 0001</span>. פענוח: <span class="ltr">R0 = L1 = 1010</span>, ו־<span class="ltr">L0 = R1 ⊕ f(L1, K) = 0001 ⊕ 1101 = 1100</span> ✓.</p></div></details>
+<p><strong>2.</strong> חשב <span class="ltr">S1(000101)</span> ו־<span class="ltr">S1(111000)</span>. טבלת <bdi dir="ltr">S1</bdi>:</p>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table">
+<tr><th>S1</th><th class="num">0</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th><th class="num">7</th><th class="num">8</th><th class="num">9</th><th class="num">10</th><th class="num">11</th><th class="num">12</th><th class="num">13</th><th class="num">14</th><th class="num">15</th></tr>
+<tr><th class="num">0</th><td class="num">14</td><td class="num">4</td><td class="num">13</td><td class="num">1</td><td class="num">2</td><td class="num">15</td><td class="num">11</td><td class="num">8</td><td class="num">3</td><td class="num">10</td><td class="num">6</td><td class="num">12</td><td class="num">5</td><td class="num">9</td><td class="num">0</td><td class="num">7</td></tr>
+<tr><th class="num">1</th><td class="num">0</td><td class="num">15</td><td class="num">7</td><td class="num">4</td><td class="num">14</td><td class="num">2</td><td class="num">13</td><td class="num">1</td><td class="num">10</td><td class="num">6</td><td class="num">12</td><td class="num">11</td><td class="num">9</td><td class="num">5</td><td class="num">3</td><td class="num">8</td></tr>
+<tr><th class="num">2</th><td class="num">4</td><td class="num">1</td><td class="num">14</td><td class="num">8</td><td class="num">13</td><td class="num">6</td><td class="num">2</td><td class="num">11</td><td class="num">15</td><td class="num">12</td><td class="num">9</td><td class="num">7</td><td class="num">3</td><td class="num">10</td><td class="num">5</td><td class="num">0</td></tr>
+<tr><th class="num">3</th><td class="num">15</td><td class="num">12</td><td class="num">8</td><td class="num">2</td><td class="num">4</td><td class="num">9</td><td class="num">1</td><td class="num">7</td><td class="num">5</td><td class="num">11</td><td class="num">3</td><td class="num">14</td><td class="num">10</td><td class="num">0</td><td class="num">6</td><td class="num">13</td></tr>
+</table></div>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">000101</span>: שורה <span class="ltr">01 = 1</span>, עמודה <span class="ltr">0010 = 2</span> ← <strong>7</strong> = <span class="ltr">0111</span>. <span class="ltr">111000</span>: שורה <span class="ltr">10 = 2</span>, עמודה <span class="ltr">1100 = 12</span> ← <strong>3</strong> = <span class="ltr">0011</span>.</p></div></details>
+<p><strong>3.</strong> למה פענוח <bdi dir="ltr">DES</bdi> לא דורש פונקציה <span class="ltr">f⁻¹</span>?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>כי <bdi dir="ltr">f</bdi> משמשת רק כדי לייצר ערך שעושים איתו <bdi dir="ltr">XOR</bdi>. הקלט שלה (<span class="ltr">R(i−1)</span>) עובר גלוי בתור <span class="ltr">L(i)</span>, כך שבפענוח מחשבים את אותו <bdi dir="ltr">f</bdi> שוב ועושים <bdi dir="ltr">XOR</bdi> — וה־<bdi dir="ltr">XOR</bdi> מבטל את עצמו.</p></div></details>
+<p><strong>4.</strong> מה סכום הסיבובים בתזמון המפתחות, ולמה זה חשוב?</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">4·1 + 12·2 = 28</span> = אורך כל חצי, ולכן <span class="ltr">C16 = C0</span> ו־<span class="ltr">D16 = D0</span>. כך מפתח הסבב הראשון של הפענוח, <span class="ltr">K16</span>, מתקבל ישירות מ־<span class="ltr">(C0, D0)</span> בלי סיבוב, ומשם מסובבים ימינה.</p></div></details>
+<p><strong>5.</strong> כמה פעולות דורשת התקפת <bdi dir="ltr">MITM</bdi> על <bdi dir="ltr">2-DES</bdi>, וכמה זיכרון? למה זה לא 112 ביט?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>כ־<span class="ltr">2^57</span> הצפנות (<span class="ltr">2^56</span> קדימה + <span class="ltr">2^56</span> אחורה) ו־<span class="ltr">2^56</span> רשומות זיכרון. כי הערך האמצעי מאפשר לחפש כל מפתח בנפרד, אז העלויות <strong>מתחברות</strong> (<span class="ltr">2^56 + 2^56</span>) במקום <strong>להיכפל</strong> (<span class="ltr">2^56 · 2^56</span>).</p></div></details>
+<p><strong>6.</strong> בחר <span class="ltr">K1 = K2 = K3</span> ב־<bdi dir="ltr">3-DES</bdi> במצב <bdi dir="ltr">EDE</bdi>. מה מקבלים, ולמה זה שימושי?</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">E_K(D_K(E_K(P))) = E_K(P)</span> — <bdi dir="ltr">DES</bdi> רגיל. זה מאפשר תאימות לאחור עם מערכות <bdi dir="ltr">DES</bdi> ישנות.</p></div></details>
+</div></div>
+
+<div class="pager"><a class="prev" href="hw1.html"><small>▶ הקודם</small>תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a><span style="flex:1"></span></div>
+</main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

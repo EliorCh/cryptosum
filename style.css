@@ -132,6 +132,7 @@ nav.side a.chap.here { color: #f2b84b; }
 .pager small { display: block; color: var(--muted); }
 .pager .next { text-align: left; }
 .pager .prev { text-align: right; }
+figure svg { direction: ltr; }
 main > h2.chapter:first-child { margin-top: 0; }
 p.mathline, .box-body p.mathline, main p.mathline { direction: ltr; text-align: center; }
 table.ltr-table th, table.ltr-table td { text-align: center; }
