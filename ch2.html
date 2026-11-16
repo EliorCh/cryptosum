@@ -62,6 +62,17 @@ window.MathJax = {
 <p><strong>איך ייתכן שמפתח שמצפין לא יודע לפענח?</strong> הרעיון הוא <strong>פונקציה חד־כיוונית עם דלת סתרים</strong> (<span class="term">trapdoor</span>): פעולה שקל לחשב, שקשה מאוד להפוך — אלא אם יודעים פרט סודי אחד. המפתח הציבורי מאפשר לחשב את הכיוון הקל; המפתח הפרטי הוא "דלת הסתרים" שמאפשרת לחזור.</p>
 <p>הדימוי: <strong>תיבת דואר.</strong> כל אחד יכול להכניס מכתב דרך החריץ (מפתח ציבורי), רק לבעלים יש מפתח לפתוח אותה (מפתח פרטי).</p>
 </div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — שלושה דברים שהמרצה הדגיש</div><div class="box-body">
+<p><strong>1. איך לזכור באיזה מפתח משתמשים:</strong> "תחשבו מה יש רק לי, ומה אני רוצה לעשות." אני רוצה שכולם יוכלו לשלוח לי הודעות מוצפנות, אבל שרק אני אוכל לקרוא אותן ← כולם מצפינים עם הציבורי שלי, ורק אני מפענח עם הפרטי שלי.</p>
+<p><strong>2. כמה מפתחות צריך?</strong> בכיתה של 17 סטודנטים, שכל אחד יוכל לדבר בסוד עם כל אחד:</p>
+<div class="tbl-wrap"><table>
+<tr><th>שיטה</th><th>נוסחה</th><th>17 משתתפים</th></tr>
+<tr><td>סימטרי — מפתח לכל זוג</td><td class="num">n(n−1)/2</td><td class="num">17·16/2 = 136</td></tr>
+<tr><td>אסימטרי — זוג מפתחות לכל אחד</td><td class="num">n pairs</td><td class="num">17</td></tr>
+</table></div>
+<p>במערכת של מיליון משתמשים ההבדל עצום — עוד יתרון של הצפנה אסימטרית.</p>
+<p><strong>3. מאיפה אני יודע שהמפתח הציבורי באמת של בוב?</strong> אם איב שולחת לי את המפתח הציבורי <em>שלה</em> ואומרת שהוא של בוב — אני אצפין בשבילה. הפתרון הפשוט: הבנק מפרסם את המפתח הציבורי שלו באתר שלו. הפתרון המלא הוא תעודות (<span class="term">PKI</span>) — בהמשך הקורס, ובהתקפת "אדם בתווך" ב<a href="ch3.html#mitm">פרק 3</a>.</p>
+</div></div>
 <div class="box theory"><div class="box-head">📘 על מה נשען הביטחון — בעיות מתמטיות "חד־כיווניות"</div><div class="box-body">
 <div class="tbl-wrap"><table>
 <tr><th>בעיה</th><th>הכיוון הקל</th><th>הכיוון הקשה</th><th>מי משתמש</th></tr>
@@ -69,6 +80,7 @@ window.MathJax = {
 <tr><td>לוג דיסקרטי</td><td>לחשב <span class="ltr">g^x mod p</span></td><td>למצוא את <span class="ltr">x</span></td><td><bdi dir="ltr">Diffie-Hellman, ElGamal</bdi> (פרק 3)</td></tr>
 </table></div>
 </div></div>
+
 
 <h3 id="modulo"><span class="sec">2.2</span>פעולת מודולו</h3>
 <p>תחשוב על שעון: אחרי המקסימום חוזרים לאפס. בשעון של 24 שעות, 20 שעות אחרי 12:00 השעה היא לא 32 אלא <span class="ltr">32 mod 24 = 8</span>.</p>
@@ -136,10 +148,20 @@ gcd(63, 28)          63 = 2·28 + 7
 = gcd(28, 7)         28 = 4·7  + 0
 = gcd( 7, 0)  →  7</pre>
 </div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — הדוגמאות מהלוח</div><div class="box-body">
+<pre>gcd(56, 12)        56 = 4·12 + 8
+= gcd(12, 8)       12 = 1·8  + 4
+= gcd( 8, 4)        8 = 2·4  + 0
+= gcd( 4, 0)  →  4          (check: 56 = 2·2·2·7 , 12 = 2·2·3 → common 2·2 = 4)
+
+gcd(7, 5) = gcd(5, 2) = gcd(2, 1) = gcd(1, 0) = 1   → 7 and 5 are coprime</pre>
+<p>ההערה של המרצה: אם יודעים את הפירוק לראשוניים, <bdi dir="ltr">GCD</bdi> קל. אבל למספרים ענקיים אנחנו <strong>לא</strong> יודעים לפרק (זה כל הבסיס של <bdi dir="ltr">RSA</bdi>) — ואוקלידס מחשב <bdi dir="ltr">GCD</bdi> בלי לפרק בכלל.</p>
+</div></div>
 <div class="box theory"><div class="box-head">📘 למה התובנה נכונה</div><div class="box-body">
 <p>נכתוב <span class="ltr">r0 = q · r1 + r2</span> (חילוק עם שארית). כל מספר <bdi dir="ltr">d</bdi> שמחלק גם את <bdi dir="ltr">r0</bdi> וגם את <bdi dir="ltr">r1</bdi> מחלק גם את <span class="ltr">r2 = r0 − q · r1</span>, כי זה הפרש של כפולות של <bdi dir="ltr">d</bdi>. ולהפך: כל מספר שמחלק את <bdi dir="ltr">r1</bdi> ואת <bdi dir="ltr">r2</bdi> מחלק גם את <span class="ltr">r0 = q · r1 + r2</span>. כלומר לזוג <span class="ltr">(r0, r1)</span> ולזוג <span class="ltr">(r1, r2)</span> יש בדיוק אותם מחלקים משותפים — ולכן אותו <bdi dir="ltr">GCD</bdi>. הזוג החדש קטן יותר, וממשיכים עד שמגיעים ל־0.</p>
 </div></div>
 <p><strong>למה זה עובד גם למספרים בגודל <span class="ltr">2^1000</span>?</strong> כל שני צעדים השארית קטנה לפחות בחצי, ולכן מספר הצעדים הוא <span class="ltr">O(log min(r0, r1))</span> — כמה אלפי צעדים, לא <span class="ltr">2^1000</span>.</p>
+
 
 <h3 id="eea"><span class="sec">2.5</span>אוקלידס המורחב (<bdi dir="ltr">EEA</bdi>) — איך מוצאים הופכי מודולרי</h3>
 <p>האלגוריתם המורחב מוצא, בנוסף ל־<bdi dir="ltr">GCD</bdi>, גם מקדמים <bdi dir="ltr">s</bdi> ו־<bdi dir="ltr">t</bdi> כך ש:</p>
@@ -197,6 +219,14 @@ $$\varphi(240) = (2^4 - 2^3)(3-1)(5-1) = 8 \cdot 2 \cdot 4 = 64$$
 <p>בדיקה בדרך השנייה: <span class="ltr">240 · (1/2) · (2/3) · (4/5) = 64</span> ✓</p>
 </div></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — φ בשתי הדרכים</div><div class="box-body">
+<p><strong>בהגדרה, <span class="ltr">φ(8)</span>:</strong> עוברים על <span class="ltr">0 … 7</span> ובודקים מי זר ל־8. יוצאים <span class="ltr">{1, 3, 5, 7}</span>, ולכן <span class="ltr">φ(8) = 4</span>. זה עובד, אבל למספר של 2,048 ביט "ייגמר השיעור" (וגם היקום).</p>
+<p><strong>בנוסחה, <span class="ltr">φ(40)</span>:</strong></p>
+<p class="mathline"><span class="ltr">40 = 2³ · 5</span></p>
+<p class="mathline"><span class="ltr">φ(40) = (2³ − 2²)(5¹ − 5⁰) = 4 · 4 = 16</span></p>
+<p>המרצה הראה גם שאפשר לבדוק את עצמכם במחשבוני φ באינטרנט — שימושי לבדיקת תרגילים.</p>
+</div></div>
+
 <h3 id="fermat"><span class="sec">2.7</span>המשפט הקטן של פרמה ומשפט אוילר</h3>
 <div class="tbl-wrap"><table>
 <tr><th>המשפט הקטן של פרמה</th><th>משפט אוילר (הכללה)</th></tr>
@@ -212,7 +242,15 @@ $$a^{\varphi(m)} \equiv 1 \pmod m$$
 <div class="box example"><div class="box-head">✏️ <span class="ltr">5^4 mod 12</span></div><div class="box-body">
 <p><span class="ltr">φ(12) = φ(4)·φ(3) = 2·2 = 4</span>, ו־<span class="ltr">gcd(5, 12) = 1</span>, לכן לפי אוילר התוצאה 1. בדיקה: <span class="ltr">5^4 = 625 = 52·12 + 1</span> ✓</p>
 </div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — בדיקות פרמה מהלוח</div><div class="box-body">
+<p>עם <span class="ltr">p = 7, a = 8</span>:</p>
+<p class="mathline"><span class="ltr">8⁶ mod 7 = 1</span></p>
+<p>(קל לראות: <span class="ltr">8 ≡ 1 (mod 7)</span>, אז כל חזקה שלו היא 1.) ועם <span class="ltr">p = 13</span>:</p>
+<p class="mathline"><span class="ltr">8¹² mod 13 = 1</span></p>
+<p>וכשהגדילו את המעריך באחד, <span class="ltr">8¹³ mod 13 = 8</span> — זו הצורה השנייה של פרמה, <span class="ltr">a^p ≡ a</span>.</p>
+</div></div>
 <div class="keypoint">💡 <b>שימוש מעשי:</b> מעריכים אפשר לצמצם מודולו <span class="ltr">φ(m)</span>. למשל <span class="ltr">3^1002 mod 11</span>: כי <span class="ltr">φ(11)=10</span>, ו־<span class="ltr">1002 mod 10 = 2</span>, אז התשובה <span class="ltr">3^2 = 9</span>.</div>
+
 
 <h3 id="rsa"><span class="sec">2.8</span><bdi dir="ltr">RSA</bdi> — היסטוריה ויצירת מפתחות</h3>
 <div class="cards">
@@ -261,6 +299,16 @@ $$M^{ed} = M^{k\varphi(n) + 1} = \left(M^{\varphi(n)}\right)^{k} \cdot M \equiv 
 </div></div>
 <div class="keypoint">💡 <b>למה איב לא יכולה לפענח:</b> היא יודעת <span class="ltr">(n, e)</span> ו־<bdi dir="ltr">C</bdi>. כדי למצוא <bdi dir="ltr">d</bdi> צריך את <span class="ltr">φ(n) = (p−1)(q−1)</span>, וכדי לדעת אותו צריך לפרק את <bdi dir="ltr">n</bdi> ל־<bdi dir="ltr">p·q</bdi>. עבור <bdi dir="ltr">n</bdi> של 2,048 ביט זה לא אפשרי בזמן סביר.</div>
 
+<div class="box warn"><div class="box-head">⚠️ <bdi dir="ltr">RSA</bdi> "של ספר לימוד" — ולמה בפועל זה לא מספיק (מהשיעור)</div><div class="box-body">
+<p>המרצה הדגיש שמה שלמדנו הוא <strong><span class="term">textbook RSA</span></strong> — הגרסה הפשוטה, שמספיקה כדי להבין את הרעיון. יש לה בעיה מהותית: היא <strong>דטרמיניסטית</strong> — אותה הודעה עם אותו מפתח נותנת תמיד אותו <bdi dir="ltr">C</bdi>.</p>
+<p><strong>ההתקפה שעלתה בכיתה:</strong> נניח שההודעות הן תמיד 0 או 1 (למשל "כן"/"לא"). איב לא צריכה את <bdi dir="ltr">d</bdi> בכלל. היא מצפינה בעצמה את 0 ואת 1 עם המפתח הציבורי — מותר לה, הוא ציבורי — ובודקת איזו מהן שווה ל־<bdi dir="ltr">C</bdi> שראתה. שני ניסיונות, וההודעה גלויה.</p>
+<p>זו בדיוק התקפת <span class="term">Chosen Plaintext</span> מ<a href="ch1.html#attacks">פרק 1</a>, שב־<bdi dir="ltr">RSA</bdi> זמינה לכל אחד. בפועל מוסיפים להודעה ריפוד אקראי לפני ההצפנה, כך שהצפנה כפולה של אותה הודעה נותנת תוצאות שונות.</p>
+</div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — למה איב לא פשוט מנחשת את <bdi dir="ltr">d</bdi></div><div class="box-body">
+<p>שאלה מהכיתה: איב יודעת <span class="ltr">e, n, C</span> ואפילו את <bdi dir="ltr">M</bdi>. למה שלא תנסה <span class="ltr">C², C³, C⁴, …</span> עד שתקבל <bdi dir="ltr">M</bdi>? כי <bdi dir="ltr">d</bdi> הוא מספר בגודל של בערך <span class="ltr">2^2048</span> — זה <span class="ltr">2^2048</span> ניסיונות. ולחשב <span class="ltr">φ(n)</span> בספירה (<bdi dir="ltr">GCD</bdi> עם כל מספר עד <bdi dir="ltr">n</bdi>) — אותו דבר.</p>
+<p>המרצה הוסיף: <strong>אין הוכחה</strong> ש־<bdi dir="ltr">RSA</bdi> בטוח. יודעים רק שמאז 1977 אף אחד לא מצא דרך לשבור אותו. ומחשב קוונטי חזק מספיק כן ישבור אותו — נושא לשיעור על קריפטוגרפיה פוסט־קוונטית.</p>
+</div></div>
+
 <h3 id="rsa-example"><span class="sec">2.10</span><bdi dir="ltr">RSA</bdi> — דוגמאות מלאות</h3>
 <div class="box example"><div class="box-head">✏️ דוגמה 1 (מהשקפים): <span class="ltr">p = 11, q = 17, M = 88</span></div><div class="box-body">
 <div class="tbl-wrap"><table>
@@ -297,12 +345,40 @@ $$n = 19 \cdot 23 = 437 \qquad \varphi(n) = 18 \cdot 22 = 396$$
 </table></div>
 <p><span class="ltr">C = 85</span>. <strong>פענוח:</strong> <span class="ltr">85^317 mod 437 = 100</span> ✓ (תשעה ביטים — נסו במעבדה של ריבוע וכפל עם <span class="ltr">x=85, e=317, n=437</span>).</p>
 </div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה 3 — מהלוח: <span class="ltr">p = 7, q = 13, M = 4</span></div><div class="box-body">
+<p><strong>שלבים 1–3:</strong></p>
+<p class="mathline"><span class="ltr">n = 7 · 13 = 91      φ(n) = 6 · 12 = 72</span></p>
+<p><strong>שלב 4:</strong> בכיתה הציעו קודם <span class="ltr">e = 10</span> — נפסל, כי <span class="ltr">gcd(10, 72) = 2</span>. אחר כך <span class="ltr">e = 11</span>: ראשוני שלא מחלק את 72 ← <span class="ltr">gcd = 1</span> ✓. (שימו לב: <bdi dir="ltr">e</bdi> <strong>לא</strong> חייב להיות ראשוני, רק זר ל־φ(<bdi dir="ltr">n</bdi>).)</p>
+<p><strong>שלב 5:</strong> בכיתה השתמשו במחשבון הופכי מקוון. ביד, באוקלידס המורחב על <span class="ltr">(72, 11)</span>:</p>
+<div class="tbl-wrap"><table>
+<tr><th>i</th><th>r</th><th>q</th><th>s</th><th>t</th></tr>
+<tr><td class="num">0</td><td class="num">72</td><td class="num">—</td><td class="num">1</td><td class="num">0</td></tr>
+<tr><td class="num">1</td><td class="num">11</td><td class="num">—</td><td class="num">0</td><td class="num">1</td></tr>
+<tr><td class="num">2</td><td class="num">6</td><td class="num">6</td><td class="num">1</td><td class="num">−6</td></tr>
+<tr><td class="num">3</td><td class="num">5</td><td class="num">1</td><td class="num">−1</td><td class="num">7</td></tr>
+<tr class="hl"><td class="num">4</td><td class="num">1</td><td class="num">1</td><td class="num">2</td><td class="num">−13</td></tr>
+</table></div>
+<p><span class="ltr">t = −13 ≡ −13 + 72 = 59</span>. בדיקה: <span class="ltr">11 · 59 = 649 = 9 · 72 + 1</span> ✓ ← <span class="ltr">d = 59</span>.</p>
+<p><strong>הצפנה:</strong> <span class="ltr">C = 4^11 mod 91</span>, <span class="ltr">11 = 1011₂</span>:</p>
+<p class="mathline"><span class="ltr">z=4 → 4²=16 → 16²=256≡74, 74·4=296≡23 → 23²=529≡74, 74·4=296≡23</span></p>
+<p class="mathline"><span class="ltr">C = 23</span></p>
+<p><strong>פענוח:</strong> <span class="ltr">23^59 mod 91 = 4</span> ✓ (בכיתה בדקו במחשבון; כאן — במעבדה עם <span class="ltr">p=7, q=13, e=11, M=4</span>).</p>
+<p><strong>שימו לב למלכודת שהמרצה הדגיש:</strong> ביצירת המפתחות עובדים מודולו <span class="ltr">φ(n) = 72</span>; בהצפנה ובפענוח עובדים מודולו <span class="ltr">n = 91</span>.</p>
+</div></div>
 <div class="lab"><h5>מעבדה: <bdi dir="ltr">RSA</bdi> מלא עם כל שלבי החישוב</h5>
 <div class="row"><label>p <input id="rsa-p" value="11"></label><label>q <input id="rsa-q" value="17"></label><label><bdi dir="ltr">e</bdi> (ריק = הקטן החוקי) <input id="rsa-e" value="7"></label><label>M <input id="rsa-m" value="88"></label><button onclick="rsaRun()">חשב</button></div>
 <div id="rsa-out"></div>
 <p style="font-size:14px;color:var(--muted);margin:8px 0 0">המעבדה נועדה לבדוק את החישוב הידני שלך — בתרגיל צריך להראות את השלבים בעצמך.</p>
 </div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — שאלת חולצת ה־<bdi dir="ltr">RSA</bdi></div><div class="box-body">
+<p><strong>שאלת חולצת ה־<bdi dir="ltr">RSA</bdi>:</strong> המרצה הראה בדיחה שבה המפתח הפרטי הוא <span class="ltr">d = 4</span>. האם זה בכלל אפשרי?</p>
+<details class="reveal"><summary>פתרון</summary><div>
+<p><strong>לא.</strong> <bdi dir="ltr">d</bdi> הוא ההופכי של <bdi dir="ltr">e</bdi> מודולו <span class="ltr">φ(n)</span>, ולכן גם הוא חייב להיות זר ל־<span class="ltr">φ(n)</span>. אבל <bdi dir="ltr">p</bdi> ו־<bdi dir="ltr">q</bdi> הם ראשוניים אי־זוגיים, אז <span class="ltr">p − 1</span> ו־<span class="ltr">q − 1</span> שניהם זוגיים, ולכן:</p>
+<p class="mathline"><span class="ltr">4 | φ(n) = (p − 1)(q − 1)</span></p>
+<p>מספר זוגי לא יכול להיות זר למספר זוגי. לכן <strong><bdi dir="ltr">d</bdi> תמיד אי־זוגי</strong> — ומאותה סיבה גם <bdi dir="ltr">e</bdi>.</p>
+</div></details>
+</div></div>
 <h3 id="sam"><span class="sec">2.11–2.12</span>חזקה יעילה: ריבוע וכפל (<bdi dir="ltr">Square & Multiply</bdi>)</h3>
 <p>ב־<bdi dir="ltr">RSA</bdi> מחשבים <span class="ltr">M^e mod n</span> עם <bdi dir="ltr">e</bdi> של אלפי ביטים. כפל נאיבי דורש <span class="ltr">e − 1</span> כפלים — עבור <bdi dir="ltr">d</bdi> של 2,048 ביט זה יותר מכמות האטומים ביקום.</p>
 <div class="box theory"><div class="box-head">📘 רעיון 1: ריבוע חוזר</div><div class="box-body">
@@ -430,6 +506,10 @@ print(square_and_multiply(11, 23, 187))  <span class="c"># 88</span></pre>
 <details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">45 = 101101₂</span> — שישה ביטים, ארבעה מהם 1. ריבועים: 5 (מספר הביטים פחות 1). כפלים: 3 (מספר האחדות פחות 1). סה״כ 8, במקום 44.</p></div></details>
 <p><strong>5.</strong> למה התקפת ערוץ הצד תוקפת את הפענוח ולא את ההצפנה?</p>
 <details class="reveal"><summary>פתרון</summary><div><p>בהצפנה המעריך הוא <bdi dir="ltr">e</bdi> — ציבורי, אין מה לגלות. בפענוח המעריך הוא <bdi dir="ltr">d</bdi> הסודי, ותבנית ה־<bdi dir="ltr">S/M</bdi> חושפת את הביטים שלו.</p></div></details>
+<p><strong>6.</strong> (הבדיחה מהשיעור) מישהו פרסם "מפתח <bdi dir="ltr">RSA</bdi> פרטי" עם <span class="ltr">d = 4</span>. למה זה בלתי אפשרי?</p>
+<details class="reveal"><summary>פתרון</summary><div><p><bdi dir="ltr">p</bdi> ו־<bdi dir="ltr">q</bdi> ראשוניים אי־זוגיים, אז <span class="ltr">p − 1</span> ו־<span class="ltr">q − 1</span> זוגיים, ולכן <span class="ltr">φ(n) = (p−1)(q−1)</span> מתחלק ב־4. כיוון ש־<bdi dir="ltr">d</bdi> הוא הופכי של <bdi dir="ltr">e</bdi> מודולו <span class="ltr">φ(n)</span>, הוא חייב להיות זר ל־<span class="ltr">φ(n)</span>. אבל <span class="ltr">gcd(4, φ(n)) = 4 ≠ 1</span>. למעשה <bdi dir="ltr">d</bdi> (וגם <bdi dir="ltr">e</bdi>) חייבים להיות <strong>אי־זוגיים</strong>.</p></div></details>
+<p><strong>7.</strong> בכמה מפתחות סימטריים צריך כדי ש־100 אנשים יוכלו לדבר בסוד כל אחד עם כל אחד? ובכמה זוגות מפתחות אסימטריים?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>סימטרי: <span class="ltr">100 · 99 / 2 = 4,950</span>. אסימטרי: 100 זוגות (מפתח ציבורי ופרטי לכל אחד).</p></div></details>
 </div></div>
 
 <div class="pager"><a class="prev" href="ch1.html"><small>▶ הקודם</small>פרק 1 — מבוא לקריפטוגרפיה</a><a class="next" href="ch3.html"><small>הבא ◀</small>פרק 3 — לוג דיסקרטי ו־<bdi dir="ltr">Diffie-Hellman</bdi></a></div>

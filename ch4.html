@@ -130,6 +130,13 @@ window.MathJax = {
 <li><strong>החלפה ותמורה סופית</strong> — מחליפים בין החצאים ומפעילים <span class="ltr">IP⁻¹</span>.</li>
 </ol>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — <bdi dir="ltr">DES</bdi> בהקשר</div><div class="box-body">
+<ul>
+<li>לפני 1977 (<bdi dir="ltr">RSA</bdi> ו־<bdi dir="ltr">Diffie-Hellman</bdi>) <strong>כל</strong> ההצפנה בעולם הייתה סימטרית; איכשהו השיגו מפתח בשני הצדדים ומצפינים.</li>
+<li><bdi dir="ltr">DES</bdi> היה הפעם הראשונה שתקן הצפנה הוצע לשימוש אזרחי רחב, לא רק לצבאות.</li>
+<li>שימו לב לאינדקסים: ב־<bdi dir="ltr">DES</bdi> הסבבים, המפתחות והביטים ממוספרים <strong>מ־1</strong> (ביט 1 עד 64, <span class="ltr">K1</span> עד <span class="ltr">K16</span>), ולא מ־0 כמו בתכנות.</li>
+</ul>
+</div></div>
 <h3 id="ip"><span class="sec">4.5</span>שלב 1: התמורה ההתחלתית והסופית <span class="term">(IP, IP⁻¹)</span></h3>
 <div class="box theory"><div class="box-head">📘 איך קוראים טבלת תמורה</div><div class="box-body">
 <p>תמורה (<span class="term">permutation</span>) רק <strong>מסדרת מחדש</strong> ביטים — לא מוסיפה ולא מוחקת. הטבלה נקראת כך: <strong>במקום ה־<bdi dir="ltr">k</bdi> בפלט שמים את הביט שמספרו כתוב בתא ה־<bdi dir="ltr">k</bdi> בטבלה.</strong> קוראים את הטבלה שורה אחרי שורה, משמאל לימין.</p>
@@ -162,6 +169,15 @@ window.MathJax = {
 </div></div>
 <div class="box warn"><div class="box-head">⚠️ אין להן שום ערך ביטחוני</div><div class="box-body"><p><bdi dir="ltr">IP</bdi> ו־<bdi dir="ltr">IP</bdi>⁻¹ הן תמורות קבועות וציבוריות, ואחת מבטלת את השנייה. תוקף פשוט מפעיל אותן בעצמו. הן נוספו בשנות ה־70 מסיבות של נוחות בחומרה (חיווט ל־<bdi dir="ltr">bus</bdi> של 8 ביט). במבחן: "האם <bdi dir="ltr">IP</bdi> מוסיפה ביטחון?" — <strong>לא.</strong></p></div></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — תמורה צעצוע של 4 ביטים</div><div class="box-body">
+<p>כדי להבין את רעיון התמורה, בכיתה לקחו תמורה של 4 ביטים שמזיזה את ביט 1 למקום 3, ביט 2 למקום 2, ביט 3 למקום 4 וביט 4 למקום 1. בכיתה הפעילו אותה על <span class="ltr">1011</span> (ובמקרה יצא אותו רצף). כאן נפעיל אותה על <span class="ltr">1100</span> כדי לראות את הביטים זזים:</p>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="max-width:460px">
+<tr><th>position</th><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">4</td></tr>
+<tr><th>input</th><td class="num">1</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><th>output</th><td class="num">0</td><td class="num">1</td><td class="num">1</td><td class="num">0</td></tr>
+</table></div>
+<p>מקום 1 מקבל את ביט 4 (0), מקום 2 את ביט 2 (1), מקום 3 את ביט 1 (1), מקום 4 את ביט 3 (0). התמורה ההפוכה מחזירה כל ביט למקומו. המרצה הדגיש: כל עוד אין שם מפתח, אין בזה שום סוד — כל אחד יכול להפעיל את התמורה ואת ההפוכה שלה.</p>
+</div></div>
 <h3 id="feistel"><span class="sec">4.6</span>שלב 2: סבב פייסטל (<bdi dir="ltr">Feistel</bdi>)</h3>
 <div class="box formula"><div class="box-head">📐 סבב <bdi dir="ltr">i</bdi></div><div class="box-body">
 $$L_i = R_{i-1} \qquad\qquad R_i = L_{i-1} \oplus f(R_{i-1}, K_i)$$
@@ -314,6 +330,11 @@ $$R_i \oplus f(R_{i-1}, K_i) = L_{i-1} \oplus f \oplus f = L_{i-1}$$
 </ul>
 </div></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — <bdi dir="ltr">S-box</bdi> היא לא הפיכה — וזה בסדר</div><div class="box-body">
+<p>סטודנט שאל: אפשר לחזור אחורה מה־<bdi dir="ltr">S-box</bdi>? <strong>לא.</strong> נכנסים 6 ביטים (64 קלטים אפשריים) ויוצאים 4 (16 פלטים אפשריים), כך שכל פלט מגיע מכמה קלטים. ב־<bdi dir="ltr">S1</bdi> כל שורה היא סידור של כל המספרים 0–15, ולכן <strong>כל ערך מופיע בדיוק 4 פעמים</strong> בטבלה (פעם בכל שורה). למשל 0 מופיע בשורה 0 עמודה 14, בשורה 1 עמודה 0, בשורה 2 עמודה 15 ובשורה 3 עמודה 13.</p>
+<p>זה לא מפריע לפענוח, כי במבנה פייסטל <bdi dir="ltr">f</bdi> אף פעם לא צריכה להתהפך (4.6).</p>
+<p>המרצה הוסיף: לחשדות סביב ה־<bdi dir="ltr">NSA</bdi> היה גם צד כזה — "למה דווקא הטבלאות האלה?", ואין הסבר רשמי לסדר של <bdi dir="ltr">E</bdi> ושל <bdi dir="ltr">IP</bdi>. ההמשך ב־4.11.</p>
+</div></div>
 <h3 id="key-schedule"><span class="sec">4.9</span>שלב 5: תזמון המפתחות (<bdi dir="ltr">Key Schedule</bdi>)</h3>
 <p>מהמפתח של 64 ביט צריך לייצר 16 מפתחות־סבב של 48 ביט כל אחד. התהליך:</p>
 <div class="tbl-wrap"><table>
@@ -411,6 +432,9 @@ $$DES_{k_i}(x_0) \overset{?}{=} y_0 \qquad i = 0, 1, \dots, 2^{56}-1$$
 <tr><td class="num">2012</td><td>crack.sh (48 FPGA)</td><td>שירות</td><td>כ־26 שעות</td></tr>
 </table></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — "אני אחליף מפתח כל חמש דקות — אז אני מוגן?"</div><div class="box-body">
+<p>סטודנט שאל: אם פריצת <bdi dir="ltr">DES</bdi> לוקחת 26 שעות, אפשר להשתמש בו לשיחות קצרות ולהחליף מפתח כל פעם? התשובה: <strong>לא.</strong> התוקף יכול להקליט את התעבורה עכשיו ולפרוץ אותה <strong>בדיעבד</strong>. אם המידע עדיין רגיש אחרי יום, שבוע או שנה — הוא נחשף. הביטחון צריך להחזיק כל עוד המידע צריך להישאר סודי, לא רק כל עוד השיחה נמשכת.</p>
+</div></div>
 <h3 id="double-des"><span class="sec">4.12</span><bdi dir="ltr">2-DES</bdi> והתקפת <bdi dir="ltr">Meet-in-the-Middle</bdi></h3>
 <p>אם 56 ביט קצר מדי, הרעיון הטבעי: להצפין <strong>פעמיים</strong> עם שני מפתחות בלתי תלויים. נראה שזה נותן מפתח של <span class="ltr">56 + 56 = 112</span> ביט:</p>
 $$C = E_{K_2}(E_{K_1}(P)) \qquad\qquad P = D_{K_1}(D_{K_2}(C))$$
@@ -453,6 +477,16 @@ $$\text{cost} = 2^{56} + 2^{56} = 2^{57} \text{ encryptions} \;+\; 2^{56} \text{
 <p>יש <span class="ltr">2^112</span> זוגות מפתחות, אבל רק <span class="ltr">2^64</span> ערכים אפשריים של בלוק. לכן עם זוג <span class="ltr">(P, C)</span> אחד צפויות בערך <span class="ltr">2^112 / 2^64 = 2^48</span> התאמות מקריות. בודקים כל מועמד מול זוג שני: הסיכוי שמועמד שגוי יעבור גם אותו הוא <span class="ltr">2^−64</span>, כך שנשארים בערך <span class="ltr">2^48 · 2^−64 = 2^−16</span> מועמדים שגויים — כלומר בפועל רק הנכון.</p>
 </div></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — <bdi dir="ltr">Meet-in-the-Middle</bdi> ≠ <bdi dir="ltr">Man-in-the-Middle</bdi></div><div class="box-body">
+<p>המרצה הזהיר שהשמות מבלבלים מאוד, ושאלו שתי התקפות שונות לגמרי:</p>
+<div class="tbl-wrap"><table>
+<tr><th></th><th><bdi dir="ltr">Man-in-the-Middle</bdi> (אדם בתווך)</th><th><bdi dir="ltr">Meet-in-the-Middle</bdi> (פגישה באמצע)</th></tr>
+<tr><td><strong>מה זה</strong></td><td>תוקף שיושב <strong>על הערוץ</strong>, מיירט, משנה ומעביר הודעות.</td><td>טכניקה <strong>חישובית:</strong> מחשבים קדימה מצד אחד ואחורה מהצד השני ומחפשים התאמה.</td></tr>
+<tr><td><strong>איפה ראינו</strong></td><td>החלפת בלוקים ב־<bdi dir="ltr">ECB</bdi> (פרק 1), <bdi dir="ltr">DH</bdi> בלי אימות (3.10).</td><td><bdi dir="ltr">BSGS</bdi> (3.8), <bdi dir="ltr">2-DES</bdi> ו־<bdi dir="ltr">3-DES</bdi> (כאן).</td></tr>
+<tr><td><strong>מה צריך התוקף</strong></td><td>שליטה בערוץ.</td><td>זוגות (<bdi dir="ltr">P, C</bdi>) והרבה זיכרון.</td></tr>
+<tr><td><strong>הפתרון</strong></td><td>אימות: חתימות, תעודות, <bdi dir="ltr">MAC</bdi>.</td><td>מפתח ארוך יותר / שלוש שכבות.</td></tr>
+</table></div>
+</div></div>
 <h3 id="triple-des"><span class="sec">4.13</span><bdi dir="ltr">3-DES</bdi> — הצפנה משולשת</h3>
 <div class="box formula"><div class="box-head">📐 מצב <bdi dir="ltr">EDE</bdi>: הצפנה ← פענוח ← הצפנה</div><div class="box-body">
 $$C = E_{K_3}\big(D_{K_2}(E_{K_1}(P))\big) \qquad\qquad P = D_{K_1}\big(E_{K_2}(D_{K_3}(C))\big)$$
@@ -468,6 +502,11 @@ $$C = E_{K_3}\big(D_{K_2}(E_{K_1}(P))\big) \qquad\qquad P = D_{K_1}\big(E_{K_2}(
 </table></div>
 <div class="box warn"><div class="box-head">⚠️ מצב היום</div><div class="box-body"><p><bdi dir="ltr">NIST</bdi> הוציאה את <bdi dir="ltr">3-DES</bdi> משימוש; מאז 2023 אסור להשתמש בו להצפנה. מעבר לאיטיות (פי 3 מ־<bdi dir="ltr">DES</bdi>), יש לו בעיה נוספת: בלוק של 64 ביט בלבד, שהופך התנגשויות לסבירות כשמצפינים כמויות גדולות של מידע. היורש: <strong>AES</strong> — בלוק 128 ביט, מפתח 128/192/256 ביט.</p></div></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — למה <bdi dir="ltr">3-DES</bdi> שרד כל כך הרבה שנים</div><div class="box-body">
+<p>ב־<bdi dir="ltr">DES</bdi> אין שום חישוב מתמטי "כבד" — רק <bdi dir="ltr">XOR</bdi>, טבלאות ותמורות. זה רץ <strong>מהר מאוד בחומרה</strong>. כשהתברר ש־<bdi dir="ltr">DES</bdi> חלש, כבר היו בעולם המון שבבים שמריצים אותו. <bdi dir="ltr">3-DES</bdi> פשוט הריץ את אותו שבב שלוש פעמים — בלי להחליף חומרה. לכן הוא נשאר בשימוש שנים רבות (גם לצד <bdi dir="ltr">AES</bdi>), עד שירד בהדרגה.</p>
+<p>לגבי הביטחון של <bdi dir="ltr">3-DES</bdi>, החישוב מהכיתה: ב־<bdi dir="ltr">MITM</bdi> אפשר "לחתוך" רק בין שכבה לשכבה, אז צד אחד משלם <span class="ltr">2^56</span> והצד השני <span class="ltr">2^112</span> (שני מפתחות יחד) — סה״כ בערך <span class="ltr">2^112</span>.</p>
+<p>בשיעור הבא: צופן סימטרי נוסף — <bdi dir="ltr">AES</bdi>.</p>
+</div></div>
 <h3 id="ch4-sum"><span class="sec">4.14</span>סיכום ותרגול — פרק 4</h3>
 <div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
 <div class="tbl-wrap"><table>

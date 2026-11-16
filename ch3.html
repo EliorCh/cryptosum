@@ -96,6 +96,19 @@ window.MathJax = {
 <tr><td>"קשה להפריד צבעים"</td><td>קשה לחלץ את <bdi dir="ltr">a</bdi> מתוך <span class="ltr">gᵃ mod p</span> — בעיית הלוג הדיסקרטי</td></tr>
 </table></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — ניסיון ראשון שנכשל: "<bdi dir="ltr">Diffie-Hellman</bdi> עם חיבור"</div><div class="box-body">
+<p>לפני המתמטיקה המרצה בנה בכיתה גרסה עם חיבור רגיל, כדי להראות למה צריך משהו קשה יותר:</p>
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>אליס</th><th>ערוץ (איב רואה)</th><th>בוב</th></tr>
+<tr><td>ציבורי</td><td colspan="3" style="text-align:center">המספר המשותף 3</td></tr>
+<tr><td>סודות</td><td>סוד 7</td><td>—</td><td>סוד 4</td></tr>
+<tr><td>שליחה</td><td class="num">3 + 7 = 10</td><td class="num">10 , 7</td><td class="num">3 + 4 = 7</td></tr>
+<tr class="hl"><td>מפתח</td><td class="num">7 + 7 = 14</td><td>—</td><td class="num">10 + 4 = 14</td></tr>
+</table></div>
+<p>שניהם הגיעו ל־14 — אבל איב רואה 3 ו־10 ופשוט מחסרת: <span class="ltr">10 − 3 = 7</span>, הסוד של אליס. משם <span class="ltr">7 + 7 = 14</span>. מספיקה לה הודעה אחת.</p>
+<p><strong>המסקנה:</strong> הפעולה צריכה להיות כזו שקל לחשב אותה אבל <strong>קשה להפוך</strong> — כמו ערבוב צבעים. חיבור קל להפוך (חיסור). חזקה מודולו <bdi dir="ltr">p</bdi> קשה להפוך — זה ה־<bdi dir="ltr">DLP</bdi>. ובשביל זה צריך את תורת החבורות שבסעיף הבא.</p>
+</div></div>
+
 <h3 id="groups"><span class="sec">3.3</span>חבורות סופיות</h3>
 <p><strong>למה פתאום תורת החבורות?</strong> בפרוטוקול <bdi dir="ltr">Diffie-Hellman</bdi> (3.6) שני הצדדים מעלים מספר בחזקה מודולו <bdi dir="ltr">p</bdi>. כדי שזה יעבוד וגם יהיה בטוח צריך לוודא שלושה דברים: שהחישוב תמיד נשאר בתוך קבוצה מוגדרת, שאפשר "לחזור אחורה" (הופכיים), ושהחזקות של המספר שבחרנו מכסות הרבה ערכים ולא מעט מאוד. מושגי החבורה, הסדר והיוצר הם בדיוק הכלים לבדוק את זה.</p>
 <div class="box formula"><div class="box-head">📐 הגדרה: חבורה <span class="ltr">(G, ∘)</span></div><div class="box-body">
@@ -189,6 +202,14 @@ $$g^{(p-1)/q} \not\equiv 1 \pmod p$$
 <div class="row"><label><bdi dir="ltr">p</bdi> ראשוני (עד 200) <input id="gr-p" value="11"></label><button onclick="groupRun()">הצג טבלה</button></div>
 <div id="gr-out"></div></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — הופכיים, איך מחשבים חזקות ביד, ואין "חוק" ליוצרים</div><div class="box-body">
+<ul>
+<li><strong>הופכיים מהכיתה:</strong> ב־<span class="ltr">Z9*</span> ההופכי של 2 הוא 5 (<span class="ltr">2 · 5 = 10 ≡ 1</span>). ב־<span class="ltr">Z11*</span> ההופכי של 4 הוא 3 (<span class="ltr">4 · 3 = 12 ≡ 1</span>).</li>
+<li><strong>איך מחשבים חזקות ביד מהר:</strong> לא מחשבים את <span class="ltr">3⁵</span> מאפס. כופלים את התוצאה הקודמת ב־3 ומצמצמים: <span class="ltr">3⁴ ≡ 4</span>, אז <span class="ltr">3⁵ ≡ 4 · 3 = 12 ≡ 1</span>.</li>
+<li><strong>אין חוק שמסגיר מי יוצר:</strong> ב־<span class="ltr">Z11*</span> היוצרים הם 2, 6, 7, 8. המספר 3 ראשוני ולא יוצר, 6 ו־8 פריקים ויוצרים. אין קשר לראשוניות — בודקים (למשל במבחן מ־3.5).</li>
+<li><strong>זהירות עם המילה "אחד":</strong> המרצה הדגיש שבחבורה כללית "1" הוא <strong>איבר היחידה</strong> של הפעולה, לא בהכרח המספר 1. בחבורה כפלית מודולו <bdi dir="ltr">p</bdi> זה אכן 1; בחבורה חיבורית זה 0.</li>
+</ul>
+</div></div>
 <h3 id="dh"><span class="sec">3.6</span>פרוטוקול <bdi dir="ltr">Diffie-Hellman</bdi></h3>
 <div class="box formula"><div class="box-head">📐 הפרוטוקול — ארבעה שלבים</div><div class="box-body">
 <div class="tbl-wrap"><table>
@@ -228,6 +249,20 @@ $$B^a = (g^b)^a = g^{ab} = (g^a)^b = A^b \pmod p$$
 </table></div>
 <p>בדיקה ישירה: <span class="ltr">2^(7·11) = 2^77 mod 37 = 32</span> ✓. איב ראתה רק <span class="ltr">p=37, g=2, A=17, B=13</span>.</p>
 </div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — הדוגמה מהלוח: <span class="ltr">p = 11, g = 2, a = 5, b = 3</span></div><div class="box-body">
+<p>2 הוא יוצר של <span class="ltr">Z11*</span> (ראו את הטבלה ב־3.5).</p>
+<div class="tbl-wrap"><table>
+<tr><th></th><th>אליס</th><th>בוב</th></tr>
+<tr><td>ערך ציבורי</td><td class="num">A = 2⁵ = 32 ≡ 10</td><td class="num">B = 2³ = 8</td></tr>
+<tr class="hl"><td>מפתח</td><td class="num">K = 8⁵ mod 11 = 10</td><td class="num">K = 10³ = 1000 mod 11 = 10</td></tr>
+</table></div>
+<p>טריקים שעלו בכיתה לחישוב בלי מחשבון:</p>
+<ul>
+<li><span class="ltr">10³ mod 11</span>: כי <span class="ltr">10 ≡ −1 (mod 11)</span>, אז <span class="ltr">10³ ≡ (−1)³ = −1 ≡ 10</span>.</li>
+<li><span class="ltr">8⁵ mod 11</span>: <span class="ltr">8² = 64 ≡ 9</span>, <span class="ltr">8⁴ ≡ 9² = 81 ≡ 4</span>, <span class="ltr">8⁵ = 8⁴ · 8 ≡ 32 ≡ 10</span>.</li>
+<li>אם בטעות שוכחים לצמצם (<span class="ltr">A = 32</span> במקום 10) — התוצאה הסופית לא משתנה, כי <span class="ltr">32 ≡ 10</span>. אבל החישוב נהיה כבד בלי סיבה.</li>
+</ul>
+</div></div>
 <div class="box example"><div class="box-head">✏️ הדוגמה מהשקף: <span class="ltr">p = 1,000,003, g = 2, a = 123,456, b = 789,012</span></div><div class="box-body">
 <div class="tbl-wrap"><table>
 <tr><th>ערך</th><th>בשקף</th><th>חישוב אמיתי</th></tr>
@@ -242,6 +277,7 @@ $$B^a = (g^b)^a = g^{ab} = (g^a)^b = A^b \pmod p$$
 <div id="dh-out"></div>
 <p style="font-size:14px;color:var(--muted);margin:8px 0 0">המעבדה מראה את כל חישובי ריבוע וכפל, כך שאפשר להשוות שורה מול שורה לחישוב שלך.</p>
 </div>
+
 
 <h3 id="dlp"><span class="sec">3.7</span>בעיית הלוג הדיסקרטי (<bdi dir="ltr">DLP</bdi>)</h3>
 <div class="box formula"><div class="box-head">📐 הבעיה</div><div class="box-body">
@@ -310,6 +346,32 @@ $$g^{im + j} = \beta \iff g^{j} = \beta \cdot \left(g^{m}\right)^{-i}$$
 <div class="row"><label>p <input id="bs-p" value="97"></label><label>g <input id="bs-g" value="5"></label><label>β (y) <input id="bs-y" value="56"></label><button onclick="bsgsRun()">פתור</button></div>
 <div id="bs-out"></div></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — <bdi dir="ltr">BSGS</bdi> על הלוח: <span class="ltr">2^x ≡ 9 (mod 23)</span> — והתעלומה של שתי התשובות</div><div class="box-body">
+<p>בכיתה בחרו <span class="ltr">m = ⌈√23⌉ = 5</span>.</p>
+<p><strong>צעדי תינוק</strong> — <span class="ltr">2^j mod 23</span>:</p>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="max-width:420px">
+<tr><th class="num">j</th><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">4</td></tr>
+<tr><th class="num">2ʲ</th><td class="num">1</td><td class="num">2</td><td class="num">4</td><td class="num">8</td><td class="num">16</td></tr>
+</table></div>
+<p><strong>צעד הענק:</strong> <span class="ltr">2⁵ = 32 ≡ 9</span>, וההופכי שלו <span class="ltr">2^(−5) ≡ 18</span>, כי <span class="ltr">9 · 18 = 162 = 7 · 23 + 1</span>.</p>
+<div class="tbl-wrap"><table>
+<tr><th class="num">i</th><th>β · 18ⁱ</th><th>בטבלה?</th><th>x = i·m + j</th></tr>
+<tr><td class="num">0</td><td class="num">9</td><td>לא</td><td>—</td></tr>
+<tr class="hl"><td class="num">1</td><td class="num">9·18 = 162 ≡ 1</td><td>כן, <span class="ltr">j = 0</span></td><td class="num">1·5 + 0 = 5</td></tr>
+<tr><td class="num">2</td><td class="num">1·18 = 18</td><td>לא</td><td>—</td></tr>
+<tr class="hl"><td class="num">3</td><td class="num">18·18 = 324 ≡ 2</td><td>כן, <span class="ltr">j = 1</span></td><td class="num">3·5 + 1 = 16</td></tr>
+</table></div>
+<p>בדיקה: <span class="ltr">2⁵ ≡ 9</span> ✓ וגם <span class="ltr">2^16 ≡ 9</span> ✓. בכיתה זה נשאר כשאלה פתוחה — <strong>למה יש שתי תשובות?</strong></p>
+<details class="reveal"><summary>ההסבר</summary><div>
+<p><strong>2 אינו יוצר של <span class="ltr">Z23*</span>.</strong> הסדר שלו הוא 11 ולא 22:</p>
+<p class="mathline"><span class="ltr">2^11 = 2048 = 89 · 23 + 1 ≡ 1</span></p>
+<p>לכן החזקות של 2 חוזרות כל 11 צעדים, ו־<span class="ltr">2^x ≡ 9</span> נכון לכל <span class="ltr">x = 5, 16, 27, …</span> — כלומר <span class="ltr">x ≡ 5 (mod 11)</span>. שתי התשובות נכונות, ו־5 היא הקטנה ביותר.</p>
+<p>זו בדיוק הסיבה שב־<bdi dir="ltr">Diffie-Hellman</bdi> דורשים ש־<bdi dir="ltr">g</bdi> יהיה <strong>יוצר</strong> (3.5): עם יוצר, לכל <bdi dir="ltr">y</bdi> יש <bdi dir="ltr">x</bdi> אחד בלבד בטווח <span class="ltr">0 … p−2</span>.</p>
+<p><strong>הערה טכנית:</strong> ב־<bdi dir="ltr">BSGS</bdi> בוחרים <span class="ltr">m = ⌈√n⌉</span> כאשר <bdi dir="ltr">n</bdi> הוא <strong>גודל החבורה</strong> (או הסדר של <bdi dir="ltr">g</bdi>) — כאן 22 או 11, לא 23. מכיוון ש־<span class="ltr">m² = 25 ≥ 22</span>, הבחירה <span class="ltr">m = 5</span> עדיין מכסה את כל האפשרויות, כך שהחישוב תקין.</p>
+</div></details>
+<p><strong>מה המרצה אמר שצריך לזכור:</strong> לא את החישוב, אלא את הרעיון — מחלקים את הבעיה לשני חצאים, שומרים צד אחד בטבלה (בטבלת גיבוב, כך שכל חיפוש הוא צעד אחד), ומשווים אליה את הצד השני. אותו רעיון בדיוק חוזר ב־<bdi dir="ltr">Meet-in-the-Middle</bdi> על <bdi dir="ltr">2-DES</bdi> (<a href="ch4.html#double-des">פרק 4</a>).</p>
+</div></div>
+
 <h3 id="dlp-compare"><span class="sec">3.9</span>השוואת ההתקפות ולמה עקומים אליפטיים</h3>
 <div class="tbl-wrap"><table>
 <tr><th>אלגוריתם</th><th>זמן</th><th>זיכרון</th><th>דטרמיניסטי?</th></tr>
@@ -319,6 +381,16 @@ $$g^{im + j} = \beta \iff g^{j} = \beta \cdot \left(g^{m}\right)^{-i}$$
 <tr><td>Index Calculus</td><td class="num">L_p[1/3, c]</td><td>פולינומי</td><td>לא (הסתברותי)</td></tr>
 </table></div>
 <div class="box warn"><div class="box-head">⚠️ תיקון קטן לשקף 26</div><div class="box-body"><p>השקף מאחד את <bdi dir="ltr">BSGS</bdi> ו־<bdi dir="ltr">Pollard</bdi> ρ לשורה אחת ("זיכרון <span class="ltr">O(√n)</span>, דטרמיניסטי"). זה נכון ל־<bdi dir="ltr">BSGS</bdi>. <span class="term">Pollard ρ</span> מגיע לאותו זמן עם זיכרון קבוע, אבל הוא אלגוריתם <strong>הסתברותי</strong> (מבוסס הליכה אקראית והתנגשויות).</p></div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — איך בוחרים את גודל <bdi dir="ltr">p</bdi> — החשבון מהכיתה</div><div class="box-body">
+<ol>
+<li><strong>כמה פעולות זה "בלתי אפשרי"?</strong> בערך <span class="ltr">2^128</span> — גם כל המחשבים בעולם יחד לא יגיעו לזה.</li>
+<li><strong>אילו רק כוח גס היה קיים</strong> (<span class="ltr">O(p)</span>), היה מספיק <bdi dir="ltr">p</bdi> של כ־128 ביט.</li>
+<li><strong>אבל <bdi dir="ltr">BSGS</bdi> עובד בשורש</strong> (<span class="ltr">O(√p)</span>), כלומר "חוצה" את מספר הביטים. כדי להישאר עם <span class="ltr">2^128</span> צריך <span class="ltr">p ≈ 2^256</span>.</li>
+<li><strong>ו־<bdi dir="ltr">Index Calculus</bdi> מהיר עוד יותר</strong> ב־<span class="ltr">Zp*</span>. היא הסיבה שבפועל משתמשים ב־<bdi dir="ltr">p</bdi> של 2,048 עד 4,096 ביט. המרצה סיפר שבעבר, לפני שההתקפה הזו הייתה ידועה, השתמשו במפתחות קטנים יותר — והם נשברו.</li>
+<li>על עקומים אליפטיים <bdi dir="ltr">Index Calculus</bdi> לא עובד ← שם נשארים כ־256 ביט.</li>
+</ol>
+<p>את הסימון <span class="ltr">L_p[1/3, c]</span> לא צריך לזכור.</p>
+</div></div>
 <div class="box theory"><div class="box-head">📘 שני מונחים מהטבלה</div><div class="box-body">
 <p><strong>תת־אקספוננציאלי:</strong> מהיר יותר מכל <span class="ltr">2^(c·k)</span> (כש־<bdi dir="ltr">k</bdi> הוא מספר הביטים של <bdi dir="ltr">p</bdi>), אבל איטי יותר מכל פולינום ב־<bdi dir="ltr">k</bdi>. הסימון <span class="ltr">L_p[1/3, c]</span> מתאר זמן כזה. בפועל: לא מספיק להכפיל את גודל <bdi dir="ltr">p</bdi> כדי להכפיל את הביטחון, ולכן ב־<span class="ltr">Zp*</span> צריך <bdi dir="ltr">p</bdi> של אלפי ביטים.</p>
 <p><strong>עקומים אליפטיים (<bdi dir="ltr">ECC</bdi>):</strong> חבורה שאיבריה הם נקודות על עקום, והפעולה היא "חיבור נקודות" גאומטרי. גם בה מוגדר <bdi dir="ltr">DLP</bdi>, אבל <bdi dir="ltr">Index Calculus</bdi> לא עובד עליה — נשארות רק התקפות השורש הריבועי. לכן מפתח של 256 ביט בעקום נותן את אותו ביטחון כמו <bdi dir="ltr">p</bdi> של 3,072 ביט ב־<span class="ltr">Zp*</span>.</p>
@@ -331,6 +403,7 @@ $$g^{im + j} = \beta \iff g^{j} = \beta \cdot \left(g^{m}\right)^{-i}$$
 </ul>
 <p>חבורות ציקליות בשימוש: <span class="ltr">Zp*</span>, <span class="ltr">GF(2^m)*</span>, ונקודות על עקום אליפטי (החזקה ביותר לגודל נתון).</p>
 </div></div>
+
 
 <h3 id="mitm"><span class="sec">3.10</span>התקפה על <bdi dir="ltr">DH</bdi>: אדם בתווך (<bdi dir="ltr">Man-in-the-Middle</bdi>)</h3>
 <p><bdi dir="ltr">DH</bdi> פותר הפצת מפתחות, אבל <strong>לא מספק אימות:</strong> אליס לא יודעת שה־<bdi dir="ltr">B</bdi> שקיבלה באמת הגיע מבוב.</p>
@@ -363,6 +436,10 @@ $$g^{im + j} = \beta \iff g^{j} = \beta \cdot \left(g^{m}\right)^{-i}$$
 <p>ומאיפה אליס יודעת שהמפתח הציבורי הוא באמת של בוב? מ<strong>תעודה</strong> (<span class="term">certificate</span>) שגוף מוסמך חתם עליה — זו תשתית ה־<span class="term">PKI</span>. כך עובד <bdi dir="ltr">TLS</bdi>: השרת שולח ערך <bdi dir="ltr">DH</bdi> חתום ותעודה, והדפדפן בודק את שניהם.</p>
 </div></div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — איב לא רק קוראת — היא גם משנה</div><div class="box-body">
+<p>בהתקפת אדם בתווך איב מפענחת כל הודעה עם <span class="ltr">K₁</span> ויכולה גם <strong>לשנות</strong> אותה לפני שהיא מצפינה מחדש עם <span class="ltr">K₂</span>: "תעביר לי 100 שקל" הופך ל"תעביר לי מיליון שקל". אליס ובוב לא יכולים לגלות.</p>
+<p><strong>ואחרי שיש מפתח משותף — מה עושים איתו?</strong> מצפינים איתו בצופן <strong>סימטרי</strong> (פרק 4). המרצה הדגיש שגם ב־<bdi dir="ltr">RSA</bdi>, כשצריך להעביר הרבה מידע, לא מצפינים את כולו ב־<bdi dir="ltr">RSA</bdi> כי הוא איטי: משתמשים ב־<bdi dir="ltr">RSA</bdi> או ב־<bdi dir="ltr">DH</bdi> רק כדי להעביר מפתח, ואת שאר המידע מצפינים סימטרית.</p>
+</div></div>
 <h3 id="ch3-sum"><span class="sec">3.11</span>סיכום ותרגול — פרק 3</h3>
 <div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
 <ul>

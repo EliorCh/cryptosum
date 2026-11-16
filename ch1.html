@@ -31,6 +31,7 @@ window.MathJax = {
 <a class="sub" href="#kerckhoffs">עקרון קרקהוף (Kerckhoffs, 1883)</a>
 <a class="sub" href="#atbash">הצופן העתיק ביותר: אתב״ש</a>
 <a class="sub" href="#caesar">צופן קיסר (Caesar)</a>
+<a class="sub" href="#affine">צופן אפיני — ניסיון לשפר את קיסר (מהשיעור)</a>
 <a class="sub" href="#substitution">צופן החלפה וניתוח תדירויות</a>
 <a class="sub" href="#xor">המפתח הסודי ופעולת XOR</a>
 <a class="sub" href="#otp">פנקס חד־פעמי (One-Time Pad) — סודיות מושלמת</a>
@@ -110,6 +111,10 @@ window.MathJax = {
 </div>
 <div class="keypoint">💡 <b>משפט למבחן:</b> אם הביטחון של מערכת תלוי בכך שהתוקף לא יודע <em>איך</em> היא עובדת — היא מתוכננת לא נכון.</div>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — למה לא כדאי להמציא צופן לבד</div><div class="box-body">
+<p>המרצה הציע ניסוי מחשבתי: "מי שכותב תוך ארבע שעות אלגוריתם הצפנה מאובטח מקבל 100 אלף דולר". הרבה יחשבו שהאלגוריתם שלהם מצוין — ומספר האלגוריתמים הטובים שיצאו יהיה כנראה אפס. גם כשמומחים גדולים מציעים אלגוריתמים חדשים, רבים מהם נשברים כשכל העולם מנסה לתקוף אותם.</p>
+<p><strong>הנקודה החשובה:</strong> לרוב האלגוריתמים בשימוש <strong>אין הוכחה</strong> שהם בטוחים. סומכים עליהם כי הם פורסמו, הרבה אנשים ניסו לשבור אותם, ואף אחד עדיין לא הצליח. זו בדיוק הסיבה שעקרון קרקהוף דורש אלגוריתם ציבורי.</p>
+</div></div>
 <h3 id="atbash"><span class="sec">1.3</span>הצופן העתיק ביותר: אתב״ש</h3>
 <p>האות הראשונה מוחלפת באחרונה, השנייה בלפני־אחרונה, וכן הלאה. בעברית: א↔ת, ב↔ש, ג↔ר… ומכאן השם <strong>את־בש</strong>. באנגלית: <span class="ltr">A↔Z, B↔Y, C↔X</span>.</p>
 <div class="box example"><div class="box-head">✏️ דוגמה מהתנ״ך — ירמיהו כ״ה, כ״ו</div><div class="box-body">
@@ -141,6 +146,39 @@ $$C = (P + k) \bmod 26 \qquad\qquad P = (C - k) \bmod 26$$
 <tr><th>🔑 מרחב מפתחות</th><th>⚡ כוח גס</th><th>📊 חולשה</th></tr>
 <tr><td>רק 25 מפתחות אפשריים (הזזה 1–25).</td><td><strong>כוח גס</strong> (<span class="term">brute force</span>) פירושו לנסות כל מפתח אפשרי עד שיוצא טקסט הגיוני. כאן זה 25 ניסיונות — שבריר שנייה (נסה במעבדה למעלה).</td><td>כל אות מוזזת באותו מרחק, כך שהאות הנפוצה ביותר בטקסט המוצפן היא כנראה <span class="ltr">E</span> המוזזת — ומזה מקבלים את <bdi dir="ltr">k</bdi> מיד.</td></tr>
 </table></div>
+
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — תרגיל הפענוח מהלוח</div><div class="box-body">
+<p>בשיעור הראשון המרצה כתב על הלוח טקסט מוצפן בקיסר עם <span class="ltr">k = 3</span>, והכיתה פענחה אותו בהזזה של <span class="ltr">−3</span>:</p>
+<p class="mathline"><span class="ltr">ZHOFRPH WR FUBSWR FRXUVH</span></p>
+<details class="reveal"><summary>פתרון</summary><div><p class="mathline"><span class="ltr">WELCOME TO CRYPTO COURSE</span></p><p>נסו במעבדה למעלה: הדביקו את הטקסט המוצפן ולחצו על "נסה את כל 25 המפתחות" — שורה <span class="ltr">k = 3</span> היא היחידה שנקראת.</p></div></details>
+</div></div>
+<h3 id="affine"><span class="sec">1.4ב</span>צופן אפיני — ניסיון לשפר את קיסר (מהשיעור)</h3>
+<p>הצופן הזה לא מופיע בשקפים — המרצה פיתח אותו בכיתה כדי להראות שגם "שיפור" של קיסר עדיין נשבר. הרעיון: במקום רק להזיז, גם <strong>לכפול</strong> במספר. המפתח הוא זוג <span class="ltr">(a, b)</span>:</p>
+<div class="box formula"><div class="box-head">📐 הצפנה ופענוח (<bdi dir="ltr">A=0</bdi>, …, <bdi dir="ltr">Z=25</bdi>)</div><div class="box-body">
+$$C = (a \cdot M + b) \bmod 26$$
+$$M = a^{-1} \cdot (C - b) \bmod 26$$
+<p>בפענוח אי אפשר "לחלק ב־<bdi dir="ltr">a</bdi>" — בעולם מודולו מכפילים בהופכי <span class="ltr">a⁻¹</span> (ראו <a href="ch0.html#notation">טבלת הסימונים</a>). קיסר הוא בדיוק המקרה <span class="ltr">a = 1</span>.</p>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ לא כל <bdi dir="ltr">a</bdi> מותר</div><div class="box-body">
+<p>כדי שיהיה <span class="ltr">a⁻¹</span>, צריך <span class="ltr">gcd(a, 26) = 1</span>. מכיוון ש־<span class="ltr">26 = 2 · 13</span>, נפסלים כל הזוגיים ו־13. נשארים 12 ערכים:</p>
+<p class="mathline"><span class="ltr">a ∈ {1, 3, 5, 7, 9, 11, 15, 17, 19, 21, 23, 25}</span></p>
+<p>למה זה חשוב? עם <bdi dir="ltr">a</bdi> זוגי, למשל <span class="ltr">a = 2</span>, גם <bdi dir="ltr">A</bdi> (0) וגם <bdi dir="ltr">N</bdi> (13) מוצפנות לאותה אות (<span class="ltr">2·0 = 0</span>, <span class="ltr">2·13 = 26 ≡ 0</span>) — ואז אי אפשר לפענח.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה מהשיעור: <span class="ltr">a = 5, b = 17</span></div><div class="box-body">
+<p><strong>הצפנת <bdi dir="ltr">B</bdi></strong> (B = 1):</p>
+<p class="mathline"><span class="ltr">5 · 1 + 17 = 22 → W</span></p>
+<p><strong>הופכי:</strong> <span class="ltr">5⁻¹ mod 26 = 21</span>, כי <span class="ltr">5 · 21 = 105 = 4 · 26 + 1</span>.</p>
+<p><strong>פענוח <bdi dir="ltr">W</bdi></strong> (W = 22):</p>
+<p class="mathline"><span class="ltr">21 · (22 − 17) = 105 ≡ 1 → B ✓</span></p>
+</div></div>
+<div class="box theory"><div class="box-head">📘 כמה מפתחות יש?</div><div class="box-body">
+<p>12 אפשרויות ל־<bdi dir="ltr">a</bdi> כפול 26 אפשרויות ל־<bdi dir="ltr">b</bdi>:</p>
+<p class="mathline"><span class="ltr">|K| = 12 · 26 = 312</span></p>
+<p>עדיין שבריר שנייה לכוח גס. המסקנה של המרצה: כל "תעלול" כזה שמגדיל קצת את מרחב המפתחות עדיין משאיר מספר סופי וקטן של אפשרויות — וזה מה שמוביל לרעיון הבא: להחליף כל אות באות שרירותית.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: צופן אפיני</h5>
+<div class="row"><label>טקסט <input id="af-in" class="wide" value="HELLO"></label><label>a <input id="af-a" type="number" value="5"></label><label>b <input id="af-b" type="number" value="17"></label><button onclick="affineRun()">הצפן ופענח</button></div>
+<div id="af-out"></div></div>
 
 <h3 id="substitution"><span class="sec">1.5</span>צופן החלפה וניתוח תדירויות</h3>
 <p>במקום הזזה קבועה — כל אות ממופה לאות אחרת לפי טבלה שרירותית (תמורה של האלף־בית). <strong>הטבלה היא המפתח.</strong></p>
@@ -217,6 +255,12 @@ Plaintext :  01001000   (H)  ← back to the original</pre>
 <div class="card"><div class="ic">2️⃣</div><b>אקראי באמת</b>ממקור פיזיקלי (<bdi dir="ltr">TRNG</bdi>), לא ממחולל פסאודו־אקראי.</div>
 <div class="card"><div class="ic">3️⃣</div><b>לעולם לא לחזור</b>שימוש חוזר במפתח מדליף מידע ושובר את הביטחון.</div>
 </div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — מאיפה בא ה־<bdi dir="ltr">XOR</bdi></div><div class="box-body">
+<p>בשיעור המרצה לא התחיל מ־<bdi dir="ltr">XOR</bdi> אלא מ"קיסר על ביטים": להוסיף לכל ביט של ההודעה ביט של מפתח, מודולו 2:</p>
+<p class="mathline"><span class="ltr">C_i = (M_i + K_i) mod 2</span></p>
+<p>כשבודקים את ארבעת המקרים, מגלים שזו בדיוק טבלת האמת של <bdi dir="ltr">XOR</bdi>. ובמודולו 2 חיבור וחיסור הם אותו דבר (<span class="ltr">+1 ≡ −1</span>), ולכן הפענוח הוא אותה פעולה בדיוק.</p>
+<p><strong>הנימוק לסודיות מושלמת, כפי שהוצג בכיתה:</strong> אם רואים <span class="ltr">C_i = 0</span>, מה הסיכוי ש־<span class="ltr">M_i = 0</span>? בדיוק חצי — כמו בלי לראות כלום. אילו היה יוצא <bdi dir="ltr">90%</bdi>, כבר אפשר היה לנחש.</p>
+</div></div>
 <div class="box warn"><div class="box-head">⚠️ למה שימוש חוזר הורס הכול</div><div class="box-body">
 <p>אם הוצפנו שתי הודעות באותו מפתח, איב מחשבת <bdi dir="ltr">XOR</bdi> בין שני הטקסטים המוצפנים והמפתח מתבטל:</p>
 $$C_1 \oplus C_2 = (P_1 \oplus K) \oplus (P_2 \oplus K) = P_1 \oplus P_2$$
@@ -226,6 +270,9 @@ $$C_1 \oplus C_2 = (P_1 \oplus K) \oplus (P_2 \oplus K) = P_1 \oplus P_2$$
 <p><strong>כי הוא מעביר את הבעיה ולא פותר אותה.</strong> כדי לשלוח <bdi dir="ltr">1GB</bdi> צריך מראש מפתח סודי של <bdi dir="ltr">1GB</bdi>, שהועבר בדרך מאובטחת, שלא ישומש שוב לעולם. אם יש לך ערוץ מאובטח להעביר כזה מפתח — היית יכול להעביר בו את ההודעה עצמה. בנוסף, ייצור כמויות עצומות של אקראיות אמיתית וניהול המפתחות יקרים. זו בדיוק <strong>בעיית הפצת המפתחות</strong> שפרק 2 בא לפתור.</p>
 </div></details>
 
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — "ספרי הצפנים" — איך הפיצו מפתחות פעם</div><div class="box-body">
+<p><strong>ההיסטוריה של הפצת מפתחות:</strong> פעם צבאות העבירו ספרי מפתחות פיזיים בשליחים, וכל צד השתמש באותו ספר. הבעיה: <bdi dir="ltr">OTP</bdi> דורש מפתח באורך כל מה שתרצו לשלוח אי פעם — אי אפשר לשלוח "ספר באורך אינסופי". מכאן הגיעה ההצפנה המודרנית: מפתח קצר שמשתמשים בו <strong>שוב ושוב</strong>, ואלגוריתם שמחזיק מעמד גם כך.</p>
+</div></div>
 <h3 id="attacks"><span class="sec">1.8</span>סוגי התקפות קריפטואנליטיות</h3>
 <p>כשאומרים ש"צופן בטוח", חייבים לשאול: בטוח <strong>מול מה</strong>? מודל התקפה מתאר מה התוקף יודע ומה הוא מסוגל לעשות. ככל שהמודל נותן לתוקף יותר, הצופן שעומד בו חזק יותר. הסדר בטבלה הוא מהחלש לחזק — צופן מודרני צריך לעמוד גם במודל החזק ביותר.</p>
 <div class="tbl-wrap"><table>
@@ -235,6 +282,14 @@ $$C_1 \oplus C_2 = (P_1 \oplus K) \oplus (P_2 \oplus K) = P_1 \oplus P_2$$
 <tr><td>✏️ <span class="term">Chosen Plaintext</span></td><td>יכול להצפין הודעות לבחירתו.</td><td>לשחזר מפתח או לזייף טקסטים מוצפנים.</td><td>ב־<bdi dir="ltr">RSA</bdi> זה תמיד אפשרי — המפתח הציבורי גלוי.</td></tr>
 <tr><td>⚡ <span class="term">Chosen Ciphertext</span></td><td>יכול לפענח טקסטים מוצפנים לבחירתו (חוץ מזה שהוא רוצה לפענח).</td><td>לשחזר טקסט גלוי או מפתח.</td><td>שרת שמחזיר "שגיאת ריפוד" כשמשהו לא תקין בפענוח — התוקף שולח לו טקסטים מוצפנים מעוותים ולומד מהתגובות (<span class="term">padding oracle</span>). המודל החזק ביותר.</td></tr>
 </table></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — מתי צופן נחשב "שבור", ומאיפה התוקף משיג טקסט גלוי</div><div class="box-body">
+<ul>
+<li><strong>המטרה של התוקף</strong> היא לא רק המפתח. גם אם הוא מצליח לפענח הודעה <em>חדשה</em> שלא ראה קודם — הצופן שבור.</li>
+<li><strong>אפילו ביט אחד מספיק:</strong> לפי ההגדרה בשיעור, אם התוקף מנחש ביט אחד של המפתח או של ההודעה בהסתברות טובה מ־<bdi dir="ltr">50%</bdi> (חצי ועוד משהו קטן), המערכת נחשבת שבורה — "זורקים אותה לפח".</li>
+<li><strong>תמיד נותנים לתוקף את מירב הכוח:</strong> מערכת מודרנית צריכה לעמוד גם במודל החזק ביותר (<bdi dir="ltr">Chosen Ciphertext</bdi>).</li>
+<li><strong>איך משיגים <bdi dir="ltr">Known Plaintext</bdi> במציאות:</strong> התוקף משכנע אותך לשלוח הודעה שהוא יודע מה כתוב בה ("שלח את המייל הזה למזכירות"). עכשיו יש לו גם את <bdi dir="ltr">M</bdi> וגם את <bdi dir="ltr">C</bdi>.</li>
+</ul>
+</div></div>
 <h4>טקסונומיה: התקפות קלאסיות מול התקפות מימוש</h4>
 <div class="tbl-wrap"><table>
 <tr><th>קלאסיות (תוקפות את המתמטיקה)</th><th>מימוש (תוקפות את הקוד או החומרה)</th></tr>
@@ -245,6 +300,32 @@ $$C_1 \oplus C_2 = (P_1 \oplus K) \oplus (P_2 \oplus K) = P_1 \oplus P_2$$
 <tr><td><strong>יום הולדת:</strong> בקבוצה של 23 אנשים יש סיכוי של מעל <bdi dir="ltr">50%</bdi> ששניים חולקים יום הולדת. באותו אופן, מוצאים שני קלטים עם אותו פלט הרבה יותר מהר משנדמה.</td><td><strong><span class="term">Padding Oracle</span>:</strong> ניצול הודעות שגיאה (למשל <bdi dir="ltr">POODLE</bdi>).</td></tr>
 </table></div>
 <div class="keypoint">💡 <b>אלגוריתם מושלם עדיין יכול להישבר דרך המימוש שלו.</b> זה יחזור בפרק 2 עם התקפת ערוץ הצד על ריבוע וכפל.</div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — התקפת תזמון על בדיקת סיסמה</div><div class="box-body">
+<p>הדוגמה שהמרצה נתן להתקפת ערוץ צד — בלי שום קריפטוגרפיה. קוד רגיל שבודק סיסמה תו אחרי תו, ו<strong>עוצר בתו הראשון שלא מתאים</strong> (כי זה יעיל):</p>
+<pre>for (i = 0; i &lt; len; i++) {
+    if (input[i] != secret[i])
+        return false;      <span class="c">// early exit - fast "no"</span>
+}
+return true;</pre>
+<p><strong>הבעיה:</strong> תשובה שגויה מגיעה מהר יותר כשהתו הראשון שגוי, ולאט יותר כשכמה תווים ראשונים נכונים. התוקף מודד את זמן התגובה:</p>
+<ol>
+<li>שולח <span class="ltr">AAAA…</span>, <span class="ltr">BAAA…</span>, … — הניחוש שלוקח <strong>יותר זמן</strong> הוא זה שהתו הראשון שלו נכון.</li>
+<li>קובע את התו הראשון, ועובר לשני. וכך הלאה.</li>
+</ol>
+<p><strong>החשבון</strong> (סיסמה של 8 תווים, 72 תווים אפשריים: 26 קטנות + 26 גדולות + 10 ספרות + 10 סימנים):</p>
+<div class="tbl-wrap"><table>
+<tr><th>שיטה</th><th>מספר ניסיונות</th></tr>
+<tr><td>כוח גס על כל הסיסמה</td><td class="num">72^8 ≈ 7.2 × 10^14</td></tr>
+<tr class="hl"><td>תזמון — תו אחרי תו</td><td class="num">72 · 8 = 576</td></tr>
+</table></div>
+<p>מהמעריך הפכנו למכפלה. לפי המרצה זה עובד אפילו דרך האינטרנט, כשממצעים הרבה מדידות. <strong>התיקון:</strong> השוואה בזמן קבוע — תמיד עוברים על כל התווים, ומחליטים רק בסוף.</p>
+<p>המרצה הזכיר גם מחקרים שבהם שחזרו מפתח פרטי ממדידת החום או המתח של המעבד — אותו רעיון בדיוק.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: התקפת תזמון (סימולציה)</h5>
+<p style="margin:0 0 8px">המחשב מחזיק סיסמה סודית. כל ניחוש מחזיר רק "שגוי" — וגם את "הזמן" (כמה תווים נבדקו עד העצירה).</p>
+<div class="row"><label>ניחוש <input id="tm-g" class="wide" value="AAAAAA"></label><button onclick="timingGuess()">בדוק ניחוש</button><button class="ghost" onclick="timingAttack()">הרץ את ההתקפה</button><button class="ghost" onclick="timingNew()">סיסמה חדשה</button></div>
+<div id="tm-out"></div></div>
+
 
 <h3 id="rng"><span class="sec">1.9</span>מחוללי מספרים אקראיים (<bdi dir="ltr">RNG</bdi>)</h3>
 <div class="tbl-wrap"><table>
@@ -303,7 +384,15 @@ $$C_i = E_K(P_i) \qquad P_i = D_K(C_i)$$
 </svg>
 <figcaption>התקפת החלפת בלוקים על <bdi dir="ltr">ECB</bdi>: איב לא שברה את <bdi dir="ltr">AES</bdi>, היא רק סידרה מחדש בלוקים.</figcaption>
 </figure>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — עוד שתי התקפות על הדוגמה של הבנק</div><div class="box-body">
+<ul>
+<li><strong>שידור חוזר (<span class="term">replay</span>):</strong> איב מקליטה את <span class="ltr">C1 C2 C3</span> של העברה לגיטימית ושולחת אותה לבנק שוב ושוב. כל פעם הבנק מעביר את הכסף מחדש — וכל ההודעות "תקינות", כי הן באמת הוצפנו במפתח הנכון. (זו התקפה שגם <bdi dir="ltr">CBC</bdi> לבדו לא מונע; צריך מספר סידורי או חותמת זמן בתוך ההודעה.)</li>
+<li><strong>שינוי ביט:</strong> אם איב הופכת ביט בבלוק הסכום, אין לה מושג איזה סכום ייצא — אבל היא כבר "שיחקה" בהודעה בלי שנתפסה.</li>
+</ul>
+<p>המרצה הדגיש: את הסכומים בדוגמת השקף (1,000 / 9,000) לא צריך לזכור למבחן — צריך להבין למה בלוקים עצמאיים מאפשרים את המשחקים האלה.</p>
+</div></div>
 <div class="keypoint">💡 <b><bdi dir="ltr">ECB</bdi> מדליף מבנה ומאפשר "גזור והדבק".</b> כל בלוק מוצפן הוא יחידה עצמאית תקפה — אפשר להחליף, לשכפל ולהזיז בלוקים, והפענוח יצליח. הצפנה טובה לא מבטיחה <strong>שלמות</strong> (integrity).</div>
+
 
 <h3 id="modes"><span class="sec">1.12</span>מצבי הפעלה (<bdi dir="ltr">Modes of Operation</bdi>) והתיקון: <bdi dir="ltr">CBC</bdi></h3>
 <p>צופן בלוקים לבדו מצפין בלוק אחד. מצב ההפעלה מגדיר איך מצפינים הודעה שלמה.</p>
@@ -388,6 +477,10 @@ $$C_0 = IV \qquad C_i = E_K(P_i \oplus C_{i-1}) \qquad P_i = D_K(C_i) \oplus C_{
 <details class="reveal"><summary>פתרון</summary><div><p>את קווי המתאר של התמונה המקורית ("הפינגווין של <bdi dir="ltr">ECB</bdi>"). כל בלוק לבן זהה הופך לאותו בלוק מוצפן, אז אזורים אחידים נשארים אחידים — המבנה דולף.</p></div></details>
 <p><strong>4.</strong> סדר מהחלש לחזק: <bdi dir="ltr">Chosen Plaintext, Ciphertext-Only, Chosen Ciphertext, Known Plaintext</bdi>.</p>
 <details class="reveal"><summary>פתרון</summary><div><p>Ciphertext-Only ← Known Plaintext ← Chosen Plaintext ← Chosen Ciphertext.</p></div></details>
+<p><strong>5.</strong> צופן אפיני עם <span class="ltr">a = 5, b = 17</span>. הצפן את <span class="ltr">HI</span>, ואז פענח בחזרה (נתון: <span class="ltr">5⁻¹ mod 26 = 21</span>).</p>
+<details class="reveal"><summary>פתרון</summary><div><p>H = 7: <span class="ltr">5·7 + 17 = 52 ≡ 0 → A</span>. I = 8: <span class="ltr">5·8 + 17 = 57 ≡ 5 → F</span>. ההצפנה: <span class="ltr">AF</span>.</p><p>פענוח <bdi dir="ltr">A</bdi>: <span class="ltr">21·(0 − 17) = −357 ≡ 7 → H</span>. פענוח <bdi dir="ltr">F</bdi>: <span class="ltr">21·(5 − 17) = −252 ≡ 8 → I</span> ✓.</p></div></details>
+<p><strong>6.</strong> למה בצופן אפיני אסור לבחור <span class="ltr">a = 13</span>?</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">gcd(13, 26) = 13 ≠ 1</span>, ולכן אין ל־13 הופכי מודולו 26. בפועל: כל אות זוגית הופכת ל־<bdi dir="ltr">b</bdi> וכל אות אי־זוגית ל־<span class="ltr">13 + b</span> — רק שתי אותיות אפשריות, ואי אפשר לפענח.</p></div></details>
 </div></div>
 
 <div class="pager"><a class="prev" href="ch0.html"><small>▶ הקודם</small>פרק 0 — ידע מקדים וסימונים</a><a class="next" href="ch2.html"><small>הבא ◀</small>פרק 2 — הצפנה אסימטרית ו־<bdi dir="ltr">RSA</bdi></a></div>

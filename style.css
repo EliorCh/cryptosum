@@ -136,4 +136,6 @@ figure svg { direction: ltr; }
 main > h2.chapter:first-child { margin-top: 0; }
 p.mathline, .box-body p.mathline, main p.mathline { direction: ltr; text-align: center; }
 table.ltr-table th, table.ltr-table td { text-align: center; }
+.box.lecture { border-color: #e2cdb0; }
+.box.lecture .box-head { background: #f6ecdf; color: #8a4b12; }
 .prereq { background: #eef4ff; border: 1px solid #c9d9fb; border-radius: 12px; padding: 10px 16px; margin: 0 0 18px; font-size: 15.5px; }
