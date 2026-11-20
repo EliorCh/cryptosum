@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>פרק 5 — הצפנה סימטרית: AES · קריפטוגרפיה שימושית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code','svg'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+<script data-goatcounter="https://eliorch.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<!-- mta-theme --><link rel="stylesheet" href="../main/site-theme.css"><script src="../main/site-theme.js" data-course="crypto" data-fam="cr" data-footer="body"></script><!-- /mta-theme -->
+</head>
+<body>
+<button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
+<div class="layout">
+<nav class="side" id="sidebar">
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–6 + תרגיל בית 1</small></div>
+<div class="progress"><span id="prog"></span></div>
+<a class="chap" href="index.html">דף הבית</a>
+<a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
+<a class="chap" href="ch1.html">פרק 1 — מבוא לקריפטוגרפיה</a>
+<a class="chap" href="ch2.html">פרק 2 — הצפנה אסימטרית ו־RSA</a>
+<a class="chap" href="ch3.html">פרק 3 — לוג דיסקרטי ו־Diffie-Hellman</a>
+<a class="chap" href="hw1.html">תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a>
+<a class="chap" href="ch4.html">פרק 4 — הצפנה סימטרית: DES</a>
+<a class="chap here" href="ch5.html">פרק 5 — הצפנה סימטרית: AES</a>
+<a class="sub" href="#ch5">פתיחה</a>
+<a class="sub" href="#aes-history">למה צריך יורש ל־DES, ותחרות ה־NIST</a>
+<a class="sub" href="#aes-params">פרמטרים והשוואה ל־DES</a>
+<a class="sub" href="#aes-state">ה־State: מטריצה של 4×4 בתים</a>
+<a class="sub" href="#aes-round">מבנה הסבב — ארבעה שלבים</a>
+<a class="sub" href="#subbytes">שלב 1: SubBytes</a>
+<a class="sub" href="#shiftrows">שלב 2: ShiftRows</a>
+<a class="sub" href="#mixcolumns">שלב 3: MixColumns — ברמת הרעיון</a>
+<a class="sub" href="#addroundkey">שלב 4: AddRoundKey ותזמון המפתחות</a>
+<a class="sub" href="#aes-last-round">הסבב האחרון בלי MixColumns, ומעבדה</a>
+<a class="sub" href="#aes-decrypt">פענוח</a>
+<a class="sub" href="#galois">העשרה: שדות גלואה — <span class="ltr">GF(2^8)</span></a>
+<a class="sub" href="#ch5-sum">סיכום ותרגול — פרק 5</a>
+<a class="chap" href="ch6.html">פרק 6 — חתימות דיגיטליות</a>
+</nav>
+<main id="top">
+<!-- =============================== CHAPTER 5 =============================== -->
+<h2 class="chapter" id="ch5"><span class="num">5</span>הצפנה סימטרית: <bdi dir="ltr">AES</bdi></h2>
+<div class="prereq">📚 <strong>לפני הפרק כדאי להכיר:</strong> בלבול ופיזור ואפקט המפולת (<a href="ch4.html#confusion-diffusion">4.3</a>), מבנה <bdi dir="ltr">DES</bdi> וה־<bdi dir="ltr">S-box</bdi> שלו (<a href="ch4.html#des-overview">4.4</a>, <a href="ch4.html#sbox">4.8</a>), XOR (<a href="ch1.html#xor">1.6</a>).</div>
+<p class="hook"><bdi dir="ltr">AES</bdi> הוא הצופן הסימטרי הנפוץ ביותר בעולם — הוא מצפין את רוב התעבורה באינטרנט (<bdi dir="ltr">TLS</bdi>), דיסקים, <bdi dir="ltr">Wi-Fi</bdi> ו־<bdi dir="ltr">WhatsApp</bdi>. בשיעור (15.11) המרצה הדגיש שבבחינה לא צריך לשנן לאן עובר כל ביט, אלא להבין את <strong>הרעיון</strong> של כל שלב ואיך הוא שונה מ־<bdi dir="ltr">DES</bdi>. הפרק הזה בנוי בדיוק כך.</p>
+
+<h3 id="aes-history"><span class="sec">5.1</span>למה צריך יורש ל־<bdi dir="ltr">DES</bdi>, ותחרות ה־<bdi dir="ltr">NIST</bdi></h3>
+<p>בפרק 4 ראינו ש־<bdi dir="ltr">DES</bdi> נשבר בכוח גס בגלל מפתח של 56 ביט בלבד, ו־<bdi dir="ltr">3-DES</bdi> איטי. היה צריך צופן חדש — והפעם בחרו אותו בתהליך פתוח לגמרי.</p>
+<div class="tbl-wrap"><table>
+<tr><th>שנה</th><th>מה קרה</th></tr>
+<tr><td class="num">1997</td><td><bdi dir="ltr">NIST</bdi> (גוף התקינה האמריקאי) פרסם קול קורא פומבי לצופן בלוקים חדש.</td></tr>
+<tr><td class="num">1998</td><td>הוגשו 15 מועמדים מכל העולם.</td></tr>
+<tr><td class="num">1999</td><td>5 עלו לגמר: <bdi dir="ltr">MARS, RC6, Rijndael, Serpent, Twofish</bdi>.</td></tr>
+<tr><td class="num">2000</td><td><bdi dir="ltr">Rijndael</bdi> נבחר כזוכה.</td></tr>
+<tr><td class="num">2001</td><td>פורסם כתקן <bdi dir="ltr">AES</bdi> (<span class="term">FIPS 197</span>).</td></tr>
+</table></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — מה היה שונה הפעם</div><div class="box-body">
+<ul>
+<li><strong>תהליך פתוח:</strong> בניגוד ל־<bdi dir="ltr">DES</bdi>, ש"הגיע מוכן" מ־<bdi dir="ltr">IBM</bdi> וה־<bdi dir="ltr">NSA</bdi> (ראו החשדות ב־4.11), כאן כל הקריפטוגרפים בעולם ניסו לשבור את המועמדים. בדיוק אותו תהליך התקיים לאחרונה בתחרות של הצפנה פוסט־קוונטית — נושא בהמשך הקורס.</li>
+<li><strong>למה <bdi dir="ltr">Rijndael</bdi> ניצח:</strong> לא רק בגלל הביטחון, אלא גם בגלל <strong>מהירות</strong> והתאמה טובה <strong>לחומרה</strong>.</li>
+<li><strong>הממציאים:</strong> שני חוקרים צעירים מבלגיה, יואן דאמן (<span class="term">Joan Daemen</span>) ווינסנט ריימן (<span class="term">Vincent Rijmen</span>). השם <bdi dir="ltr">Rijndael</bdi> מורכב משמות המשפחה שלהם.</li>
+<li><strong>המצב היום:</strong> אחרי כ־26 שנה אין שבירה מעשית ידועה של <bdi dir="ltr">AES</bdi>. הוא נתמך כמעט בכל רכיב (במעבדים מודרניים יש לו אפילו פקודות חומרה ייעודיות).</li>
+</ul>
+</div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — <bdi dir="ltr">AES</bdi> ומידע מסווג (ומה ההבדל מהמקור)</div><div class="box-body">
+<p><strong>מה המרצה אמר:</strong> ה־<bdi dir="ltr">NSA</bdi> אישרה להשתמש ב־<bdi dir="ltr">AES</bdi> גם למידע מסווג, "אם לא משתמשים במפתח הכי קטן". (התמלול בקטע הזה לא ברור לגמרי.)</p>
+<p><strong>מה כתוב במדיניות הרשמית — ההבדל:</strong></p>
+<ul>
+<li><strong>המדיניות המקורית</strong> (<span class="term">CNSSP-15</span>, 2003): <strong>כל</strong> גדלי המפתח של <bdi dir="ltr">AES</bdi>, כולל 128, מספיקים עד רמת <bdi dir="ltr">SECRET</bdi>. לרמת <bdi dir="ltr">TOP SECRET</bdi> נדרש מפתח של 192 או 256 ביט. כלומר "לא המפתח הקטן" נכון רק לרמה הגבוהה ביותר.</li>
+<li><strong>מאז 2015</strong> (חבילת <span class="term">CNSA</span>): ה־<bdi dir="ltr">NSA</bdi> דורשת <bdi dir="ltr">AES-256</bdi> לכל רמות הסיווג.</li>
+</ul>
+<p>לא סביר שישאלו על זה בבחינה; זה הקשר.</p>
+</div></div>
+
+<h3 id="aes-params"><span class="sec">5.2</span>פרמטרים והשוואה ל־<bdi dir="ltr">DES</bdi></h3>
+<div class="box formula"><div class="box-head">📐 הפרמטרים של <bdi dir="ltr">AES</bdi></div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>גרסה</th><th>גודל בלוק</th><th>גודל מפתח</th><th>מספר סבבים</th></tr>
+<tr><td>AES-128</td><td class="num">128 bits</td><td class="num">128 bits</td><td class="num">10</td></tr>
+<tr><td>AES-192</td><td class="num">128 bits</td><td class="num">192 bits</td><td class="num">12</td></tr>
+<tr><td>AES-256</td><td class="num">128 bits</td><td class="num">256 bits</td><td class="num">14</td></tr>
+</table></div>
+<p><strong>הבלוק תמיד 128 ביט</strong> (16 בתים) — רק המפתח ומספר הסבבים משתנים. לפי המרצה, "גם 128 מספיק חזק עד היום": כוח גס על <span class="ltr">2^128</span> מפתחות לא אפשרי (ראו <a href="ch0.html#security-bits">0.4</a>).</p>
+</div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — למה מפתח ארוך יותר = יותר סבבים?</div><div class="box-body"><p>סטודנט שאל, והתשובה: מי שבוחר במפתח ארוך יותר רוצה ביטחון גבוה יותר — אז מוסיפים סבבים כדי שגם המבנה עצמו (לא רק גודל המפתח) יהיה חזק יותר, עם יותר מרווח ביטחון מול התקפות אנליטיות.</p></div></div>
+<div class="tbl-wrap"><table>
+<tr><th></th><th><bdi dir="ltr">DES</bdi> (פרק 4)</th><th>AES</th></tr>
+<tr><td>גודל בלוק</td><td class="num">64 bits</td><td class="num">128 bits</td></tr>
+<tr><td>גודל מפתח</td><td class="num">56 bits</td><td class="num">128 / 192 / 256 bits</td></tr>
+<tr><td>מספר סבבים</td><td class="num">16</td><td class="num">10 / 12 / 14</td></tr>
+<tr><td>יחידת עבודה</td><td><strong>ביט</strong> — תמורות של ביטים בודדים</td><td><strong>בית</strong> — 8 ביטים בכל פעם</td></tr>
+<tr><td>מבנה</td><td>רשת פייסטל — כל סבב מצפין <strong>חצי</strong> בלוק</td><td>רשת החלפה־תמורה (<span class="term">SPN</span>) — כל סבב משנה את <strong>כל</strong> הבלוק</td></tr>
+<tr><td>S-box</td><td>8 תיבות, כל אחת 6 ← 4 ביט, לא הפיכות</td><td>תיבה אחת, 8 ← 8 ביט, <strong>הפיכה</strong></td></tr>
+<tr><td>פענוח</td><td>אותו אלגוריתם, מפתחות בסדר הפוך</td><td>שלבים הפוכים בסדר הפוך (5.10)</td></tr>
+<tr><td>מצב היום</td><td>שבור (כוח גס)</td><td>אין שבירה מעשית ידועה</td></tr>
+</table></div>
+<div class="keypoint">💡 <b>ההבדל המבני החשוב:</b> בפייסטל <bdi dir="ltr">f</bdi> לא צריכה להיות הפיכה, כי רק חצי מוצפן בכל פעם (4.6). ב־<bdi dir="ltr">AES</bdi> כל הבלוק מוצפן בכל סבב, ולכן <strong>כל</strong> שלב חייב להיות הפיך — אחרת אי אפשר לפענח.</div>
+
+<h3 id="aes-state"><span class="sec">5.3</span>ה־<bdi dir="ltr">State</bdi>: מטריצה של 4×4 בתים</h3>
+<p><bdi dir="ltr">AES</bdi> לא רואה את הבלוק כ־128 ביטים ברצף, אלא כ־16 בתים מסודרים במטריצה של 4 שורות על 4 עמודות, שנקראת <strong>State</strong>. הבתים נכנסים <strong>עמודה אחרי עמודה:</strong></p>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="max-width:420px">
+<tr><th></th><th>col 0</th><th>col 1</th><th>col 2</th><th>col 3</th></tr>
+<tr><th>row 0</th><td class="num">b0</td><td class="num">b4</td><td class="num">b8</td><td class="num">b12</td></tr>
+<tr><th>row 1</th><td class="num">b1</td><td class="num">b5</td><td class="num">b9</td><td class="num">b13</td></tr>
+<tr><th>row 2</th><td class="num">b2</td><td class="num">b6</td><td class="num">b10</td><td class="num">b14</td></tr>
+<tr><th>row 3</th><td class="num">b3</td><td class="num">b7</td><td class="num">b11</td><td class="num">b15</td></tr>
+</table></div>
+<p>בית אחד = 8 ביטים = שתי ספרות <bdi dir="ltr">hex</bdi> (בסיס 16: <span class="ltr">0…9, a…f</span>). למשל הבית <span class="ltr">0x32</span> הוא <span class="ltr">0011 0010</span> בבינארי, כלומר 50 בעשרוני. התחילית <span class="ltr">0x</span> רק מסמנת "<bdi dir="ltr">hex</bdi>".</p>
+
+<h3 id="aes-round"><span class="sec">5.4</span>מבנה הסבב — ארבעה שלבים</h3>
+<figure>
+<svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono,monospace" font-size="15">
+  <defs><marker id="a1" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#14213d"/></marker></defs>
+  <g text-anchor="middle">
+  <rect x="230" y="10" width="240" height="34" rx="6" fill="#fff" stroke="#555"/><text x="350" y="32">plaintext (16 bytes)</text>
+  <rect x="230" y="62" width="240" height="34" rx="6" fill="#edf8f0" stroke="#15803d"/><text x="350" y="84">AddRoundKey (K0)</text>
+  <rect x="180" y="118" width="340" height="170" rx="12" fill="#f4efff" stroke="#7c3aed" stroke-dasharray="6 4"/>
+  <text x="600" y="140" fill="#7c3aed" font-size="13">rounds 1 … 9</text>
+  <text x="600" y="158" fill="#7c3aed" font-size="13">(AES-128)</text>
+  <rect x="230" y="130" width="240" height="30" rx="6" fill="#7c3aed"/><text x="350" y="150" fill="#fff">1. SubBytes</text>
+  <rect x="230" y="168" width="240" height="30" rx="6" fill="#2563eb"/><text x="350" y="188" fill="#fff">2. ShiftRows</text>
+  <rect x="230" y="206" width="240" height="30" rx="6" fill="#2563eb"/><text x="350" y="226" fill="#fff">3. MixColumns</text>
+  <rect x="230" y="244" width="240" height="30" rx="6" fill="#15803d"/><text x="350" y="264" fill="#fff">4. AddRoundKey (Ki)</text>
+  <rect x="180" y="300" width="340" height="40" rx="10" fill="#fff8e7" stroke="#b45309"/>
+  <text x="350" y="325" font-size="13">round 10: SubBytes, ShiftRows, AddRoundKey</text>
+  <rect x="230" y="348" width="240" height="30" rx="6" fill="#14213d"/><text x="350" y="368" fill="#fff">ciphertext</text>
+  </g>
+  <g stroke="#14213d" stroke-width="2" fill="none" marker-end="url(#a1)">
+  <path d="M350 44 V60"/><path d="M350 96 V128"/><path d="M350 288 V298"/><path d="M350 340 V346"/>
+  </g>
+</svg>
+<figcaption><bdi dir="ltr">AES-128</bdi>: הוספת מפתח התחלתית, 9 סבבים מלאים, וסבב אחרון בלי <bdi dir="ltr">MixColumns</bdi>.</figcaption>
+</figure>
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>מה הוא עושה</th><th>תפקיד (שאנון, 4.3)</th></tr>
+<tr><td><strong>SubBytes</strong></td><td>מחליף כל בית לפי טבלה קבועה (<bdi dir="ltr">S-box</bdi>).</td><td>בלבול — הרכיב הלא־ליניארי</td></tr>
+<tr><td><strong>ShiftRows</strong></td><td>מזיז כל שורה מעגלית שמאלה ב־0, 1, 2, 3 מקומות.</td><td>פיזור בין <strong>עמודות</strong></td></tr>
+<tr><td><strong>MixColumns</strong></td><td>מערבב את 4 הבתים של כל עמודה (כפל במטריצה קבועה).</td><td>פיזור בתוך <strong>עמודה</strong></td></tr>
+<tr><td><strong>AddRoundKey</strong></td><td><bdi dir="ltr">XOR</bdi> של ה־<bdi dir="ltr">State</bdi> עם מפתח הסבב (128 ביט).</td><td>המקום היחיד שבו המפתח נכנס</td></tr>
+</table></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — סגנון הבחינה</div><div class="box-body"><p>בשיחה עם סטודנטים בהפסקה המרצה אמר (התמלול לא חד לגמרי) שלא צריך לשנן בדיוק לאן עובר כל ביט בכל שלב. צריך להבין <strong>את הרעיון:</strong> מה כל שלב עושה ולמה, באילו מפתחות משתמשים, ואיך אפשר לתקוף. שאלות פתוחות יכולות להיות מסוג "למה זה פגיע?" או "הצע אלגוריתם שמשלב כמה רכיבים".</p></div></div>
+
+<h3 id="subbytes"><span class="sec">5.5</span>שלב <bdi dir="ltr">1</bdi>: <bdi dir="ltr">SubBytes</bdi></h3>
+<p>כל אחד מ־16 הבתים מוחלף <strong>בנפרד</strong> לפי טבלה קבועה אחת: ה־<bdi dir="ltr">S-box</bdi> של <bdi dir="ltr">AES</bdi>. היא ממפה 8 ביטים ל־8 ביטים (ב־<bdi dir="ltr">DES</bdi> המיפוי היה 6 ← 4).</p>
+<div class="box formula"><div class="box-head">📐 איך קוראים את הטבלה</div><div class="box-body">
+<p>כותבים את הבית בשתי ספרות <bdi dir="ltr">hex</bdi>. <strong>הספרה הראשונה</strong> (4 הביטים העליונים) בוחרת <strong>שורה</strong>, <strong>הספרה השנייה</strong> (4 הביטים התחתונים) בוחרת <strong>עמודה</strong>.</p>
+<p>הדוגמה מהשקף: הבית <span class="ltr">0x32</span> ← שורה 3, עמודה 2 ← בתא כתוב <span class="ltr">23</span>.</p>
+<p class="mathline"><span class="ltr">SubBytes(0x32) = 0x23</span></p>
+<p>עוד שתי בדיקות: <span class="ltr">0x00 → 0x63</span> (שורה 0 עמודה 0), <span class="ltr">0x53 → 0xed</span> (שורה 5 עמודה 3).</p>
+</div></div>
+<div class="lab"><h5>מעבדה: טבלת ה־<bdi dir="ltr">S-box</bdi> של <bdi dir="ltr">AES</bdi></h5>
+<div class="row"><label>בית (<bdi dir="ltr">hex</bdi>) <input id="asb-x" value="32"></label><button onclick="aesSboxRun()">חפש</button><button class="ghost" onclick="aesSboxRun(true)">הפוך (<bdi dir="ltr">S-box</bdi> הפוכה)</button></div>
+<div id="asb-out"></div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — ה־<bdi dir="ltr">S-box</bdi> של <bdi dir="ltr">AES</bdi> הפיכה</div><div class="box-body">
+<p>סטודנט שאל אם אפשר לחזור אחורה מה־<bdi dir="ltr">S-box</bdi>. התשובה: <strong>כן</strong> — זו תמורה על כל 256 הערכים, בלי כפילויות (כל ערך מופיע בטבלה פעם אחת בדיוק). לכן יש טבלה הפוכה, ואפשר לבטל את השלב הזה לבדו. מה שמונע מתוקף לחזור אחורה הוא ה־<bdi dir="ltr">XOR</bdi> עם המפתח (<bdi dir="ltr">AddRoundKey</bdi>): בלי המפתח אי אפשר לבטל אותו.</p>
+<p>זה הפוך מ־<bdi dir="ltr">DES</bdi>, שבו כל ערך הופיע 4 פעמים ב־<bdi dir="ltr">S-box</bdi> (4.8) — שם זה לא הפריע, בזכות מבנה פייסטל.</p>
+</div></div>
+<div class="box exercise"><div class="box-head">🏋️ תרגול קריאה</div><div class="box-body">
+<p>היעזר במעבדה (או בטבלה שהיא מציגה) ומצא: <span class="ltr">SubBytes(0x00)</span>, <span class="ltr">SubBytes(0x19)</span>, <span class="ltr">SubBytes(0xa0)</span>.</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">0x00</span> ← שורה 0 עמודה 0 ← <span class="ltr">0x63</span>. <span class="ltr">0x19</span> ← שורה 1 עמודה 9 ← <span class="ltr">0xd4</span>. <span class="ltr">0xa0</span> ← שורה <bdi dir="ltr">a</bdi> (10) עמודה 0 ← <span class="ltr">0xe0</span>.</p></div></details>
+</div></div>
+
+<h3 id="shiftrows"><span class="sec">5.6</span>שלב <bdi dir="ltr">2</bdi>: <bdi dir="ltr">ShiftRows</bdi></h3>
+<div class="box formula"><div class="box-head">📐 הכלל</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>שורה</th><th>הזזה מעגלית שמאלה</th></tr>
+<tr><td class="num">0</td><td>0 — לא זזה</td></tr>
+<tr><td class="num">1</td><td>מקום אחד</td></tr>
+<tr><td class="num">2</td><td>שני מקומות</td></tr>
+<tr><td class="num">3</td><td>שלושה מקומות</td></tr>
+</table></div>
+<p>"מעגלית" = מה שיוצא משמאל חוזר מימין, כמו הרוטציה בתזמון המפתחות של <bdi dir="ltr">DES</bdi> (4.9).</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה: <bdi dir="ltr">State</bdi> לפני ואחרי</div><div class="box-body">
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table">
+<tr><th colspan="4">before</th><th></th><th colspan="4">after ShiftRows</th></tr>
+<tr><td class="num">00</td><td class="num">04</td><td class="num">08</td><td class="num">0c</td><td>←0</td><td class="num">00</td><td class="num">04</td><td class="num">08</td><td class="num">0c</td></tr>
+<tr><td class="num">01</td><td class="num">05</td><td class="num">09</td><td class="num">0d</td><td>←1</td><td class="num">05</td><td class="num">09</td><td class="num">0d</td><td class="num">01</td></tr>
+<tr><td class="num">02</td><td class="num">06</td><td class="num">0a</td><td class="num">0e</td><td>←2</td><td class="num">0a</td><td class="num">0e</td><td class="num">02</td><td class="num">06</td></tr>
+<tr><td class="num">03</td><td class="num">07</td><td class="num">0b</td><td class="num">0f</td><td>←3</td><td class="num">0f</td><td class="num">03</td><td class="num">07</td><td class="num">0b</td></tr>
+</table></div>
+<p>שימו לב לעמודה הראשונה אחרי ההזזה: <span class="ltr">00, 05, 0a, 0f</span> — בית אחד מכל עמודה מקורית. זו כל המטרה: אחרי <bdi dir="ltr">ShiftRows</bdi> כל עמודה מכילה בתים מ<strong>ארבע עמודות שונות</strong>, כך ש־<bdi dir="ltr">MixColumns</bdi> יערבב ביניהן.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: <bdi dir="ltr">ShiftRows</bdi></h5>
+<div class="row"><label>State (32 hex) <input id="sr-x" class="wide" value="000102030405060708090a0b0c0d0e0f"></label><button onclick="shiftRowsRun()">הזז</button></div>
+<div id="sr-out"></div></div>
+
+<h3 id="mixcolumns"><span class="sec">5.7</span>שלב <bdi dir="ltr">3</bdi>: <bdi dir="ltr">MixColumns</bdi> — ברמת הרעיון</h3>
+<p>כל עמודה (4 בתים) מוכפלת במטריצה קבועה:</p>
+$$\begin{pmatrix} s'_0 \\ s'_1 \\ s'_2 \\ s'_3 \end{pmatrix} = \begin{pmatrix} 02 & 03 & 01 & 01 \\ 01 & 02 & 03 & 01 \\ 01 & 01 & 02 & 03 \\ 03 & 01 & 01 & 02 \end{pmatrix} \begin{pmatrix} s_0 \\ s_1 \\ s_2 \\ s_3 \end{pmatrix}$$
+<p>כל בית בפלט תלוי בכל 4 הבתים של העמודה. שינוי בבית אחד בכניסה משנה את כל 4 הבתים ביציאה.</p>
+<div class="box theory"><div class="box-head">📘 למה זה לא כפל "רגיל"</div><div class="box-body">
+<p>החשבון כאן הוא בשדה מיוחד, <span class="ltr">GF(2^8)</span> (שדה גלואה, 5.11): "חיבור" הוא <bdi dir="ltr">XOR</bdi>, ו"כפל" מוגדר כך שהתוצאה תמיד נשארת בית אחד. המקדמים 01, 02, 03 מייצגים את הפולינומים <span class="ltr">1, x, x+1</span>. בפועל: כפל ב־01 משאיר את הבית, כפל ב־02 הוא הזזה של הבית שמאלה (ואם יצא ביט 1 מהקצה — <bdi dir="ltr">XOR</bdi> עם <span class="ltr">0x1b</span>), וכפל ב־03 הוא כפל ב־02 ועוד <bdi dir="ltr">XOR</bdi> עם הבית עצמו.</p>
+<p><strong>בבחינה לא צריך לחשב את זה</strong> — רק להבין שזה ערבוב בתוך עמודה.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה מוכרת (לסקרנים)</div><div class="box-body">
+<p class="mathline"><span class="ltr">MixColumns(db 13 53 45) = 8e 4d a1 bc</span></p>
+<p>זו הדוגמה הקלאסית מהספרות; המעבדה ב־5.9 מראה את <bdi dir="ltr">MixColumns</bdi> על בלוק שלם.</p>
+</div></div>
+
+<h3 id="addroundkey"><span class="sec">5.8</span>שלב <bdi dir="ltr">4</bdi>: <bdi dir="ltr">AddRoundKey</bdi> ותזמון המפתחות</h3>
+<p><bdi dir="ltr">XOR</bdi> פשוט של כל 16 בתי ה־<bdi dir="ltr">State</bdi> עם 16 בתי מפתח הסבב. כמו ב־<bdi dir="ltr">DES</bdi>, זה <strong>המקום היחיד</strong> שבו המפתח נכנס. לפני הסבב הראשון יש <bdi dir="ltr">AddRoundKey</bdi> נוסף עם המפתח המקורי (<span class="ltr">K0</span>).</p>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — תזמון המפתחות</div><div class="box-body">
+<p>בשאלה של סטודנט בסוף השיעור המרצה לא נכנס לפרטים, ואמר ש־<bdi dir="ltr">AES</bdi> מייצר ב<strong>תזמון מפתחות</strong> (<span class="term">Key Schedule</span>) מפתח סבב <strong>שונה</strong> של 128 ביט לכל סבב — כי אותו מפתח בכל סבב היה מחליש את הצופן.</p>
+<p>פירוט (לא נדרש): ב־<bdi dir="ltr">AES-128</bdi> נוצרים 11 מפתחות סבב (<span class="ltr">K0 … K10</span>) מהמפתח המקורי. כל מילה חדשה של 4 בתים מתקבלת מ־<bdi dir="ltr">XOR</bdi> של מילים קודמות, ובכל מילה רביעית מפעילים סיבוב בתים, את ה־<bdi dir="ltr">S-box</bdi> וקבוע סבב. למשל עבור המפתח <span class="ltr">000102…0f</span>, מפתח הסבב הראשון הוא <span class="ltr">d6aa74fd d2af72fa daa678f1 d6ab76fe</span>.</p>
+</div></div>
+
+<h3 id="aes-last-round"><span class="sec">5.9</span>הסבב האחרון בלי <bdi dir="ltr">MixColumns</bdi>, ומעבדה</h3>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — למה הסבב האחרון שונה</div><div class="box-body">
+<p><strong>מה המרצה אמר:</strong> השלב הזה "רק מערבב עוד פעם", ולכן בסוף הוא מיותר.</p>
+<p><strong>הסבר מדויק יותר (מהספרות):</strong> <bdi dir="ltr">MixColumns</bdi> הוא פעולה <strong>ליניארית וידועה</strong>. אילו הייתה אחרי ה־<bdi dir="ltr">AddRoundKey</bdi> האחרון, תוקף פשוט היה מבטל אותה בעצמו בלי מפתח — היא לא הייתה מוסיפה שום ביטחון. בנוסף, ההשמטה מאפשרת לבנות את הפענוח במבנה שדומה להצפנה.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: <bdi dir="ltr">AES-128</bdi> סבב אחרי סבב</h5>
+<div class="row"><label>טקסט גלוי (<bdi dir="ltr">32 hex</bdi>) <input id="aes-x" class="wide" value="3243f6a8885a308d313198a2e0370734"></label><label>מפתח (<bdi dir="ltr">32 hex</bdi>) <input id="aes-k" class="wide" value="2b7e151628aed2a6abf7158809cf4f3c"></label><button onclick="aesRun()">הצפן</button></div>
+<div id="aes-out"></div>
+<p style="font-size:14px;color:var(--muted);margin:8px 0 0">ערכי ברירת המחדל הם וקטור הבדיקה מתקן <bdi dir="ltr">FIPS-197</bdi>; התוצאה הנכונה היא <span class="ltr">3925841d02dc09fbdc118597196a0b32</span>.</p></div>
+<div class="box example"><div class="box-head">✏️ סבב 1 על וקטור הבדיקה</div><div class="box-body">
+<pre>start of round 1 : 19 3d e3 be a0 f4 e2 2b 9a c6 8d 2a e9 f8 48 08
+after SubBytes   : d4 27 11 ae e0 bf 98 f1 b8 b4 5d e5 1e 41 52 30
+after ShiftRows  : d4 bf 5d 30 e0 b4 52 ae b8 41 11 f1 1e 27 98 e5
+after MixColumns : 04 66 81 e5 e0 cb 19 9a 48 f8 d3 7a 28 06 26 4c
+round key K1     : a0 fa fe 17 88 54 2c b1 23 a3 39 39 2a 6c 76 05
+after AddRoundKey: a4 9c 7f f2 68 9f 35 2b 6b 5b ea 43 02 6a 50 49</pre>
+<p>הבתים כתובים לפי סדר העמודות (<bdi dir="ltr">b0, b1, b2</bdi>, …). למשל אחרי <bdi dir="ltr">ShiftRows</bdi> העמודה הראשונה היא <span class="ltr">d4 bf 5d 30</span>: <span class="ltr">d4</span> משורה 0 נשאר, <span class="ltr">bf</span> הגיע משורה 1 של העמודה השנייה, וכן הלאה.</p>
+</div></div>
+<h4>בלבול, פיזור ואפקט המפולת</h4>
+<p><bdi dir="ltr">SubBytes</bdi> נותן <strong>בלבול</strong>; <bdi dir="ltr">ShiftRows</bdi> ו־<bdi dir="ltr">MixColumns</bdi> יחד נותנים <strong>פיזור</strong>. המרצה: "ביט אחד משפיע אחרי סבב אחד על הרבה ביטים, ואחרי שני סבבים כמעט על כולם". הנה המדידה בפועל — הופכים ביט אחד בטקסט הגלוי ובודקים כמה ביטים שונים אחרי כל סבב:</p>
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table">
+<tr><th>after round</th><td class="num">0</td><td class="num">1</td><td class="num">2</td><td class="num">3</td><td class="num">4</td><td class="num">5</td><td class="num">6</td><td class="num">7</td><td class="num">8</td><td class="num">9</td><td class="num">10</td></tr>
+<tr><th>bits different (of 128)</th><td class="num">1</td><td class="num">18</td><td class="num">71</td><td class="num">58</td><td class="num">59</td><td class="num">60</td><td class="num">57</td><td class="num">66</td><td class="num">57</td><td class="num">71</td><td class="num">62</td></tr>
+</table></div>
+<p>(טקסט גלוי <span class="ltr">00112233…ff</span>, מפתח <span class="ltr">000102…0f</span>, הביט האחרון הפוך.) כבר אחרי שני סבבים בערך חצי מהביטים שונים — כמו שאפקט המפולת דורש (4.3).</p>
+<div class="lab"><h5>מעבדה: אפקט המפולת ב־<bdi dir="ltr">AES</bdi></h5>
+<div class="row"><label>טקסט גלוי <input id="aav-x" class="wide" value="00112233445566778899aabbccddeeff"></label><label>מפתח <input id="aav-k" class="wide" value="000102030405060708090a0b0c0d0e0f"></label><label>ביט להפוך (1–128) <input id="aav-b" type="number" value="128" min="1" max="128"></label><button onclick="aesAvalancheRun()">השווה</button></div>
+<div id="aav-out"></div></div>
+
+<h3 id="aes-decrypt"><span class="sec">5.10</span>פענוח</h3>
+<p>כל שלב הפיך, אז מפענחים בסדר הפוך עם הפעולות ההופכיות: <span class="ltr">InvShiftRows</span> (הזזה ימינה), <span class="ltr">InvSubBytes</span> (<bdi dir="ltr">S-box</bdi> הפוכה), <span class="ltr">InvMixColumns</span> (המטריצה ההופכית), ו־<bdi dir="ltr">AddRoundKey</bdi> (<bdi dir="ltr">XOR</bdi> הוא ההופכי של עצמו), עם מפתחות הסבבים בסדר הפוך.</p>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור</div><div class="box-body"><p>המרצה אמר שהפענוח "מאוד פשוט" ולא נכנס אליו. נשמע גם משהו כמו "לא באמת שיעורי בית" — כנראה הכוונה שלא תהיה משימה על הפענוח (לא ודאי מהתמלול).</p></div></div>
+
+<h3 id="galois"><span class="sec">5.11</span>העשרה: שדות גלואה — <span class="ltr">GF(2^8)</span></h3>
+<div class="box warn"><div class="box-head">⚠️ לא לבחינה</div><div class="box-body"><p>המרצה אמר במפורש שהמתמטיקה של שדות גלואה <strong>לא נדרשת לבחינה</strong>. הוא גם ויתר על חצי שיעור שתכנן להקדיש לנושא. הסעיף כאן רק כדי שתדעו מאיפה הטבלאות באות.</p></div></div>
+<ul>
+<li>כל בית מייצג <strong>פולינום ממעלה 7 לכל היותר:</strong> הביטים הם המקדמים. למשל <span class="ltr">0x57 = 01010111</span> הוא <span class="ltr">x⁶ + x⁴ + x² + x + 1</span>.</li>
+<li>חיבור = <bdi dir="ltr">XOR</bdi> של המקדמים. כפל = כפל פולינומים, ואז שארית מחלוקה בפולינום הקבוע של <bdi dir="ltr">AES</bdi> <span class="ltr">x⁸ + x⁴ + x³ + x + 1</span> — בדיוק כמו "מודולו" על מספרים, רק עם פולינומים.</li>
+<li>ה־<bdi dir="ltr">S-box</bdi> בנויה על ה<strong>הופכי</strong> של כל בית בשדה הזה, ואחריו טרנספורמציה קבועה. לכן בחומרה אפשר <strong>לחשב</strong> את הטבלה במקום לשמור אותה בזיכרון. (המעבדה באתר הזה בונה את הטבלה בדיוק כך, בחישוב.)</li>
+</ul>
+
+<h3 id="ch5-sum"><span class="sec">5.12</span>סיכום ותרגול — פרק 5</h3>
+<div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
+<ul>
+<li><bdi dir="ltr">AES = Rijndael</bdi>, נבחר בתחרות פתוחה של <bdi dir="ltr">NIST</bdi> (1997 עד 2001).</li>
+<li>בלוק 128 ביט תמיד; מפתח 128/192/256 ← 10/12/14 סבבים.</li>
+<li>עובד על בתים במטריצה 4×4 (<bdi dir="ltr">State</bdi>), לא על ביטים.</li>
+<li>סבב: <bdi dir="ltr">SubBytes</bdi> (בלבול) ← <bdi dir="ltr">ShiftRows</bdi> ← <bdi dir="ltr">MixColumns</bdi> (פיזור) ← <bdi dir="ltr">AddRoundKey</bdi> (מפתח).</li>
+<li>הסבב האחרון בלי <bdi dir="ltr">MixColumns</bdi>.</li>
+<li>כל השלבים הפיכים (בניגוד ל־<bdi dir="ltr">f</bdi> של <bdi dir="ltr">DES</bdi>), כולל ה־<bdi dir="ltr">S-box</bdi>.</li>
+<li>שדות גלואה — לא לבחינה.</li>
+</ul>
+</div></div>
+<div class="box exercise"><div class="box-head">🏋️ תרגול</div><div class="box-body">
+<p><strong>1.</strong> כמה סבבים יש ב־<bdi dir="ltr">AES-192</bdi>, ומה גודל הבלוק שלו?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>12 סבבים; הבלוק 128 ביט — כמו בכל גרסאות <bdi dir="ltr">AES</bdi>.</p></div></details>
+<p><strong>2.</strong> מדוע ב־<bdi dir="ltr">AES</bdi> ה־<bdi dir="ltr">S-box</bdi> חייבת להיות הפיכה, וב־<bdi dir="ltr">DES</bdi> לא?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>ב־<bdi dir="ltr">AES</bdi> כל הבלוק עובר את ה־<bdi dir="ltr">S-box</bdi> בכל סבב, ובפענוח צריך לבטל כל שלב — אז היא חייבת להיות הפיכה. ב־<bdi dir="ltr">DES</bdi> ה־<bdi dir="ltr">S-box</bdi> נמצאת בתוך <bdi dir="ltr">f</bdi>, ובמבנה פייסטל <bdi dir="ltr">f</bdi> לא מתהפכת אף פעם (מחשבים אותה שוב ועושים <bdi dir="ltr">XOR</bdi>).</p></div></details>
+<p><strong>3.</strong> מה יקרה אם נוריד את <bdi dir="ltr">ShiftRows</bdi> ונשאיר את שאר השלבים?</p>
+<details class="reveal"><summary>פתרון</summary><div><p><bdi dir="ltr">MixColumns</bdi> מערבב רק בתוך עמודה, ו־<bdi dir="ltr">SubBytes</bdi> ו־<bdi dir="ltr">AddRoundKey</bdi> עובדים בית־בית. בלי <bdi dir="ltr">ShiftRows</bdi> שום מידע לא עובר בין עמודות, וה־<bdi dir="ltr">AES</bdi> מתפרק לארבעה צפנים נפרדים של 32 ביט, שכל אחד מהם הרבה יותר קל לתקוף. זה בדיוק סוג השאלה "למה זה פגיע".</p></div></details>
+<p><strong>4.</strong> בצע <bdi dir="ltr">ShiftRows</bdi> על השורה השלישית (שורה 2) <span class="ltr">[a, b, c, d]</span>.</p>
+<details class="reveal"><summary>פתרון</summary><div><p>שורה 2 זזה שני מקומות שמאלה: <span class="ltr">[c, d, a, b]</span>.</p></div></details>
+<p><strong>5.</strong> למה אין <bdi dir="ltr">MixColumns</bdi> בסבב האחרון?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>כי היא ליניארית וידועה ובאה אחרי המפתח האחרון — תוקף יכול לבטל אותה בעצמו, ולכן היא לא מוסיפה ביטחון (המרצה: "היא מיותרת בסוף").</p></div></details>
+</div></div>
+
+<div class="pager"><a class="prev" href="ch4.html"><small>▶ הקודם</small>פרק 4 — הצפנה סימטרית: <bdi dir="ltr">DES</bdi></a><a class="next" href="ch6.html"><small>הבא ◀</small>פרק 6 — חתימות דיגיטליות</a></div>
+</main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

@@ -333,3 +333,154 @@ function avalancheRun(){
   } catch(e){ fail('av-out', e); }
 }
 [sboxRun, avalancheRun, () => desRun(false)].forEach(f => { try { f(); } catch(e) {} });
+/* ---------------- AES-128 (educational) ---------------- */
+const AES = (() => {
+  // GF(2^8) multiply modulo x^8 + x^4 + x^3 + x + 1
+  const gmul = (a, b) => { let p = 0; for(let i = 0; i < 8; i++){ if(b & 1) p ^= a; const hi = a & 0x80; a = (a << 1) & 0xff; if(hi) a ^= 0x1b; b >>= 1; } return p; };
+  const SBOX = new Array(256), INV = new Array(256);
+  for(let x = 0; x < 256; x++){
+    let inv = 0; if(x) for(let y = 1; y < 256; y++) if(gmul(x, y) === 1){ inv = y; break; }
+    let s = inv; for(let i = 1; i <= 4; i++) s ^= ((inv << i) | (inv >> (8 - i))) & 0xff;
+    SBOX[x] = s ^ 0x63; INV[SBOX[x]] = x;
+  }
+  const RCON = [0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36];
+  const hex2 = v => v.toString(16).padStart(2, '0');
+  function parse(h){ h = h.replace(/\s+/g, '').toLowerCase(); if(!/^[0-9a-f]{32}$/.test(h)) throw new Error('נדרשים בדיוק 32 תווי hex (128 ביט)'); return h.match(/../g).map(x => parseInt(x, 16)); }
+  // state as column-major 16 bytes: s[r + 4c]
+  const sub = s => s.map(b => SBOX[b]);
+  const shift = s => { const o = s.slice(); for(let r = 1; r < 4; r++) for(let c = 0; c < 4; c++) o[r + 4 * c] = s[r + 4 * ((c + r) % 4)]; return o; };
+  const mix = s => { const o = s.slice(); for(let c = 0; c < 4; c++){ const a = s.slice(4 * c, 4 * c + 4);
+      o[4*c]   = gmul(a[0],2) ^ gmul(a[1],3) ^ a[2] ^ a[3];
+      o[4*c+1] = a[0] ^ gmul(a[1],2) ^ gmul(a[2],3) ^ a[3];
+      o[4*c+2] = a[0] ^ a[1] ^ gmul(a[2],2) ^ gmul(a[3],3);
+      o[4*c+3] = gmul(a[0],3) ^ a[1] ^ a[2] ^ gmul(a[3],2); } return o; };
+  const add = (s, k) => s.map((b, i) => b ^ k[i]);
+  function expand(key){
+    const w = []; for(let i = 0; i < 4; i++) w.push(key.slice(4 * i, 4 * i + 4));
+    for(let i = 4; i < 44; i++){ let t = w[i - 1].slice();
+      if(i % 4 === 0){ t = [t[1], t[2], t[3], t[0]].map(b => SBOX[b]); t[0] ^= RCON[i / 4 - 1]; }
+      w.push(w[i - 4].map((b, j) => b ^ t[j])); }
+    const rk = []; for(let r = 0; r <= 10; r++) rk.push([].concat(w[4*r], w[4*r+1], w[4*r+2], w[4*r+3]));
+    return rk;
+  }
+  function encrypt(ptHex, keyHex){
+    const rk = expand(parse(keyHex)); let s = add(parse(ptHex), rk[0]); const trace = [{r: 0, start: null, ark: s, key: rk[0]}];
+    for(let r = 1; r <= 10; r++){
+      const st = {r, start: s}; st.sb = sub(s); st.sr = shift(st.sb); st.mc = r < 10 ? mix(st.sr) : null;
+      st.key = rk[r]; s = add(st.mc || st.sr, rk[r]); st.ark = s; trace.push(st);
+    }
+    return {out: s, outHex: s.map(hex2).join(''), trace, rk};
+  }
+  return {SBOX, INV, gmul, parse, hex2, sub, shift, mix, add, expand, encrypt};
+})();
+
+/* ---------------- chapter 5 labs (AES) ---------------- */
+function aesGrid(b, hl){
+  let h = '<table dir="ltr" class="ltr-table" style="width:auto;display:inline-table;margin:4px">';
+  for(let r = 0; r < 4; r++){ h += '<tr>'; for(let c = 0; c < 4; c++){ const i = r + 4 * c; h += '<td class="num"' + (hl && hl[r] ? ' style="background:' + hl[r] + '"' : '') + '>' + AES.hex2(b[i]) + '</td>'; } h += '</tr>'; }
+  return h + '</table>';
+}
+function aesSboxRun(inv){
+  try{
+    const v = $('asb-x').value.trim().replace(/^0x/i, '').toLowerCase();
+    if(!/^[0-9a-f]{1,2}$/.test(v)) throw new Error('הכנס בית אחד ב־hex, למשל 32');
+    const x = parseInt(v, 16), T = inv ? AES.INV : AES.SBOX, y = T[x], r = x >> 4, c = x & 15;
+    let h = '<div class="out rtl">' + (inv ? 'S-box הפוכה' : 'S-box') + ': שורה <span class="ltr">' + r.toString(16) + '</span> (הספרה הראשונה), עמודה <span class="ltr">' + c.toString(16) + '</span> (הספרה השנייה) ← <b class="ltr">' + (inv ? 'InvSubBytes' : 'SubBytes') + '(0x' + AES.hex2(x) + ') = 0x' + AES.hex2(y) + '</b>' + (inv ? '' : ' · בדיקה: <span class="ltr">InvSubBytes(0x' + AES.hex2(y) + ') = 0x' + AES.hex2(AES.INV[y]) + '</span>') + '</div>';
+    h += '<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="font-size:12.5px"><tr><th></th>' + [...Array(16).keys()].map(k => '<th class="num">' + k.toString(16) + '</th>').join('') + '</tr>';
+    for(let i = 0; i < 16; i++){ h += '<tr><th class="num">' + i.toString(16) + '</th>'; for(let j = 0; j < 16; j++){ const st = i === r && j === c ? ' style="background:#f2b84b;font-weight:800"' : (i === r || j === c ? ' style="background:#fff8e7"' : ''); h += '<td class="num"' + st + '>' + AES.hex2(T[16 * i + j]) + '</td>'; } h += '</tr>'; }
+    $('asb-out').innerHTML = h + '</table></div>';
+  } catch(e){ fail('asb-out', e); }
+}
+function shiftRowsRun(){
+  try{
+    const s = AES.parse($('sr-x').value), o = AES.shift(s), col = ['#fff', '#eef4ff', '#edf8f0', '#fff3cf'];
+    $('sr-out').innerHTML = '<div style="direction:ltr;text-align:center">' + aesGrid(s, col) + ' <b style="font-size:20px;vertical-align:middle">→</b> ' + aesGrid(o, col) + '</div><div class="out rtl">כל שורה (בצבע משלה) זזה מעגלית שמאלה: שורה 0 ב־0, שורה 1 ב־1, שורה 2 ב־2, שורה 3 ב־3.</div>';
+  } catch(e){ fail('sr-out', e); }
+}
+function aesRun(){
+  try{
+    const r = AES.encrypt($('aes-x').value, $('aes-k').value), H = b => b.map(AES.hex2).join('');
+    const rows = r.trace.map(t => t.r === 0 ? [0, '—', '—', '—', H(t.key), H(t.ark)] : [t.r, H(t.sb), H(t.sr), t.mc ? H(t.mc) : '(skipped)', H(t.key), H(t.ark)]);
+    let h = table(['round', 'SubBytes', 'ShiftRows', 'MixColumns', 'round key', 'after AddRoundKey'], rows, true);
+    h += '<div class="out">ciphertext = <b>' + r.outHex + '</b></div>';
+    const last = r.trace[1];
+    h += '<div class="out rtl">ה־State אחרי כל שלב בסבב 1 (עמודה אחרי עמודה):</div><div style="direction:ltr;text-align:center">' + aesGrid(last.start) + ' → SB ' + aesGrid(last.sb) + ' → SR ' + aesGrid(last.sr) + ' → MC ' + aesGrid(last.mc) + ' → ARK ' + aesGrid(last.ark) + '</div>';
+    $('aes-out').innerHTML = h;
+  } catch(e){ fail('aes-out', e); }
+}
+function aesAvalancheRun(){
+  try{
+    const x = $('aav-x').value, k = $('aav-k').value, b = +$('aav-b').value;
+    if(!(b >= 1 && b <= 128)) throw new Error('ביט בין 1 ל־128');
+    const p = AES.parse(x); p[(b - 1) >> 3] ^= 0x80 >> ((b - 1) & 7);
+    const a = AES.encrypt(x, k), c = AES.encrypt(p.map(AES.hex2).join(''), k);
+    const pc = (u, v) => u.reduce((n, w, i) => n + ((w ^ v[i]).toString(2).split('1').length - 1), 0);
+    const per = a.trace.map((t, i) => pc(t.ark, c.trace[i].ark));
+    let h = '<div class="out">y  = ' + a.outHex + '\ny\' = ' + c.outHex + '</div>';
+    h += table(['after round'].concat(per.map((_, i) => i)), [['bits different (of 128)'].concat(per)]);
+    h += '<div class="out rtl">בפלט השתנו <b>' + per[10] + ' מתוך 128</b> ביטים. המטרה: בערך חצי (64).</div>';
+    $('aav-out').innerHTML = h;
+  } catch(e){ fail('aav-out', e); }
+}
+/* ---------------- chapter 6 labs (signatures) ---------------- */
+function sigKeys(){
+  const p = big('sg-p'), q = big('sg-q'), e = big('sg-e');
+  if(!isPrime(p) || !isPrime(q) || p === q) throw new Error('p ו־q חייבים להיות ראשוניים שונים');
+  const n = p * q, ph = (p - 1n) * (q - 1n);
+  if(gcd(e, ph) !== 1n) throw new Error('gcd(e, φ(n)) = ' + gcd(e, ph) + ' — בחר e אחר');
+  return {n, ph, e, d: powmodInv(e, ph)};
+}
+function powmodInv(a, m){ const rows = eeaRows(m, a); return mod(rows[rows.length - 2][4], m); }
+function sigRun(){
+  try{
+    const K = sigKeys(), m = big('sg-m');
+    if(m < 0n || m >= K.n) throw new Error('m חייב להיות בין 0 ל־n−1 = ' + (K.n - 1n));
+    const s = powmod(m, K.d, K.n), v = powmod(s, K.e, K.n);
+    $('sg-m2').value = m; $('sg-s2').value = s;
+    let h = '<div class="out">n = ' + K.n + ' , φ(n) = ' + K.ph + ' , e = ' + K.e + ' , d = ' + K.d + '\npublic (n, e) = (' + K.n + ', ' + K.e + ')   private (n, d) = (' + K.n + ', ' + K.d + ')</div>';
+    h += '<h4>חתימה: <span class="ltr">s = ' + m + '^' + K.d + ' mod ' + K.n + '</span></h4>' + samHtml(m, K.d, K.n);
+    h += '<h4>אימות: <span class="ltr">' + s + '^' + K.e + ' mod ' + K.n + '</span></h4>' + samHtml(s, K.e, K.n);
+    h += '<p class="' + (v === m ? 'msg-ok' : 'msg-bad') + '">' + (v === m ? '✓ ' + v + ' = m — האימות עבר (1)' : '✗ ' + v + ' ≠ ' + m + ' — האימות נכשל (0)') + '</p>';
+    h += '<p style="font-size:14px;color:var(--muted)">עכשיו נסה לשנות את m או את s בשורה השנייה ולחץ "אמת זוג שהתקבל".</p>';
+    $('sg-out').innerHTML = h;
+  } catch(e){ fail('sg-out', e); }
+}
+function sigVerifyRun(){
+  try{
+    const K = sigKeys(), m = big('sg-m2'), s = big('sg-s2'), v = powmod(s, K.e, K.n);
+    $('sg-out').innerHTML = '<div class="out">' + s + '^' + K.e + ' mod ' + K.n + ' = ' + v + '\ncompare with m = ' + m + '</div><p class="' + (v === m ? 'msg-ok' : 'msg-bad') + '">' + (v === m ? '✓ שווה — האימות עבר (1)' : '✗ לא שווה — האימות נכשל (0)') + '</p>';
+  } catch(e){ fail('sg-out', e); }
+}
+function forgeRun(){
+  try{
+    const n = big('fg-n'), e = big('fg-e'), s = mod(big('fg-s'), n), m = powmod(s, e, n);
+    let h = '<div class="out rtl">איב לא יודעת את d. היא בוחרת <span class="ltr">s = ' + s + '</span> ומחשבת עם המפתח הציבורי בלבד:</div>' + samHtml(s, e, n);
+    h += '<div class="out">Eve sends (m, s) = (' + m + ', ' + s + ')\nBob verifies: ' + s + '^' + e + ' mod ' + n + ' = ' + powmod(s, e, n) + ' = m ✓</div>';
+    h += '<p class="msg-bad">⚠️ האימות עבר — זיוף קיומי. אבל איב לא בחרה את m: יצא ' + m + ', מספר "אקראי".</p>';
+    $('fg-out').innerHTML = h;
+  } catch(e){ fail('fg-out', e); }
+}
+function padRun(){
+  try{
+    const n = big('pd-n'), e = big('pd-e'), k = +$('pd-k').value;
+    if(!(k >= 1 && k <= 7)) throw new Error('בין 1 ל־7 ביטי ריפוד');
+    if(n > 100000n) throw new Error('n קטן (עד 100,000) כדי לנסות את כל ה־s');
+    const mask = BigInt((1 << k) - 1), hits = [];
+    for(let s = 1n; s < n; s++){ const m = powmod(s, e, n); if((m & mask) === mask) hits.push([s, m]); }
+    let h = '<div class="out rtl">ריפוד חוקי = <span class="ltr">' + k + '</span> הביטים האחרונים של m הם 1. מתוך <span class="ltr">' + (n - 1n) + '</span> חתימות אפשריות, רק <b>' + hits.length + '</b> נותנות m עם ריפוד חוקי — בערך <span class="ltr">' + (hits.length / Number(n - 1n)).toFixed(3) + '</span>, וצפוי <span class="ltr">2^−' + k + ' = ' + (1 / (1 << k)).toFixed(3) + '</span>.</div>';
+    h += table(['s (forged)', 'm = s^e mod n', 'binary of m'], hits.slice(0, 12).map(x => [x[0], x[1], x[1].toString(2)]));
+    $('pd-out').innerHTML = h;
+  } catch(e){ fail('pd-out', e); }
+}
+(function keyQuiz(){
+  const box = document.getElementById('keyquiz'); if(!box) return;
+  const opts = ['הציבורי של אליס', 'הפרטי של אליס', 'הציבורי של בוב', 'הפרטי של בוב'];
+  const Q = [['אליס מצפינה הודעה לבוב', 2], ['בוב מפענח הודעה שאליס הצפינה לו', 3], ['אליס חותמת על הודעה', 1], ['צ׳רלי מאמת חתימה של אליס', 0], ['בוב חותם על תשובה לאליס', 3], ['אליס מצפינה לבוב מפתח AES לשיחה', 2]];
+  Q.forEach(q => {
+    const d = document.createElement('div'); d.style.margin = '8px 0';
+    d.innerHTML = '<p style="margin:4px 0"><b>' + q[0] + '</b> — באיזה מפתח?</p><div class="chips">' + opts.map((o, j) => '<button class="ghost" data-j="' + j + '">' + o + '</button>').join('') + '</div>';
+    d.querySelectorAll('button').forEach(b => b.onclick = () => { d.querySelectorAll('button').forEach(x => { const j = +x.dataset.j; x.style.background = j === q[1] ? '#15803d' : (x === b ? '#b91c1c' : '#e7ecf5'); x.style.color = (j === q[1] || x === b) ? '#fff' : '#14213d'; }); });
+    box.appendChild(d);
+  });
+})();
+[aesSboxRun, shiftRowsRun, aesRun, aesAvalancheRun, sigRun, forgeRun, padRun].forEach(f => { try { f(); } catch(e) {} });

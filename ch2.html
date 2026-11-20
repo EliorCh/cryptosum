@@ -22,7 +22,7 @@ window.MathJax = {
 <button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
 <div class="layout">
 <nav class="side" id="sidebar">
-<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–4 + תרגיל בית 1</small></div>
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–6 + תרגיל בית 1</small></div>
 <div class="progress"><span id="prog"></span></div>
 <a class="chap" href="index.html">דף הבית</a>
 <a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
@@ -44,6 +44,8 @@ window.MathJax = {
 <a class="chap" href="ch3.html">פרק 3 — לוג דיסקרטי ו־Diffie-Hellman</a>
 <a class="chap" href="hw1.html">תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a>
 <a class="chap" href="ch4.html">פרק 4 — הצפנה סימטרית: DES</a>
+<a class="chap" href="ch5.html">פרק 5 — הצפנה סימטרית: AES</a>
+<a class="chap" href="ch6.html">פרק 6 — חתימות דיגיטליות</a>
 </nav>
 <main id="top">
 <!-- =============================== CHAPTER 2 =============================== -->
@@ -265,7 +267,7 @@ $$a^{\varphi(m)} \equiv 1 \pmod m$$
 <tr><td class="num">1</td><td>בוחרים שני ראשוניים גדולים ושונים (במציאות 1,024+ ביט כל אחד).</td><td class="num">p, q</td><td>🔒 סודי</td></tr>
 <tr><td class="num">2</td><td>מחשבים את המודולוס.</td><td class="num">n = p · q</td><td>🌐 ציבורי</td></tr>
 <tr><td class="num">3</td><td>מחשבים את פונקציית אוילר.</td><td class="num">φ(n) = (p−1)(q−1)</td><td>🔒 סודי</td></tr>
-<tr><td class="num">4</td><td>בוחרים מעריך ציבורי (נפוץ: <span class="ltr">e = 65537 = 2^16 + 1</span>).</td><td class="num">1 &lt; e &lt; φ(n),  gcd(e, φ(n)) = 1</td><td>🌐 ציבורי</td></tr>
+<tr><td class="num">4</td><td>בוחרים מעריך ציבורי. ערכים נפוצים: <span class="ltr">3, 17, 65537 = 2^16 + 1</span> — קטנים ועם מעט ביטים דולקים, כדי שההצפנה והאימות של חתימות יהיו מהירים (<a href="ch6.html#small-e">6.7</a>).</td><td class="num">1 &lt; e &lt; φ(n),  gcd(e, φ(n)) = 1</td><td>🌐 ציבורי</td></tr>
 <tr><td class="num">5</td><td>מחשבים מעריך פרטי — ההופכי של <bdi dir="ltr">e</bdi>, בעזרת <bdi dir="ltr">EEA</bdi>.</td><td class="num">e · d ≡ 1 (mod φ(n))</td><td>🔒 סודי</td></tr>
 <tr><td class="num">6</td><td>מרכיבים את זוג המפתחות.</td><td class="num">public (n, e) · private (n, d)</td><td>—</td></tr>
 </table></div>
@@ -301,6 +303,7 @@ $$M^{ed} = M^{k\varphi(n) + 1} = \left(M^{\varphi(n)}\right)^{k} \cdot M \equiv 
 
 <div class="box warn"><div class="box-head">⚠️ <bdi dir="ltr">RSA</bdi> "של ספר לימוד" — ולמה בפועל זה לא מספיק (מהשיעור)</div><div class="box-body">
 <p>המרצה הדגיש שמה שלמדנו הוא <strong><span class="term">textbook RSA</span></strong> — הגרסה הפשוטה, שמספיקה כדי להבין את הרעיון. יש לה בעיה מהותית: היא <strong>דטרמיניסטית</strong> — אותה הודעה עם אותו מפתח נותנת תמיד אותו <bdi dir="ltr">C</bdi>.</p>
+<p>בשיעור של 15.11 המרצה הוסיף שבגלל זה <bdi dir="ltr">RSA</bdi> "של ספר לימוד" חשוף גם ל־<strong>Replay:</strong> איב שרואה <bdi dir="ltr">C</bdi> יודעת מתי אותה הודעה נשלחת שוב, ויכולה לשלוח אותו <bdi dir="ltr">C</bdi> בעצמה. במערכות אמיתיות <bdi dir="ltr">RSA</bdi> עובד אחרת (עם ריפוד אקראי) — ובחתימות נראה עוד חולשה של אותה גרסה, הזיוף הקיומי (<a href="ch6.html#forgery">6.8</a>).</p>
 <p><strong>ההתקפה שעלתה בכיתה:</strong> נניח שההודעות הן תמיד 0 או 1 (למשל "כן"/"לא"). איב לא צריכה את <bdi dir="ltr">d</bdi> בכלל. היא מצפינה בעצמה את 0 ואת 1 עם המפתח הציבורי — מותר לה, הוא ציבורי — ובודקת איזו מהן שווה ל־<bdi dir="ltr">C</bdi> שראתה. שני ניסיונות, וההודעה גלויה.</p>
 <p>זו בדיוק התקפת <span class="term">Chosen Plaintext</span> מ<a href="ch1.html#attacks">פרק 1</a>, שב־<bdi dir="ltr">RSA</bdi> זמינה לכל אחד. בפועל מוסיפים להודעה ריפוד אקראי לפני ההצפנה, כך שהצפנה כפולה של אותה הודעה נותנת תוצאות שונות.</p>
 </div></div>

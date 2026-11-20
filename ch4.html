@@ -22,7 +22,7 @@ window.MathJax = {
 <button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
 <div class="layout">
 <nav class="side" id="sidebar">
-<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–4 + תרגיל בית 1</small></div>
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–6 + תרגיל בית 1</small></div>
 <div class="progress"><span id="prog"></span></div>
 <a class="chap" href="index.html">דף הבית</a>
 <a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
@@ -46,6 +46,8 @@ window.MathJax = {
 <a class="sub" href="#double-des">2-DES והתקפת Meet-in-the-Middle</a>
 <a class="sub" href="#triple-des">3-DES — הצפנה משולשת</a>
 <a class="sub" href="#ch4-sum">סיכום ותרגול — פרק 4</a>
+<a class="chap" href="ch5.html">פרק 5 — הצפנה סימטרית: AES</a>
+<a class="chap" href="ch6.html">פרק 6 — חתימות דיגיטליות</a>
 </nav>
 <main id="top">
 <!-- =============================== CHAPTER 4 =============================== -->
@@ -505,7 +507,7 @@ $$C = E_{K_3}\big(D_{K_2}(E_{K_1}(P))\big) \qquad\qquad P = D_{K_1}\big(E_{K_2}(
 <div class="box lecture"><div class="box-head">🎙️ מהשיעור — למה <bdi dir="ltr">3-DES</bdi> שרד כל כך הרבה שנים</div><div class="box-body">
 <p>ב־<bdi dir="ltr">DES</bdi> אין שום חישוב מתמטי "כבד" — רק <bdi dir="ltr">XOR</bdi>, טבלאות ותמורות. זה רץ <strong>מהר מאוד בחומרה</strong>. כשהתברר ש־<bdi dir="ltr">DES</bdi> חלש, כבר היו בעולם המון שבבים שמריצים אותו. <bdi dir="ltr">3-DES</bdi> פשוט הריץ את אותו שבב שלוש פעמים — בלי להחליף חומרה. לכן הוא נשאר בשימוש שנים רבות (גם לצד <bdi dir="ltr">AES</bdi>), עד שירד בהדרגה.</p>
 <p>לגבי הביטחון של <bdi dir="ltr">3-DES</bdi>, החישוב מהכיתה: ב־<bdi dir="ltr">MITM</bdi> אפשר "לחתוך" רק בין שכבה לשכבה, אז צד אחד משלם <span class="ltr">2^56</span> והצד השני <span class="ltr">2^112</span> (שני מפתחות יחד) — סה״כ בערך <span class="ltr">2^112</span>.</p>
-<p>בשיעור הבא: צופן סימטרי נוסף — <bdi dir="ltr">AES</bdi>.</p>
+<p>ההמשך: היורש של <bdi dir="ltr">DES</bdi> — <a href="ch5.html">פרק <bdi dir="ltr">5</bdi>: <bdi dir="ltr">AES</bdi></a>.</p>
 </div></div>
 <h3 id="ch4-sum"><span class="sec">4.14</span>סיכום ותרגול — פרק 4</h3>
 <div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
@@ -544,7 +546,7 @@ $$C = E_{K_3}\big(D_{K_2}(E_{K_1}(P))\big) \qquad\qquad P = D_{K_1}\big(E_{K_2}(
 <details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">E_K(D_K(E_K(P))) = E_K(P)</span> — <bdi dir="ltr">DES</bdi> רגיל. זה מאפשר תאימות לאחור עם מערכות <bdi dir="ltr">DES</bdi> ישנות.</p></div></details>
 </div></div>
 
-<div class="pager"><a class="prev" href="hw1.html"><small>▶ הקודם</small>תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a><span style="flex:1"></span></div>
+<div class="pager"><a class="prev" href="hw1.html"><small>▶ הקודם</small>תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a><a class="next" href="ch5.html"><small>הבא ◀</small>פרק 5 — הצפנה סימטרית: <bdi dir="ltr">AES</bdi></a></div>
 </main>
 </div>
 <script src="app.js"></script>

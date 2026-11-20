@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>פרק 6 — חתימות דיגיטליות · קריפטוגרפיה שימושית</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code','svg'] }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<link rel="stylesheet" href="style.css">
+<script data-goatcounter="https://eliorch.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<!-- mta-theme --><link rel="stylesheet" href="../main/site-theme.css"><script src="../main/site-theme.js" data-course="crypto" data-fam="cr" data-footer="body"></script><!-- /mta-theme -->
+</head>
+<body>
+<button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
+<div class="layout">
+<nav class="side" id="sidebar">
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–6 + תרגיל בית 1</small></div>
+<div class="progress"><span id="prog"></span></div>
+<a class="chap" href="index.html">דף הבית</a>
+<a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
+<a class="chap" href="ch1.html">פרק 1 — מבוא לקריפטוגרפיה</a>
+<a class="chap" href="ch2.html">פרק 2 — הצפנה אסימטרית ו־RSA</a>
+<a class="chap" href="ch3.html">פרק 3 — לוג דיסקרטי ו־Diffie-Hellman</a>
+<a class="chap" href="hw1.html">תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a>
+<a class="chap" href="ch4.html">פרק 4 — הצפנה סימטרית: DES</a>
+<a class="chap" href="ch5.html">פרק 5 — הצפנה סימטרית: AES</a>
+<a class="chap here" href="ch6.html">פרק 6 — חתימות דיגיטליות</a>
+<a class="sub" href="#ch6">פתיחה</a>
+<a class="sub" href="#sig-why">מחתימה בכתב יד לחתימה דיגיטלית</a>
+<a class="sub" href="#sig-interface">הממשק: Sign ו־Verify</a>
+<a class="sub" href="#sig-props">מה חתימה נותנת — ומה לא</a>
+<a class="sub" href="#sig-symmetric">למה מפתח סימטרי לא מספיק: אי־הכחשה</a>
+<a class="sub" href="#sig-keys">איזה מפתח לאיזו פעולה</a>
+<a class="sub" href="#rsa-sig">חתימת RSA</a>
+<a class="sub" href="#small-e">למה בוחרים e קטן</a>
+<a class="sub" href="#forgery">התקפת הזיוף: להריץ את התהליך הפוך</a>
+<a class="sub" href="#forgery-dos">למה זיוף של ג'יבריש מסוכן: DoS</a>
+<a class="sub" href="#padding">התיקון: ריפוד</a>
+<a class="sub" href="#hash-sign">הבא: Hash לפני חתימה</a>
+<a class="sub" href="#ch6-sum">סיכום ותרגול — פרק 6</a>
+</nav>
+<main id="top">
+<!-- =============================== CHAPTER 6 =============================== -->
+<h2 class="chapter" id="ch6"><span class="num">6</span>חתימות דיגיטליות</h2>
+<div class="prereq">📚 <strong>לפני הפרק כדאי להכיר:</strong> <bdi dir="ltr">RSA</bdi> — מפתחות, הצפנה והוכחה (<a href="ch2.html#rsa">2.8–2.9</a>), ריבוע וכפל (<a href="ch2.html#sam">2.12</a>), מודלי התקפה ומתי צופן "שבור" (<a href="ch1.html#attacks">1.8</a>).</div>
+<p class="hook">עד עכשיו עסקנו בסודיות — שאיב לא תוכל <em>לקרוא</em>. חתימה דיגיטלית פותרת בעיה אחרת: להוכיח <strong>מי</strong> שלח הודעה ושהיא <strong>לא שונתה</strong>. המרצה ציין את הנושא הזה, ובמיוחד את התקפת הזיוף (6.8), כחומר טיפוסי לשאלות בסגנון "למה זה פגיע?".</p>
+
+<h3 id="sig-why"><span class="sec">6.1</span>מחתימה בכתב יד לחתימה דיגיטלית</h3>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — תעודת התואר כקובץ <bdi dir="ltr">PDF</bdi></div><div class="box-body">
+<p>המרצה פתח בשאלה: בסוף התואר תקבלו תעודה כקובץ <bdi dir="ltr">PDF</bdi>. מעסיק מקבל אותה ממכם — איך הוא יודע שהיא אמיתית ושלא שיניתם בה את הממוצע? על נייר יש חתימה וחותמת. מה המקבילה בקובץ?</p>
+<p>ודוגמה שנייה: הודעת <bdi dir="ltr">WhatsApp</bdi> "לא אהיה בשיעור כי אני במילואים" שמישהו משנה בדרך ל"אני חושב שאני צריך לקבל 30 במבחן". צריך דרך לגלות שינוי כזה.</p>
+</div></div>
+<p>בכיתה בדקו שלושה רעיונות נאיביים, וכל אחד נכשל מסיבה שמלמדת משהו:</p>
+<div class="tbl-wrap"><table>
+<tr><th>רעיון</th><th>למה הוא נכשל</th><th>הלקח</th></tr>
+<tr><td><strong>1. רצף ביטים קבוע</strong> בסוף כל מסמך ("החתימה של המכללה")</td><td>גרוע אפילו מחתימה בכתב יד: מעתיקים את אותו רצף ומדביקים אותו על כל מסמך אחר.</td><td>החתימה חייבת להיות <strong>תלויה בתוכן</strong> המסמך.</td></tr>
+<tr><td><strong>2. קידוד</strong> (למשל <span class="term">Base64</span>)</td><td>קידוד הוא לא הצפנה — אין בו שום סוד. כל אחד מקודד ומפענח.</td><td>חייב להיות מעורב <strong>סוד</strong>.</td></tr>
+<tr><td><strong>3. פונקציה ציבורית <bdi dir="ltr">F</bdi> על התוכן</strong></td><td>תלויה בתוכן, אבל אם כולם יודעים את <bdi dir="ltr">F</bdi> — כולם יכולים לחשב "חתימה" על כל מסמך. אין קשר לחותם.</td><td>החתימה חייבת לכלול <strong>מפתח</strong> שרק לחותם יש.</td></tr>
+</table></div>
+
+<h3 id="sig-interface"><span class="sec">6.2</span>הממשק: <bdi dir="ltr">Sign</bdi> ו־<bdi dir="ltr">Verify</bdi></h3>
+<div class="box formula"><div class="box-head">📐 שתי הפונקציות</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>פונקציה</th><th>מקבלת</th><th>מחזירה</th><th>מי מריץ</th></tr>
+<tr><td><strong>Sign</strong></td><td>הודעה <bdi dir="ltr">x</bdi> ומפתח <strong>פרטי</strong> של החותם</td><td>חתימה <bdi dir="ltr">s</bdi></td><td>רק החותם</td></tr>
+<tr><td><strong>Verify</strong></td><td>הודעה <bdi dir="ltr">x</bdi>, חתימה <bdi dir="ltr">s</bdi> ומפתח <strong>ציבורי</strong> של החותם</td><td>1 (תקין) או 0 (לא תקין)</td><td>כל אחד</td></tr>
+</table></div>
+<p>שימו לב: <bdi dir="ltr">Verify</bdi> <strong>לא מפענח</strong> שום דבר — הוא רק עונה כן/לא.</p>
+</div></div>
+
+<h3 id="sig-props"><span class="sec">6.3</span>מה חתימה נותנת — ומה לא</h3>
+<div class="tbl-wrap"><table>
+<tr><th>תכונה</th><th>יש?</th><th>הסבר</th></tr>
+<tr class="bad"><td><strong>סודיות</strong></td><td>❌ לא</td><td>ההודעה נשלחת <strong>גלויה</strong> — המטרה היא שכולם יוכלו לקרוא ולאמת. רוצים גם סודיות? מצפינים בנוסף.</td></tr>
+<tr class="good"><td><strong>שלמות</strong> (<span class="term">integrity</span>)</td><td>✅</td><td>כל שינוי בהודעה גורם לאימות להיכשל.</td></tr>
+<tr class="good"><td><strong>אימות מקור</strong> (<span class="term">authentication</span>)</td><td>✅</td><td>מי שחתם הוא מי שמחזיק במפתח הפרטי.</td></tr>
+<tr class="good"><td><strong>אי־הכחשה</strong> (<span class="term">non-repudiation</span>)</td><td>✅</td><td>החותם לא יכול לטעון אחר כך "לא אני חתמתי" (6.4).</td></tr>
+<tr class="good"><td><strong>אימות פומבי</strong></td><td>✅</td><td>כל אחד יכול לאמת עם המפתח הציבורי.</td></tr>
+<tr><td><strong>גודל קלט</strong></td><td>כל גודל</td><td>אין הגבלה על אורך ההודעה — בפועל עושים את זה בעזרת פונקציית <bdi dir="ltr">Hash</bdi> (6.11).</td></tr>
+<tr><td><strong>עמידות ל־<bdi dir="ltr">Replay</bdi></strong></td><td>—</td><td>רצוי שלא אפשר יהיה פשוט לשלוח שוב הודעה חתומה ישנה. המרצה הזכיר את זה ואמר שלא ייכנס לנושא.</td></tr>
+</table></div>
+<div class="keypoint">💡 <b>חשוב (המרצה הדגיש):</b> בחתימה דיגיטלית <strong>אין סודיות</strong>. שאלה טיפוסית: "אליס חתמה על הודעה — האם איב יכולה לקרוא אותה?" כן.</div>
+
+<h3 id="sig-symmetric"><span class="sec">6.4</span>למה מפתח סימטרי לא מספיק: אי־הכחשה</h3>
+<p>אם לאליס ולבוב יש מפתח סודי משותף <bdi dir="ltr">K</bdi>, אליס יכולה "לחתום" עם <bdi dir="ltr">K</bdi>, ובוב יבדוק עם <bdi dir="ltr">K</bdi>. בוב יודע שאליס חתמה — הרי הוא עצמו לא חתם. אבל <strong>צד שלישי</strong> (שופט) לא יכול לדעת מי מהשניים חתם, כי לשניהם יש את אותו מפתח.</p>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — הזמנת טסלה והשופט</div><div class="box-body">
+<p>ספר מאמזון אפשר להחזיר. טסלה שהוזמנה במיוחד — אי אפשר. נניח שהקונה מתחרט ותובע. אם ההזמנה "נחתמה" במפתח סימטרי משותף לקונה ולטסלה, הקונה יכול לטעון בבית המשפט: "טסלה זייפו את החתימה שלי — גם להם יש את המפתח". השופט לא יכול להכריע.</p>
+<p>עם חתימה אסימטרית רק לקונה יש את המפתח הפרטי, ולכן חתימה תקפה מוכיחה שהוא חתם. זו <strong>אי־הכחשה</strong>. המרצה: עם מפתח משותף "תמיד יהיה צד אחד שיוכל להאשים את השני".</p>
+</div></div>
+
+<h3 id="sig-keys"><span class="sec">6.5</span>איזה מפתח לאיזו פעולה</h3>
+<p>זה המקום שבו הסטודנטים התבלבלו בכיתה. הכלל מפרק 2 ("מה יש רק לי ומה אני רוצה לעשות") עובד גם כאן:</p>
+<div class="tbl-wrap"><table>
+<tr><th>פעולה</th><th>מי מבצע</th><th>באיזה מפתח</th><th>למה</th></tr>
+<tr><td><strong>הצפנה</strong> מאליס לבוב</td><td>אליס</td><td><strong>הציבורי של בוב</strong></td><td>כולם צריכים להיות מסוגלים להצפין לבוב.</td></tr>
+<tr><td><strong>פענוח</strong></td><td>בוב</td><td><strong>הפרטי של בוב</strong></td><td>רק בוב צריך לקרוא.</td></tr>
+<tr class="hl"><td><strong>חתימה</strong> של אליס</td><td>אליס</td><td><strong>הפרטי של אליס</strong></td><td>רק אליס צריכה להיות מסוגלת לחתום.</td></tr>
+<tr class="hl"><td><strong>אימות</strong> החתימה</td><td>כל אחד</td><td><strong>הציבורי של אליס</strong></td><td>כולם צריכים להיות מסוגלים לאמת.</td></tr>
+</table></div>
+<div class="keypoint">💡 <b>הכיוון הפוך מהצפנה:</b> בהצפנה משתמשים בציבורי של <strong>המקבל</strong>; בחתימה משתמשים בפרטי של <strong>השולח</strong>. המרצה: אליס "חייבת להשתמש במפתח הפרטי שלה".</div>
+<div class="box exercise"><div class="box-head">🏋️ בוחן מהיר: איזה מפתח?</div><div class="box-body">
+<div id="keyquiz"></div>
+</div></div>
+
+<h3 id="rsa-sig"><span class="sec">6.6</span>חתימת <bdi dir="ltr">RSA</bdi></h3>
+<p>אותם מפתחות של <bdi dir="ltr">RSA</bdi> מפרק 2 — ציבורי <span class="ltr">(n, e)</span>, פרטי <span class="ltr">(n, d)</span> — רק שמשתמשים בהם "הפוך":</p>
+<div class="box formula"><div class="box-head">📐 חתימה ואימות</div><div class="box-body">
+<p><strong>חתימה</strong> — אליס מעלה את ההודעה בחזקת המעריך הפרטי שלה:</p>
+$$s = m^{d} \bmod n$$
+<p>אליס שולחת את הזוג — ההודעה עצמה <strong>גלויה:</strong></p>
+$$(m, s)$$
+<p><strong>אימות</strong> — בוב מחשב עם המפתח הציבורי של אליס:</p>
+$$m' = s^{e} \bmod n$$
+<p>ובודק:</p>
+$$m' \overset{?}{=} m$$
+<p>אם שווה — מחזיר 1 (תקין), אחרת 0. הנכונות נובעת בדיוק מאותה הוכחה כמו ב־<bdi dir="ltr">RSA</bdi> רגיל (2.9): <span class="ltr">(m^d)^e = m^(ed) ≡ m</span>.</p>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ "הכי חשוב" — לבדוק את השוויון</div><div class="box-body"><p>המרצה הדגיש: "זה מאוד מאוד חשוב... האם זה שווה ל־<bdi dir="ltr">m</bdi>? זה הכי חשוב". חישוב <span class="ltr">s^e mod n</span> לבדו לא אומר כלום — <strong>ההשוואה</strong> עם <bdi dir="ltr">m</bdi> היא האימות. אם משנים רק את <bdi dir="ltr">m</bdi> או רק את <bdi dir="ltr">s</bdi>, השוויון נכשל; כדי לשנות את שניהם באופן עקבי צריך את <bdi dir="ltr">d</bdi>.</p></div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה מלאה: המפתחות מפרק 2</div><div class="box-body">
+<p>הנתונים: <span class="ltr">p = 11, q = 17</span>, ולכן:</p>
+<p class="mathline"><span class="ltr">n = 187 ,  φ(n) = 160 ,  e = 7 ,  d = 23</span></p>
+<p>אליס רוצה לחתום על <span class="ltr">m = 100</span>.</p>
+<p><strong>חתימה:</strong> <span class="ltr">s = 100^23 mod 187</span>, ו־<span class="ltr">23 = 10111₂</span>:</p>
+<div class="tbl-wrap"><table>
+<tr><th>ביט</th><th>ריבוע</th><th>כפל ב־100</th><th>z</th></tr>
+<tr><td class="num">1</td><td class="num">—</td><td class="num">—</td><td class="num">100</td></tr>
+<tr><td class="num">0</td><td class="num">100² = 10000 ≡ 89</td><td class="num">—</td><td class="num">89</td></tr>
+<tr><td class="num">1</td><td class="num">89² = 7921 ≡ 67</td><td class="num">67·100 = 6700 ≡ 155</td><td class="num">155</td></tr>
+<tr><td class="num">1</td><td class="num">155² = 24025 ≡ 89</td><td class="num">89·100 = 8900 ≡ 111</td><td class="num">111</td></tr>
+<tr class="hl"><td class="num">1</td><td class="num">111² = 12321 ≡ 166</td><td class="num">166·100 = 16600 ≡ 144</td><td class="num">144</td></tr>
+</table></div>
+<p>אליס שולחת <span class="ltr">(m, s) = (100, 144)</span>.</p>
+<p><strong>אימות:</strong> <span class="ltr">144^7 mod 187</span>, ו־<span class="ltr">7 = 111₂</span>:</p>
+<div class="tbl-wrap"><table>
+<tr><th>ביט</th><th>ריבוע</th><th>כפל ב־144</th><th>z</th></tr>
+<tr><td class="num">1</td><td class="num">—</td><td class="num">—</td><td class="num">144</td></tr>
+<tr><td class="num">1</td><td class="num">144² = 20736 ≡ 166</td><td class="num">166·144 = 23904 ≡ 155</td><td class="num">155</td></tr>
+<tr class="hl"><td class="num">1</td><td class="num">155² ≡ 89</td><td class="num">89·144 = 12816 ≡ 100</td><td class="num">100</td></tr>
+</table></div>
+<p>יצא <bdi dir="ltr">100 = m</bdi> ← <strong>תקין</strong> ✓. אם איב משנה את ההודעה ל־101 ומשאירה את <bdi dir="ltr">s</bdi>, האימות עדיין נותן 100 ≠ 101 ← נכשל. אם היא משנה את <bdi dir="ltr">s</bdi> ל־145, האימות נותן 172 ≠ 100 ← נכשל.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: חתימה ואימות <bdi dir="ltr">RSA</bdi></h5>
+<div class="row"><label>p <input id="sg-p" value="11"></label><label>q <input id="sg-q" value="17"></label><label>e <input id="sg-e" value="7"></label><label>הודעה <bdi dir="ltr">m</bdi> <input id="sg-m" value="100"></label><button onclick="sigRun()">חתום ואמת</button></div>
+<div class="row"><label><bdi dir="ltr">m</bdi> שהתקבל (לבדיקת שינוי) <input id="sg-m2" value="100"></label><label><bdi dir="ltr">s</bdi> שהתקבל <input id="sg-s2" value=""></label><button class="ghost" onclick="sigVerifyRun()">אמת זוג שהתקבל</button></div>
+<div id="sg-out"></div></div>
+
+<h3 id="small-e"><span class="sec">6.7</span>למה בוחרים <bdi dir="ltr">e</bdi> קטן</h3>
+<p>בחתימה משתמשים ב־<bdi dir="ltr">d</bdi> פעם אחת (החותם), אבל <strong>האימות</strong> עם <bdi dir="ltr">e</bdi> מתבצע פעמים רבות — כל מי שמקבל את המסמך מאמת אותו. לכן בוחרים <bdi dir="ltr">e</bdi> <strong>קטן וקבוע</strong> ומחשבים ממנו את <bdi dir="ltr">d</bdi> (בעזרת אוקלידס המורחב, 2.5). הערכים הנפוצים לפי המרצה: 3, 17 ו־<span class="ltr">2^16 + 1 = 65537</span>.</p>
+<div class="tbl-wrap"><table>
+<tr><th>e</th><th>בינארי</th><th>כפלים באימות (ריבוע וכפל, 2.12)</th></tr>
+<tr><td class="num">3</td><td class="num">11</td><td class="num">1 + 1 = 2</td></tr>
+<tr><td class="num">17</td><td class="num">10001</td><td class="num">4 + 1 = 5</td></tr>
+<tr><td class="num">65537</td><td class="num">10000000000000001</td><td class="num">16 + 1 = 17</td></tr>
+<tr><td><bdi dir="ltr">d</bdi> טיפוסי (2,048 ביט)</td><td>—</td><td class="num">≈ 2048 + 1024 ≈ 3000</td></tr>
+</table></div>
+<p>כך האימות מהיר כמעט כמו <bdi dir="ltr">AES</bdi>, והחתימה (עם <bdi dir="ltr">d</bdi> הגדול) איטית — וזה בדיוק המצב הרצוי. כל ה־<bdi dir="ltr">e</bdi> האלה ראשוניים עם מעט ביטים דולקים. צריך רק לבדוק ש־<span class="ltr">gcd(e, φ(n)) = 1</span>; למשל עם <span class="ltr">φ(n) = 160</span> מקבלים <span class="ltr">e = 3 → d = 107</span> ו־<span class="ltr">e = 17 → d = 113</span>.</p>
+
+<h3 id="forgery"><span class="sec">6.8</span>התקפת הזיוף: להריץ את התהליך הפוך</h3>
+<div class="box theory"><div class="box-head">📘 הרעיון ("קונספט שונה", כלשון המרצה)</div><div class="box-body">
+<p>איב לא יכולה לחתום על הודעה <em>שהיא בוחרת</em> — לשם כך צריך את <bdi dir="ltr">d</bdi>. אבל מה אם היא מתחילה מהסוף? היא בוחרת <strong>חתימה</strong> <bdi dir="ltr">s</bdi> כלשהי, ומחשבת עם המפתח <strong>הציבורי</strong> איזו הודעה מתאימה לה:</p>
+$$m = s^{e} \bmod n$$
+<p>עכשיו היא שולחת <span class="ltr">(m, s)</span>. האימות מחשב <span class="ltr">s^e mod n</span> — ומקבל בדיוק את <bdi dir="ltr">m</bdi>. <strong>האימות עובר.</strong></p>
+<p>זה נקרא <strong>זיוף קיומי</strong> (<span class="term">existential forgery</span>): קיימת הודעה עם חתימה תקפה שאליס מעולם לא חתמה עליה.</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ דוגמה עם אותם מפתחות (<span class="ltr">n = 187, e = 7</span>)</div><div class="box-body">
+<p>איב בוחרת <span class="ltr">s = 5</span>:</p>
+<p class="mathline"><span class="ltr">m = 5^7 mod 187 :  5 → 5²=25, 25·5=125 → 125²=15625≡104, 104·5=520≡146</span></p>
+<p>איב שולחת <span class="ltr">(146, 5)</span>. בוב מאמת: <span class="ltr">5^7 mod 187 = 146 = m</span> ✓ — עובר, למרות שאליס לא חתמה.</p>
+</div></div>
+<div class="box warn"><div class="box-head">⚠️ המגבלה של איב — ולמה זה עדיין שבירה</div><div class="box-body">
+<p>איב <strong>לא שולטת</strong> במה ש־<bdi dir="ltr">m</bdi> יוצא — בפועל יוצא ג'יבריש (מספר אקראי). היא לא יכולה לכתוב "העבר מיליון לאיב". ובכל זאת זו הפרה של ההגדרה: חתימה תקפה אמורה להוכיח שבעל המפתח הפרטי חתם — וכאן הוא לא חתם. וזכרו את ההגדרה מפרק 1: מערכת שבורה גם אם התוקף משיג "רק" משהו קטן.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: זייף חתימה</h5>
+<div class="row"><label>n <input id="fg-n" value="187"></label><label>e <input id="fg-e" value="7"></label><label>חתימה <bdi dir="ltr">s</bdi> שאיב בוחרת <input id="fg-s" value="5"></label><button onclick="forgeRun()">זייף</button></div>
+<div id="fg-out"></div></div>
+
+<h3 id="forgery-dos"><span class="sec">6.9</span>למה זיוף של ג'יבריש מסוכן: <bdi dir="ltr">DoS</bdi></h3>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — שרת העברות הכספים</div><div class="box-body">
+<p>נניח שרת שמקבל בקשות להעברת כסף. כדי לחסוך משאבים, הוא קודם מאמת את החתימה (פעולה זולה — <bdi dir="ltr">e</bdi> קטן), ורק הודעות שעברו את האימות הוא מעבד: מפענח, בודק בחשבון כמה כסף להעביר, כותב לבסיס הנתונים.</p>
+<p>הזיופים של איב <strong>עוברים</strong> את הסינון הזול. השרת מבזבז זמן יקר על כל אחד מהם, עד שבסוף הוא מגלה שזה ג'יבריש. איב מייצרת כמה זיופים שהיא רוצה בקלות — וכך מפילה את השרת. זו <strong>התקפת מניעת שירות</strong> (<span class="term">DoS</span>) ברמת האפליקציה, שמנצלת את חולשת הזיוף.</p>
+</div></div>
+
+<h3 id="padding"><span class="sec">6.10</span>התיקון: ריפוד</h3>
+<div class="box theory"><div class="box-head">📘 הרעיון</div><div class="box-body">
+<p>הפרוטוקול קובע שכל הודעה שנחתמת חייבת להסתיים ברצף קבוע — למשל 128 ביטים של 1. אליס פשוט מוסיפה את הרצף לפני החתימה; לה זה לא מפריע. המאמת בודק גם שהחתימה תקינה <strong>וגם</strong> שהרצף הנכון מופיע.</p>
+<p>איב, שמחשבת <span class="ltr">m = s^e mod n</span> מ־<bdi dir="ltr">s</bdi> אקראי, מקבלת <bdi dir="ltr">m</bdi> אקראי. הסיכוי שבמקרה ייצאו בדיוק 128 האחדות הנכונות בסוף:</p>
+$$P(\text{forgery passes}) = 2^{-128}$$
+<p>כלומר בלתי אפשרי בפועל.</p>
+</div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — דוגמת גדלים</div><div class="box-body">
+<p>הודעה של 896 ביט ועוד 128 ביט ריפוד נותנים בלוק של 1,024 ביט שנחתם. (בתמלול נשמע "996"; לפי החשבון <span class="ltr">1024 − 128 = 896</span>.)</p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ ריפוד צעצוע עם המספרים הקטנים</div><div class="box-body">
+<p>עם <span class="ltr">n = 187</span> אין מקום ל־128 ביט, אז נשתמש בריפוד של 4 אחדות: ההודעה האמיתית <bdi dir="ltr">p</bdi> מקודדת כ־<span class="ltr">m = 16·p + 15</span> (כלומר 4 הביטים האחרונים של <bdi dir="ltr">m</bdi> הם <span class="ltr">1111</span>). אליס עם <span class="ltr">p = 6</span>:</p>
+<p class="mathline"><span class="ltr">m = 16·6 + 15 = 111 = 1101111₂ ,  s = 111^23 mod 187 = 155</span></p>
+<p>מתוך כל 186 החתימות האפשריות של איב (<span class="ltr">s = 1 … 186</span>), רק 11 נותנות <bdi dir="ltr">m</bdi> שמסתיים ב־<span class="ltr">1111</span> — בערך <span class="ltr">1/16 = 2^−4</span>, כמו שהחשבון צופה. עם 128 ביט ריפוד הסיכוי יורד ל־<span class="ltr">2^−128</span>.</p>
+</div></div>
+<div class="lab"><h5>מעבדה: האם הזיוף עובר את בדיקת הריפוד?</h5>
+<div class="row"><label>n <input id="pd-n" value="187"></label><label>e <input id="pd-e" value="7"></label><label>ביטי ריפוד (אחדות) <input id="pd-k" type="number" value="4" min="1" max="7"></label><button onclick="padRun()">נסה את כל ה־<bdi dir="ltr">s</bdi></button></div>
+<div id="pd-out"></div></div>
+
+<h3 id="hash-sign"><span class="sec">6.11</span>הבא: <bdi dir="ltr">Hash</bdi> לפני חתימה</h3>
+<p>בשיעור הבא: במקום לחתום על ההודעה עצמה, מפעילים עליה קודם <strong>פונקציית <bdi dir="ltr">Hash</bdi></strong> וחותמים על התוצאה (<span class="term">hash-then-sign</span>). זה פותר שתי בעיות בבת אחת: הודעה ארוכה מכל גודל הופכת לערך קצר שנכנס ב־<bdi dir="ltr">n</bdi>, והזיוף של 6.8 כבר לא עובד — איב תצטרך למצוא הודעה שה־<bdi dir="ltr">Hash</bdi> שלה יוצא בדיוק <bdi dir="ltr">m</bdi>, וזה קשה.</p>
+
+<h3 id="ch6-sum"><span class="sec">6.12</span>סיכום ותרגול — פרק 6</h3>
+<div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
+<ul>
+<li><bdi dir="ltr">Sign</bdi> עם <strong>הפרטי של החותם</strong>, <bdi dir="ltr">Verify</bdi> עם <strong>הציבורי של החותם</strong> — הפוך מהצפנה.</li>
+<li>חתימה נותנת שלמות, אימות מקור ואי־הכחשה — <strong>לא סודיות</strong>.</li>
+<li>מפתח סימטרי משותף לא נותן אי־הכחשה.</li>
+<li>חתימת <bdi dir="ltr">RSA</bdi>: <span class="ltr">s = m^d mod n</span>; אימות: <span class="ltr">s^e mod n = m ?</span> — וההשוואה היא העיקר.</li>
+<li><bdi dir="ltr">e</bdi> קטן (3, 17, 65537) ← אימות מהיר.</li>
+<li>זיוף קיומי: לבחור <bdi dir="ltr">s</bdi> ולחשב <span class="ltr">m = s^e mod n</span>. <bdi dir="ltr">m</bdi> יוצא ג'יבריש, אבל עדיין שבירה, ואפשר לנצל אותה ל־<bdi dir="ltr">DoS</bdi>.</li>
+<li>תיקון: ריפוד קבוע (סיכוי זיוף <span class="ltr">2^−128</span>), ובהמשך <bdi dir="ltr">Hash</bdi> לפני חתימה.</li>
+</ul>
+</div></div>
+<div class="box exercise"><div class="box-head">🏋️ תרגול</div><div class="box-body">
+<p><strong>1.</strong> המפתחות של אליס: <span class="ltr">n = 187, e = 7, d = 23</span>. בוב קיבל <span class="ltr">(m, s) = (50, 50^23 mod 187)</span>. חשב את <bdi dir="ltr">s</bdi> ובצע אימות.</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">s = 50^23 mod 187 = 84</span>. אימות: <span class="ltr">84^7 mod 187 = 50 = m</span> ← תקין. (בדקו במעבדה של 6.6.)</p></div></details>
+<p><strong>2.</strong> איב שולחת <span class="ltr">(m, s) = (2, 2)</span> עם אותו מפתח ציבורי. האם האימות עובר?</p>
+<details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">2^7 = 128</span>, ו־<span class="ltr">128 mod 187 = 128 ≠ 2</span> ← נכשל. אבל אם איב הייתה שולחת <span class="ltr">(128, 2)</span> — עובר. זה בדיוק הזיוף של 6.8.</p></div></details>
+<p><strong>3.</strong> אליס רוצה לשלוח לבוב הודעה <strong>סודית וחתומה</strong>. באילו מפתחות היא משתמשת, ובאיזה סדר?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>חותמת עם <strong>הפרטי שלה</strong> (כדי להוכיח שהיא השולחת), ומצפינה עם <strong>הציבורי של בוב</strong> (כדי שרק בוב יקרא). בוב מפענח עם הפרטי שלו ומאמת עם הציבורי של אליס.</p></div></details>
+<p><strong>4.</strong> שרת מאמת חתימות <bdi dir="ltr">RSA</bdi> בלי ריפוד ובלי <bdi dir="ltr">Hash</bdi>, ורק אחרי האימות פונה לבסיס הנתונים. למה זה פגיע?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>תוקף מייצר זיופים קיומיים (בוחר <bdi dir="ltr">s</bdi>, מחשב <span class="ltr">m = s^e mod n</span>) בלי שום מפתח. הם עוברים את האימות, והשרת מבזבז משאבים על כל אחד מהם ← <bdi dir="ltr">DoS</bdi>. התיקון: ריפוד או <bdi dir="ltr">Hash</bdi> לפני חתימה.</p></div></details>
+<p><strong>5.</strong> נכון או לא: "בחתימה דיגיטלית מצפינים את ההודעה עם המפתח הפרטי, ולכן היא סודית".</p>
+<details class="reveal"><summary>פתרון</summary><div><p><strong>לא נכון.</strong> ההודעה נשלחת גלויה לצד החתימה, וכל אחד יכול "לפתוח" את החתימה עם המפתח הציבורי. אין שום סודיות.</p></div></details>
+</div></div>
+
+<div class="pager"><a class="prev" href="ch5.html"><small>▶ הקודם</small>פרק 5 — הצפנה סימטרית: <bdi dir="ltr">AES</bdi></a><span style="flex:1"></span></div>
+</main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

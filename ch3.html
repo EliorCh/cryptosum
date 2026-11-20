@@ -22,7 +22,7 @@ window.MathJax = {
 <button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
 <div class="layout">
 <nav class="side" id="sidebar">
-<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–4 + תרגיל בית 1</small></div>
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–6 + תרגיל בית 1</small></div>
 <div class="progress"><span id="prog"></span></div>
 <a class="chap" href="index.html">דף הבית</a>
 <a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
@@ -41,6 +41,8 @@ window.MathJax = {
 <a class="sub" href="#ch3-sum">סיכום ותרגול — פרק 3</a>
 <a class="chap" href="hw1.html">תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a>
 <a class="chap" href="ch4.html">פרק 4 — הצפנה סימטרית: DES</a>
+<a class="chap" href="ch5.html">פרק 5 — הצפנה סימטרית: AES</a>
+<a class="chap" href="ch6.html">פרק 6 — חתימות דיגיטליות</a>
 </nav>
 <main id="top">
 <!-- =============================== CHAPTER 3 =============================== -->
@@ -432,7 +434,7 @@ $$g^{im + j} = \beta \iff g^{j} = \beta \cdot \left(g^{m}\right)^{-i}$$
 </table></div>
 <div class="keypoint">💡 <b>שורש הבעיה: אין אימות.</b> שימו לב — איב <strong>לא פתרה</strong> <bdi dir="ltr">DLP</bdi>. היא לא שברה את המתמטיקה, היא פשוט התחזתה.</div>
 <div class="box theory"><div class="box-head">📘 איך מתקנים: לחתום על הערכים הציבוריים</div><div class="box-body">
-<p>צריך דרך שבה אליס תוכל לבדוק ש־<bdi dir="ltr">B</bdi> באמת נשלח על ידי בוב. הפתרון: בוב <strong>חותם דיגיטלית</strong> על <bdi dir="ltr">B</bdi> עם מפתח פרטי שלו (חתימות דיגיטליות — פרק 5 בקורס), ואליס בודקת את החתימה עם המפתח הציבורי של בוב. איב יכולה להחליף את <bdi dir="ltr">B</bdi>, אבל לא יכולה לייצר חתימה תקפה של בוב על הערך שלה.</p>
+<p>צריך דרך שבה אליס תוכל לבדוק ש־<bdi dir="ltr">B</bdi> באמת נשלח על ידי בוב. הפתרון: בוב <strong>חותם דיגיטלית</strong> על <bdi dir="ltr">B</bdi> עם מפתח פרטי שלו (חתימות דיגיטליות — <a href="ch6.html">פרק 6</a>), ואליס בודקת את החתימה עם המפתח הציבורי של בוב. איב יכולה להחליף את <bdi dir="ltr">B</bdi>, אבל לא יכולה לייצר חתימה תקפה של בוב על הערך שלה.</p>
 <p>ומאיפה אליס יודעת שהמפתח הציבורי הוא באמת של בוב? מ<strong>תעודה</strong> (<span class="term">certificate</span>) שגוף מוסמך חתם עליה — זו תשתית ה־<span class="term">PKI</span>. כך עובד <bdi dir="ltr">TLS</bdi>: השרת שולח ערך <bdi dir="ltr">DH</bdi> חתום ותעודה, והדפדפן בודק את שניהם.</p>
 </div></div>
 

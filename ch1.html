@@ -22,7 +22,7 @@ window.MathJax = {
 <button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
 <div class="layout">
 <nav class="side" id="sidebar">
-<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–4 + תרגיל בית 1</small></div>
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–6 + תרגיל בית 1</small></div>
 <div class="progress"><span id="prog"></span></div>
 <a class="chap" href="index.html">דף הבית</a>
 <a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
@@ -41,10 +41,13 @@ window.MathJax = {
 <a class="sub" href="#ecb">מצב ECB והתקפת החלפת הבלוקים</a>
 <a class="sub" href="#modes">מצבי הפעלה (Modes of Operation) והתיקון: CBC</a>
 <a class="sub" href="#ch1-sum">סיכום ותרגול — פרק 1</a>
+<a class="sub" href="#security-basics">העשרה: מושגי אבטחת מידע (מהשיעור של 15.11)</a>
 <a class="chap" href="ch2.html">פרק 2 — הצפנה אסימטרית ו־RSA</a>
 <a class="chap" href="ch3.html">פרק 3 — לוג דיסקרטי ו־Diffie-Hellman</a>
 <a class="chap" href="hw1.html">תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a>
 <a class="chap" href="ch4.html">פרק 4 — הצפנה סימטרית: DES</a>
+<a class="chap" href="ch5.html">פרק 5 — הצפנה סימטרית: AES</a>
+<a class="chap" href="ch6.html">פרק 6 — חתימות דיגיטליות</a>
 </nav>
 <main id="top">
 
@@ -83,7 +86,10 @@ window.MathJax = {
 <tr><td><strong>סודיות</strong> (<span class="term">confidentiality</span>)</td><td>האם איב יכולה <em>לקרוא</em> את ההודעה?</td><td>כל צופן: קיסר, <bdi dir="ltr">AES, RSA</bdi>.</td></tr>
 <tr><td><strong>שלמות</strong> (<span class="term">integrity</span>)</td><td>האם איב יכולה <em>לשנות</em> את ההודעה בלי שנגלה?</td><td>התקפת החלפת הבלוקים על <bdi dir="ltr">ECB</bdi> (1.11), מצב <bdi dir="ltr">GCM</bdi>.</td></tr>
 <tr><td><strong>אימות</strong> (<span class="term">authentication</span>)</td><td>האם ההודעה באמת הגיעה ממי שנראה ששלח אותה?</td><td>התקפת "אדם בתווך" על <bdi dir="ltr">Diffie-Hellman</bdi> (פרק 3).</td></tr>
+<tr><td><strong>אי־הכחשה</strong> (<span class="term">non-repudiation</span>)</td><td>האם השולח יכול לטעון אחר כך "לא אני שלחתי"?</td><td>חתימות דיגיטליות (פרק 6).</td></tr>
+<tr><td><strong>זמינות</strong> (<span class="term">availability</span>)</td><td>האם המערכת זמינה למשתמשים הלגיטימיים?</td><td>התקפות מניעת שירות (<bdi dir="ltr">DoS</bdi>), למשל דרך זיוף חתימות (6.9).</td></tr>
 </table></div>
+<p><strong>משולש <bdi dir="ltr">CIA</bdi>:</strong> בשיעור של 15.11 המרצה הציג את הראשי התיבות המקובלים בתעשייה — <span class="term">Confidentiality, Integrity, Availability</span> (סודיות, שלמות, זמינות). אימות ואי־הכחשה הם תכונות שמשלימות אותו, ויופיעו בחתימות דיגיטליות.</p>
 <p>שימו לב: הצפנה לבדה נותנת רק סודיות. חלק גדול מההתקפות בקורס מנצלות בדיוק את הפער הזה — ההודעה סודית, אבל אפשר לשנות אותה או להתחזות לשולח.</p>
 </div></div>
 <div class="box theory"><div class="box-head">📘 מילון מונחים בסיסי</div><div class="box-body">
@@ -94,7 +100,7 @@ window.MathJax = {
 <tr><td>מפתח</td><td class="mono">Key (K)</td><td>הסוד היחיד במערכת. קובע איך ההצפנה מתנהגת.</td></tr>
 <tr><td>הצפנה / פענוח</td><td class="mono">Encrypt / Decrypt</td><td>הפונקציות שהופכות <bdi dir="ltr">P</bdi> ל־<bdi dir="ltr">C</bdi> ולהפך.</td></tr>
 <tr><td>סימטרי</td><td class="mono">Symmetric</td><td>אותו מפתח להצפנה ולפענוח (<bdi dir="ltr">AES, ChaCha20</bdi>).</td></tr>
-<tr><td>אסימטרי</td><td class="mono">Asymmetric</td><td>זוג מפתחות: ציבורי להצפנה, פרטי לפענוח (<bdi dir="ltr">RSA</bdi>) — פרק 2.</td></tr>
+<tr><td>אסימטרי</td><td class="mono">Asymmetric</td><td>זוג מפתחות: בהצפנה — ציבורי להצפנה, פרטי לפענוח (<bdi dir="ltr">RSA</bdi>, פרק 2). בחתימה דיגיטלית הכיוון הפוך — חותמים בפרטי ומאמתים בציבורי (פרק 6).</td></tr>
 </table></div>
 </div></div>
 
@@ -481,6 +487,34 @@ $$C_0 = IV \qquad C_i = E_K(P_i \oplus C_{i-1}) \qquad P_i = D_K(C_i) \oplus C_{
 <details class="reveal"><summary>פתרון</summary><div><p>H = 7: <span class="ltr">5·7 + 17 = 52 ≡ 0 → A</span>. I = 8: <span class="ltr">5·8 + 17 = 57 ≡ 5 → F</span>. ההצפנה: <span class="ltr">AF</span>.</p><p>פענוח <bdi dir="ltr">A</bdi>: <span class="ltr">21·(0 − 17) = −357 ≡ 7 → H</span>. פענוח <bdi dir="ltr">F</bdi>: <span class="ltr">21·(5 − 17) = −252 ≡ 8 → I</span> ✓.</p></div></details>
 <p><strong>6.</strong> למה בצופן אפיני אסור לבחור <span class="ltr">a = 13</span>?</p>
 <details class="reveal"><summary>פתרון</summary><div><p><span class="ltr">gcd(13, 26) = 13 ≠ 1</span>, ולכן אין ל־13 הופכי מודולו 26. בפועל: כל אות זוגית הופכת ל־<bdi dir="ltr">b</bdi> וכל אות אי־זוגית ל־<span class="ltr">13 + b</span> — רק שתי אותיות אפשריות, ואי אפשר לפענח.</p></div></details>
+</div></div>
+
+<h3 id="security-basics"><span class="sec">1.14</span>העשרה: מושגי אבטחת מידע (מהשיעור של 15.11)</h3>
+<div class="box warn"><div class="box-head">⚠️ לא לבחינה</div><div class="box-body"><p>את החלק הראשון של השיעור ב־15.11 המרצה הקדיש לאבטחת מידע כללית, ואמר שזה <strong>לא לבחינה</strong> (התמלול בקטע הזה לא חד לגמרי). הסעיף כאן לרקע כללי — שימושי לראיונות עבודה.</p></div></div>
+<div class="tbl-wrap"><table>
+<tr><th>מונח</th><th>משמעות</th></tr>
+<tr><td><strong>פגיעות</strong> (<span class="term">vulnerability</span>)</td><td>חולשה בתוכנה או במערכת שתוקף יכול לנצל.</td></tr>
+<tr><td><strong><span class="term">Exploit</span></strong></td><td>קוד או שיטה שמנצלים פגיעות מסוימת בפועל.</td></tr>
+<tr><td><strong><span class="term">Zero-day</span></strong></td><td>פגיעות שעוד לא ידועה ליצרן — אין לה תיקון.</td></tr>
+<tr><td><strong><span class="term">Patch</span></strong></td><td>עדכון שמתקן פגיעות. המרצה: ברגע שיוצא <bdi dir="ltr">Patch</bdi> "כל העולם יודע" — תוקפים משווים בין הגרסאות ומגיעים לפגיעות מהר. לכן חשוב לעדכן מהר.</td></tr>
+<tr><td><strong><span class="term">CVE</span></strong></td><td>מספר מזהה ציבורי לפגיעות ידועה.</td></tr>
+<tr><td><strong><span class="term">Malware</span> / <span class="term">Worm</span></strong></td><td>תוכנה זדונית / תוכנה זדונית שמפיצה את עצמה לבד ברשת.</td></tr>
+<tr><td><strong><span class="term">Ransomware</span></strong></td><td>מצפינה את המידע של הקורבן ודורשת כופר. הקשר לקורס: ההצפנה היא בדרך כלל <bdi dir="ltr">AES</bdi> (פרק 5). המרצה: הרבה פעמים מצפינים גם את הגיבוי, כי הוא מחובר לאותה רשת; וגם אחרי שחזור צריך לסגור את הפרצה.</td></tr>
+<tr><td><strong><span class="term">Phishing</span></strong></td><td>הודעה מתחזה שמפתה למסור פרטים. מ"הנסיך הניגרי" הגנרי ועד <strong>פישינג ממוקד</strong> שנבנה לאדם מסוים.</td></tr>
+<tr><td><strong>הנדסה חברתית</strong></td><td>תקיפה של האדם ולא של המחשב — לשכנע מישהו למסור סיסמה או לחבר התקן.</td></tr>
+<tr><td><strong><span class="term">DoS / DDoS</span></strong></td><td>הצפת מערכת בבקשות עד שהיא לא זמינה; <bdi dir="ltr">DDoS</bdi> — ממחשבים רבים בבת אחת.</td></tr>
+<tr><td><strong>וקטור תקיפה</strong></td><td>הדרך שבה התוקף נכנס (מייל, אתר, דיסק און קי…).</td></tr>
+<tr><td><strong>סוגי תוקפים</strong></td><td>מ"<bdi dir="ltr">script kiddies</bdi>" שמריצים כלים מוכנים ועד מדינות (<span class="term">nation state</span>) עם משאבים עצומים.</td></tr>
+</table></div>
+<div class="cards">
+<div class="card"><div class="ic">🔐</div><b>הרשאה מינימלית</b>(<span class="term">Least Privilege</span>) כל משתמש מקבל רק את ההרשאות שהוא צריך. הדוגמה מהשיעור: מרצה מקבל הרשאות רק לקורס שלו, לא לכל המכללה.</div>
+<div class="card"><div class="ic">🧱</div><b>הגנה לעומק</b>(<span class="term">Defense in Depth</span>) כמה שכבות הגנה, כך שפריצה של אחת לא מספיקה.</div>
+<div class="card"><div class="ic">⚖️</div><b>אזהרה משפטית</b>המרצה הזהיר: לא לנסות לפרוץ למערכות אמיתיות — זה לא חוקי. מתאמנים בתחרויות <bdi dir="ltr">CTF</bdi> ובמכונות אימון ייעודיות.</div>
+</div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור — שני מקרים מפורסמים</div><div class="box-body">
+<p><strong>Heartbleed (2014):</strong> באג בספריית <bdi dir="ltr">OpenSSL</bdi>, במנגנון "<bdi dir="ltr">Heartbeat</bdi>" שבודק שהחיבור חי. הלקוח שולח הודעה קצרה ומצהיר על האורך שלה, והשרת מחזיר בחזרה מספר בתים <strong>לפי האורך שהלקוח הצהיר</strong>, בלי לבדוק שזה האורך האמיתי. שולחים "היי" ומצהירים על אורך 1,024 — והשרת מחזיר "היי" ועוד כ־1,000 בתים מהזיכרון שלו, שיכולים לכלול מפתחות פרטיים וסיסמאות. זו קריאה מחוץ לגבולות (<span class="term">out-of-bounds read</span>). הקשר לקורס: האלגוריתם (<bdi dir="ltr">TLS</bdi>) תקין — <strong>המימוש</strong> דלף, בדיוק כמו התקפות ערוץ הצד (1.8).</p>
+<p><strong><bdi dir="ltr">Stuxnet</bdi> (הוחדר ב־2009, נחשף ב־2010):</strong> תולעת שתקפה את הצנטריפוגות של תוכנית הגרעין האיראנית. מערכת הבקרה הייתה מנותקת מהאינטרנט (<span class="term">air gap</span>), ולכן כנראה הוחדרה עם דיסק און קי. היא ניצלה כמה <bdi dir="ltr">Zero-days</bdi>, שינתה את מהירות הצנטריפוגות במערכות הבקרה התעשייתיות (<span class="term">SCADA</span>), ובמקביל הציגה למפעילים "הכול תקין" על המסך. מיוחסת לתוקף ברמת מדינה.</p>
+<p><strong>BadUSB / Rubber Ducky:</strong> דיסק און קי שמזדהה מול המחשב כמקלדת ו"מקליד" פקודות במהירות. המרצה סיפר שהשתמש בזה בפרויקט <bdi dir="ltr">Red Team</bdi> (בדיקת חדירה מורשית).</p>
 </div></div>
 
 <div class="pager"><a class="prev" href="ch0.html"><small>▶ הקודם</small>פרק 0 — ידע מקדים וסימונים</a><a class="next" href="ch2.html"><small>הבא ◀</small>פרק 2 — הצפנה אסימטרית ו־<bdi dir="ltr">RSA</bdi></a></div>

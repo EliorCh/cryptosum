@@ -22,7 +22,7 @@ window.MathJax = {
 <button class="menu-btn" onclick="document.querySelector('nav.side').classList.toggle('open')">☰ תפריט</button>
 <div class="layout">
 <nav class="side" id="sidebar">
-<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–4 + תרגיל בית 1</small></div>
+<div class="brand">🔐 קריפטוגרפיה שימושית<small>אתר למידה · פרקים 0–6 + תרגיל בית 1</small></div>
 <div class="progress"><span id="prog"></span></div>
 <a class="chap here" href="index.html">דף הבית</a>
 <a class="chap" href="ch0.html">פרק 0 — ידע מקדים וסימונים</a>
@@ -31,13 +31,15 @@ window.MathJax = {
 <a class="chap" href="ch3.html">פרק 3 — לוג דיסקרטי ו־Diffie-Hellman</a>
 <a class="chap" href="hw1.html">תרגיל בית 1 — שיטת עבודה ובוחן מסכם</a>
 <a class="chap" href="ch4.html">פרק 4 — הצפנה סימטרית: DES</a>
+<a class="chap" href="ch5.html">פרק 5 — הצפנה סימטרית: AES</a>
+<a class="chap" href="ch6.html">פרק 6 — חתימות דיגיטליות</a>
 </nav>
 <main id="top">
 <section id="home">
 <div class="cover"><div class="mta-old-hero">
   <h1>🔐 מבוא לקריפטוגרפיה שימושית</h1>
   <p>אתר למידה לפרקים 1–4 של הקורס (ד״ר יותם אשכנזי) — מבוא, הצפנה אסימטרית ו־<bdi dir="ltr">RSA</bdi>, לוג דיסקרטי ו־<bdi dir="ltr">Diffie-Hellman</bdi>, הצפנה סימטרית ו־<bdi dir="ltr">DES</bdi> — ועוד פרק 0 עם כל הידע המקדים, כך שאפשר ללמוד מכאן גם בלי השקפים. כל מושג מוסבר במילים, בנוסחה, בדוגמה עם מספרים אמיתיים, ובמעבדה אינטראקטיבית שבה אפשר לשחק עם המספרים בעצמך.</p>
-  </div><div class="toc-grid"><a href="ch0.html"><b>פרק 0</b>ידע מקדים וסימונים</a><a href="ch1.html"><b>פרק 1</b>מבוא לקריפטוגרפיה</a><a href="ch2.html"><b>פרק 2</b>הצפנה אסימטרית ו־<bdi dir="ltr">RSA</bdi></a><a href="ch3.html"><b>פרק 3</b>לוג דיסקרטי ו־<bdi dir="ltr">Diffie-Hellman</bdi></a><a href="hw1.html"><b>תרגיל בית 1</b>שיטת עבודה ובוחן מסכם</a><a href="ch4.html"><b>פרק 4</b>הצפנה סימטרית: <bdi dir="ltr">DES</bdi></a></div>
+  </div><div class="toc-grid"><a href="ch0.html"><b>פרק 0</b>ידע מקדים וסימונים</a><a href="ch1.html"><b>פרק 1</b>מבוא לקריפטוגרפיה</a><a href="ch2.html"><b>פרק 2</b>הצפנה אסימטרית ו־<bdi dir="ltr">RSA</bdi></a><a href="ch3.html"><b>פרק 3</b>לוג דיסקרטי ו־<bdi dir="ltr">Diffie-Hellman</bdi></a><a href="hw1.html"><b>תרגיל בית 1</b>שיטת עבודה ובוחן מסכם</a><a href="ch4.html"><b>פרק 4</b>הצפנה סימטרית: <bdi dir="ltr">DES</bdi></a><a href="ch5.html"><b>פרק 5</b>הצפנה סימטרית: <bdi dir="ltr">AES</bdi></a><a href="ch6.html"><b>פרק 6</b>חתימות דיגיטליות</a></div>
 </div>
 <div class="box summary"><div class="box-head">🗺️ איך להשתמש באתר</div><div class="box-body">
 <ul>
@@ -56,6 +58,9 @@ window.MathJax = {
 <li><strong>ציון:</strong> <bdi dir="ltr">40%</bdi> תרגילים (2 תרגילי תכנות + 2 תיאורטיים), <bdi dir="ltr">60%</bdi> בחינה סופית. נוכחות חובה ב־10 שיעורים.</li>
 <li><strong>התרגילים</strong> אמורים לקחת שעה עד שעה וחצי. אם לוקח הרבה יותר — כנראה לא הבנתם את מה שנדרש, ועדיף לשאול את המרצה.</li>
 <li><strong>הבחינה:</strong> אמריקאית; המרצה ציין שאולי יש גם חלק פתוח ואמר שיבדוק.</li>
+<li><strong>סגנון הבחינה (מהשיעור של 15.11, מתוך שיחה בהפסקה):</strong> לא לשנן לאן עובר כל ביט, אלא להבין את הרעיון של כל אלגוריתם, באילו מפתחות משתמשים ולמה, ואיך אפשר לתקוף. שאלות פתוחות לדוגמה: "למה זה פגיע?" או "הצע אלגוריתם שמשלב כמה רכיבים".</li>
+<li><strong>מבחנים לדוגמה:</strong> הועלו מבחן לדוגמה ומבחן מסמסטר א׳ (בסמסטר ב׳ לא היה מבחן). לדברי המרצה, מי שמכיר את חומר הכיתה יצליח ברוב השאלות של מבחן השנה שעברה.</li>
+<li><strong>מה נשאר בקורס:</strong> פונקציות <bdi dir="ltr">Hash</bdi> (גם <bdi dir="ltr">Hash</bdi> לפני חתימה), בלוקצ'יין וביטקוין, ניהול מפתחות, ענן ו־<bdi dir="ltr">HSM</bdi>, קריפטוגרפיה פוסט־קוונטית, ושיעור חזרה. המרצה: "כמעט סיימנו את האלגוריתמיקה — מכאן פרקטיקה". התקפות משולבות בכל נושא.</li>
 <li><strong>שימוש ב־<bdi dir="ltr">AI</bdi></strong> מותר בתרגילים, בתנאי שמצהירים ומבינים את התשובה.</li>
 <li><strong>הגישה של הקורס:</strong> אינטואיציה ושימוש מעשי, בלי הוכחות מתמטיות מלאות. המרצה אמר במפורש שלפעמים "נשקר קצת" ונפשט כדי לא להיכנס למתמטיקה כבדה.</li>
 </ul>
@@ -63,7 +68,7 @@ window.MathJax = {
 </div></div>
 <div class="box theory"><div class="box-head">🧭 סדר מומלץ</div><div class="box-body">
 <p>כל פרק בעמוד נפרד, ובראש כל פרק כתוב מה צריך לדעת לפניו. הסדר המומלץ:</p>
-<p style="text-align:center;font-weight:700">פרק 0 ← פרק 1 ← פרק 2 ← פרק 3 ← תרגיל בית 1 ← פרק 4</p>
+<p style="text-align:center;font-weight:700">פרק 0 ← פרק 1 ← פרק 2 ← פרק 3 ← תרגיל בית 1 ← פרק 4 ← פרק 5 ← פרק 6</p>
 <p>אם כבר נוח לך עם בינארי, ראשוניים וסימון מודולו — אפשר לדלג על פרק 0 ולחזור אליו רק כשסימון לא ברור.</p>
 </div></div>
 
