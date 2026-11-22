@@ -43,7 +43,7 @@ window.MathJax = {
 <a class="sub" href="#addroundkey">שלב 4: AddRoundKey ותזמון המפתחות</a>
 <a class="sub" href="#aes-last-round">הסבב האחרון בלי MixColumns, ומעבדה</a>
 <a class="sub" href="#aes-decrypt">פענוח</a>
-<a class="sub" href="#galois">העשרה: שדות גלואה — <span class="ltr">GF(2^8)</span></a>
+<a class="sub" href="#galois">שדות גלואה — מבוא ברמה גבוהה</a>
 <a class="sub" href="#ch5-sum">סיכום ותרגול — פרק 5</a>
 <a class="chap" href="ch6.html">פרק 6 — חתימות דיגיטליות</a>
 </nav>
@@ -58,9 +58,9 @@ window.MathJax = {
 <div class="tbl-wrap"><table>
 <tr><th>שנה</th><th>מה קרה</th></tr>
 <tr><td class="num">1997</td><td><bdi dir="ltr">NIST</bdi> (גוף התקינה האמריקאי) פרסם קול קורא פומבי לצופן בלוקים חדש.</td></tr>
-<tr><td class="num">1998</td><td>הוגשו 15 מועמדים מכל העולם.</td></tr>
-<tr><td class="num">1999</td><td>5 עלו לגמר: <bdi dir="ltr">MARS, RC6, Rijndael, Serpent, Twofish</bdi>.</td></tr>
-<tr><td class="num">2000</td><td><bdi dir="ltr">Rijndael</bdi> נבחר כזוכה.</td></tr>
+<tr><td class="num">Aug 1998</td><td>הוגשו 15 מועמדים מכל העולם.</td></tr>
+<tr><td class="num">Aug 1999</td><td>5 עלו לגמר: <bdi dir="ltr">MARS, RC6, Rijndael, Serpent, Twofish</bdi>.</td></tr>
+<tr><td class="num">Oct 2, 2000</td><td><bdi dir="ltr">Rijndael</bdi> נבחר כזוכה.</td></tr>
 <tr><td class="num">2001</td><td>פורסם כתקן <bdi dir="ltr">AES</bdi> (<span class="term">FIPS 197</span>).</td></tr>
 </table></div>
 <div class="box lecture"><div class="box-head">🎙️ מהשיעור — מה היה שונה הפעם</div><div class="box-body">
@@ -71,11 +71,11 @@ window.MathJax = {
 <li><strong>המצב היום:</strong> אחרי כ־26 שנה אין שבירה מעשית ידועה של <bdi dir="ltr">AES</bdi>. הוא נתמך כמעט בכל רכיב (במעבדים מודרניים יש לו אפילו פקודות חומרה ייעודיות).</li>
 </ul>
 </div></div>
-<div class="box lecture"><div class="box-head">🎙️ מהשיעור — <bdi dir="ltr">AES</bdi> ומידע מסווג (ומה ההבדל מהמקור)</div><div class="box-body">
-<p><strong>מה המרצה אמר:</strong> ה־<bdi dir="ltr">NSA</bdi> אישרה להשתמש ב־<bdi dir="ltr">AES</bdi> גם למידע מסווג, "אם לא משתמשים במפתח הכי קטן". (התמלול בקטע הזה לא ברור לגמרי.)</p>
-<p><strong>מה כתוב במדיניות הרשמית — ההבדל:</strong></p>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור ומהשקף — <bdi dir="ltr">AES</bdi> ומידע מסווג</div><div class="box-body">
+<p><strong>בשקף:</strong> ה־<bdi dir="ltr">NSA</bdi> מתירה <bdi dir="ltr">AES</bdi> למידע מסווג עד רמת <strong>TOP SECRET</strong> עם מפתח של 192 או 256 ביט. <strong>בשיעור</strong> המרצה אמר זאת בקיצור: "אם לא משתמשים במפתח הכי קטן".</p>
+<p><strong>התמונה המלאה במדיניות הרשמית:</strong></p>
 <ul>
-<li><strong>המדיניות המקורית</strong> (<span class="term">CNSSP-15</span>, 2003): <strong>כל</strong> גדלי המפתח של <bdi dir="ltr">AES</bdi>, כולל 128, מספיקים עד רמת <bdi dir="ltr">SECRET</bdi>. לרמת <bdi dir="ltr">TOP SECRET</bdi> נדרש מפתח של 192 או 256 ביט. כלומר "לא המפתח הקטן" נכון רק לרמה הגבוהה ביותר.</li>
+<li><strong>המדיניות המקורית</strong> (<span class="term">CNSSP-15</span>, 2003): <strong>כל</strong> גדלי המפתח של <bdi dir="ltr">AES</bdi>, כולל 128, מספיקים עד רמת <bdi dir="ltr">SECRET</bdi>; לרמת <bdi dir="ltr">TOP SECRET</bdi> נדרש 192 או 256 — בדיוק מה שבשקף. כלומר "לא המפתח הקטן" נכון רק לרמה הגבוהה ביותר.</li>
 <li><strong>מאז 2015</strong> (חבילת <span class="term">CNSA</span>): ה־<bdi dir="ltr">NSA</bdi> דורשת <bdi dir="ltr">AES-256</bdi> לכל רמות הסיווג.</li>
 </ul>
 <p>לא סביר שישאלו על זה בבחינה; זה הקשר.</p>
@@ -89,6 +89,14 @@ window.MathJax = {
 <tr><td>AES-192</td><td class="num">128 bits</td><td class="num">192 bits</td><td class="num">12</td></tr>
 <tr><td>AES-256</td><td class="num">128 bits</td><td class="num">256 bits</td><td class="num">14</td></tr>
 </table></div>
+<div class="tbl-wrap"><table>
+<tr><th>גודל מפתח</th><th>מספר מפתחות אפשריים (מהשקף)</th></tr>
+<tr><td class="num">128</td><td class="num">2^128 ≈ 3.4 × 10^38</td></tr>
+<tr><td class="num">192</td><td class="num">2^192 ≈ 6.3 × 10^57</td></tr>
+<tr><td class="num">256</td><td class="num">2^256 ≈ 1.2 × 10^77</td></tr>
+<tr><td><bdi dir="ltr">DES</bdi> (להשוואה)</td><td class="num">2^56 ≈ 7.2 × 10^16</td></tr>
+</table></div>
+<p>ל־<bdi dir="ltr">AES-128</bdi> יש פי <span class="ltr">2^128 / 2^56 = 2^72 ≈ 4.7 × 10^21</span> יותר מפתחות מאשר ל־<bdi dir="ltr">DES</bdi>.</p>
 <p><strong>הבלוק תמיד 128 ביט</strong> (16 בתים) — רק המפתח ומספר הסבבים משתנים. לפי המרצה, "גם 128 מספיק חזק עד היום": כוח גס על <span class="ltr">2^128</span> מפתחות לא אפשרי (ראו <a href="ch0.html#security-bits">0.4</a>).</p>
 </div></div>
 <div class="box lecture"><div class="box-head">🎙️ מהשיעור — למה מפתח ארוך יותר = יותר סבבים?</div><div class="box-body"><p>סטודנט שאל, והתשובה: מי שבוחר במפתח ארוך יותר רוצה ביטחון גבוה יותר — אז מוסיפים סבבים כדי שגם המבנה עצמו (לא רק גודל המפתח) יהיה חזק יותר, עם יותר מרווח ביטחון מול התקפות אנליטיות.</p></div></div>
@@ -200,15 +208,29 @@ $$\begin{pmatrix} s'_0 \\ s'_1 \\ s'_2 \\ s'_3 \end{pmatrix} = \begin{pmatrix} 0
 <p>כל בית בפלט תלוי בכל 4 הבתים של העמודה. שינוי בבית אחד בכניסה משנה את כל 4 הבתים ביציאה.</p>
 <div class="box theory"><div class="box-head">📘 למה זה לא כפל "רגיל"</div><div class="box-body">
 <p>החשבון כאן הוא בשדה מיוחד, <span class="ltr">GF(2^8)</span> (שדה גלואה, 5.11): "חיבור" הוא <bdi dir="ltr">XOR</bdi>, ו"כפל" מוגדר כך שהתוצאה תמיד נשארת בית אחד. המקדמים 01, 02, 03 מייצגים את הפולינומים <span class="ltr">1, x, x+1</span>. בפועל: כפל ב־01 משאיר את הבית, כפל ב־02 הוא הזזה של הבית שמאלה (ואם יצא ביט 1 מהקצה — <bdi dir="ltr">XOR</bdi> עם <span class="ltr">0x1b</span>), וכפל ב־03 הוא כפל ב־02 ועוד <bdi dir="ltr">XOR</bdi> עם הבית עצמו.</p>
-<p><strong>בבחינה לא צריך לחשב את זה</strong> — רק להבין שזה ערבוב בתוך עמודה.</p>
+<p><strong>הבדל בין המרצה לשקף:</strong> המרצה אמר שהמתמטיקה של שדות גלואה לא לבחינה; השקף בכל זאת מראה את חישוב הבית הראשון (בדוגמה למטה). כדאי לפחות לדעת לקרוא אותו.</p>
 </div></div>
-<div class="box example"><div class="box-head">✏️ דוגמה מוכרת (לסקרנים)</div><div class="box-body">
+<div class="box example"><div class="box-head">✏️ הדוגמה מהשקף: עמודה <span class="ltr">db 13 53 45</span></div><div class="box-body">
 <p class="mathline"><span class="ltr">MixColumns(db 13 53 45) = 8e 4d a1 bc</span></p>
-<p>זו הדוגמה הקלאסית מהספרות; המעבדה ב־5.9 מראה את <bdi dir="ltr">MixColumns</bdi> על בלוק שלם.</p>
+<p>השקף מחשב את הבית הראשון לפי השורה הראשונה של המטריצה <span class="ltr">(02 03 01 01)</span>:</p>
+<p class="mathline"><span class="ltr">02·db ⊕ 03·13 ⊕ 01·53 ⊕ 01·45 = ad ⊕ 35 ⊕ 53 ⊕ 45 = 8e</span></p>
+<div class="tbl-wrap"><table>
+<tr><th>חלק</th><th>חישוב</th></tr>
+<tr><td class="num">02·db</td><td class="num">db = 11011011 → shift left → 1|10110110 ; bit fell out → b6 ⊕ 1b = ad</td></tr>
+<tr><td class="num">03·13</td><td class="num">02·13 = 26 (no bit fell out) ; 26 ⊕ 13 = 35</td></tr>
+<tr><td class="num">01·53 , 01·45</td><td class="num">53 , 45 (unchanged)</td></tr>
+<tr class="hl"><td>סכום (<bdi dir="ltr">XOR</bdi>)</td><td class="num">ad ⊕ 35 = 98 ; 98 ⊕ 53 = cb ; cb ⊕ 45 = 8e</td></tr>
+</table></div>
+<p>שלושת הכללים מהשקף: כפל ב־1 — ללא שינוי; כפל ב־2 — הזזה שמאלה, ואם נפל ביט — <bdi dir="ltr">XOR</bdi> עם <span class="ltr">0x1B</span>; כפל ב־3 — <span class="ltr">(×2) ⊕ (×1)</span>. החיבור הוא <bdi dir="ltr">XOR</bdi>.</p>
 </div></div>
 
 <h3 id="addroundkey"><span class="sec">5.8</span>שלב <bdi dir="ltr">4</bdi>: <bdi dir="ltr">AddRoundKey</bdi> ותזמון המפתחות</h3>
-<p><bdi dir="ltr">XOR</bdi> פשוט של כל 16 בתי ה־<bdi dir="ltr">State</bdi> עם 16 בתי מפתח הסבב. כמו ב־<bdi dir="ltr">DES</bdi>, זה <strong>המקום היחיד</strong> שבו המפתח נכנס. לפני הסבב הראשון יש <bdi dir="ltr">AddRoundKey</bdi> נוסף עם המפתח המקורי (<span class="ltr">K0</span>).</p>
+<p><bdi dir="ltr">XOR</bdi> פשוט של כל 16 בתי ה־<bdi dir="ltr">State</bdi> עם 16 בתי מפתח הסבב. כמו ב־<bdi dir="ltr">DES</bdi>, זה <strong>המקום היחיד</strong> שבו המפתח נכנס — כל שאר השלבים ציבוריים וקבועים. והוא ההופכי של עצמו: <bdi dir="ltr">XOR</bdi> שוב עם אותו מפתח מבטל אותו.</p>
+<div class="box theory"><div class="box-head">📘 למה יש <bdi dir="ltr">AddRoundKey</bdi> לפני הסבב הראשון (מהשקף)</div><div class="box-body">
+<p>לפני סבב 1 מבצעים <span class="ltr">State ⊕ K0</span>. בלי זה, <bdi dir="ltr">SubBytes</bdi> ו־<bdi dir="ltr">ShiftRows</bdi> הראשונים היו פועלים על הטקסט הגלוי בלי שום מפתח — וכל אחד היה יכול לבטל אותם, כאילו הם לא קיימים. אותו היגיון בדיוק מסביר למה בסבב האחרון אין <bdi dir="ltr">MixColumns</bdi> (5.9).</p>
+<p>הספירה המלאה ל־<bdi dir="ltr">AES-128</bdi> לפי השקף:</p>
+<p class="mathline"><span class="ltr">1 pre-round XOR + 9 full rounds + 1 last round = 11 round keys (K0 … K10)</span></p>
+</div></div>
 <div class="box lecture"><div class="box-head">🎙️ מהשיעור — תזמון המפתחות</div><div class="box-body">
 <p>בשאלה של סטודנט בסוף השיעור המרצה לא נכנס לפרטים, ואמר ש־<bdi dir="ltr">AES</bdi> מייצר ב<strong>תזמון מפתחות</strong> (<span class="term">Key Schedule</span>) מפתח סבב <strong>שונה</strong> של 128 ביט לכל סבב — כי אותו מפתח בכל סבב היה מחליש את הצופן.</p>
 <p>פירוט (לא נדרש): ב־<bdi dir="ltr">AES-128</bdi> נוצרים 11 מפתחות סבב (<span class="ltr">K0 … K10</span>) מהמפתח המקורי. כל מילה חדשה של 4 בתים מתקבלת מ־<bdi dir="ltr">XOR</bdi> של מילים קודמות, ובכל מילה רביעית מפעילים סיבוב בתים, את ה־<bdi dir="ltr">S-box</bdi> וקבוע סבב. למשל עבור המפתח <span class="ltr">000102…0f</span>, מפתח הסבב הראשון הוא <span class="ltr">d6aa74fd d2af72fa daa678f1 d6ab76fe</span>.</p>
@@ -244,16 +266,82 @@ after AddRoundKey: a4 9c 7f f2 68 9f 35 2b 6b 5b ea 43 02 6a 50 49</pre>
 <div id="aav-out"></div></div>
 
 <h3 id="aes-decrypt"><span class="sec">5.10</span>פענוח</h3>
-<p>כל שלב הפיך, אז מפענחים בסדר הפוך עם הפעולות ההופכיות: <span class="ltr">InvShiftRows</span> (הזזה ימינה), <span class="ltr">InvSubBytes</span> (<bdi dir="ltr">S-box</bdi> הפוכה), <span class="ltr">InvMixColumns</span> (המטריצה ההופכית), ו־<bdi dir="ltr">AddRoundKey</bdi> (<bdi dir="ltr">XOR</bdi> הוא ההופכי של עצמו), עם מפתחות הסבבים בסדר הפוך.</p>
-<div class="box lecture"><div class="box-head">🎙️ מהשיעור</div><div class="box-body"><p>המרצה אמר שהפענוח "מאוד פשוט" ולא נכנס אליו. נשמע גם משהו כמו "לא באמת שיעורי בית" — כנראה הכוונה שלא תהיה משימה על הפענוח (לא ודאי מהתמלול).</p></div></div>
+<div class="box lecture"><div class="box-head">🎙️ מהשיעור ומהשקף — <span class="ltr">Decryption – Homework</span></div><div class="box-body">
+<p><strong>בשקף:</strong> שקף הפענוח נקרא <span class="ltr">Decryption – Homework</span> ואין בו תוכן — כלומר הפענוח נשאר ללימוד עצמי. <strong>בשיעור</strong> המרצה אמר שהפענוח "מאוד פשוט" ולא נכנס אליו, ונשמע גם משהו כמו "לא באמת שיעורי בית" (התמלול לא חד). כדי לא להסתמך על התמלול — הנה הפענוח המלא, כדאי להכיר אותו.</p>
+</div></div>
+<div class="keypoint">💡 <b>העיקרון (מהשקף של <bdi dir="ltr">DES</bdi> מול <bdi dir="ltr">AES</bdi>):</b> AES <strong>אינו</strong> צופן פייסטל, ולכן בפענוח צריך את ה<strong>הופכי של כל שלב</strong>, בסדר הפוך — בניגוד ל־<bdi dir="ltr">DES</bdi>, שבו הפענוח הוא אותו אלגוריתם עם מפתחות בסדר הפוך (4.10).</div>
+<div class="tbl-wrap"><table>
+<tr><th>שלב בהצפנה</th><th>השלב ההופכי בפענוח</th><th>מה הוא עושה</th></tr>
+<tr><td>SubBytes</td><td><strong>InvSubBytes</strong></td><td>החלפה לפי הטבלה ההפוכה <span class="ltr">S⁻¹</span> (נסו במעבדה של 5.5 — כפתור "הפוך").</td></tr>
+<tr><td>ShiftRows</td><td><strong>InvShiftRows</strong></td><td>הזזה מעגלית <strong>ימינה:</strong> שורה <bdi dir="ltr">r</bdi> זזה <bdi dir="ltr">r</bdi> מקומות.</td></tr>
+<tr><td>MixColumns</td><td><strong>InvMixColumns</strong></td><td>כפל בעמודה במטריצה ההופכית (למטה).</td></tr>
+<tr><td>AddRoundKey</td><td><strong>AddRoundKey</strong></td><td>אותו דבר בדיוק — <bdi dir="ltr">XOR</bdi> הוא ההופכי של עצמו.</td></tr>
+</table></div>
+<div class="box formula"><div class="box-head">📐 סדר הפענוח ב־<bdi dir="ltr">AES-128</bdi> (המפתחות מ־<bdi dir="ltr">K10</bdi> עד <bdi dir="ltr">K0</bdi>)</div><div class="box-body">
+<pre>state = ciphertext ⊕ K10                      ← undo the last AddRoundKey
+round 10 undone:  InvShiftRows → InvSubBytes   ← the last round had no MixColumns
+for i = 9 down to 1:
+    state = state ⊕ Ki                        ← AddRoundKey
+    InvMixColumns → InvShiftRows → InvSubBytes
+state = state ⊕ K0                            ← undo the pre-round
+plaintext = state</pre>
+<p>המטריצה ההופכית של <bdi dir="ltr">MixColumns</bdi>:</p>
+$$\begin{pmatrix} 0e & 0b & 0d & 09 \\ 09 & 0e & 0b & 0d \\ 0d & 09 & 0e & 0b \\ 0b & 0d & 09 & 0e \end{pmatrix}$$
+<p>(בדיקה: הפעלת <bdi dir="ltr">MixColumns</bdi> ואחריה <bdi dir="ltr">InvMixColumns</bdi> על <span class="ltr">db 13 53 45</span> מחזירה בדיוק <span class="ltr">db 13 53 45</span>.)</p>
+</div></div>
+<div class="lab"><h5>מעבדה: פענוח <bdi dir="ltr">AES-128</bdi></h5>
+<div class="row"><label>טקסט מוצפן (<bdi dir="ltr">32 hex</bdi>) <input id="aesd-x" class="wide" value="3925841d02dc09fbdc118597196a0b32"></label><label>מפתח <input id="aesd-k" class="wide" value="2b7e151628aed2a6abf7158809cf4f3c"></label><button onclick="aesDecRun()">פענח</button></div>
+<div id="aesd-out"></div>
+<p style="font-size:14px;color:var(--muted);margin:8px 0 0">ברירת המחדל היא הפלט של המעבדה ב־5.9 — הפענוח צריך להחזיר <span class="ltr">3243f6a8885a308d313198a2e0370734</span>.</p></div>
 
-<h3 id="galois"><span class="sec">5.11</span>העשרה: שדות גלואה — <span class="ltr">GF(2^8)</span></h3>
-<div class="box warn"><div class="box-head">⚠️ לא לבחינה</div><div class="box-body"><p>המרצה אמר במפורש שהמתמטיקה של שדות גלואה <strong>לא נדרשת לבחינה</strong>. הוא גם ויתר על חצי שיעור שתכנן להקדיש לנושא. הסעיף כאן רק כדי שתדעו מאיפה הטבלאות באות.</p></div></div>
-<ul>
-<li>כל בית מייצג <strong>פולינום ממעלה 7 לכל היותר:</strong> הביטים הם המקדמים. למשל <span class="ltr">0x57 = 01010111</span> הוא <span class="ltr">x⁶ + x⁴ + x² + x + 1</span>.</li>
-<li>חיבור = <bdi dir="ltr">XOR</bdi> של המקדמים. כפל = כפל פולינומים, ואז שארית מחלוקה בפולינום הקבוע של <bdi dir="ltr">AES</bdi> <span class="ltr">x⁸ + x⁴ + x³ + x + 1</span> — בדיוק כמו "מודולו" על מספרים, רק עם פולינומים.</li>
-<li>ה־<bdi dir="ltr">S-box</bdi> בנויה על ה<strong>הופכי</strong> של כל בית בשדה הזה, ואחריו טרנספורמציה קבועה. לכן בחומרה אפשר <strong>לחשב</strong> את הטבלה במקום לשמור אותה בזיכרון. (המעבדה באתר הזה בונה את הטבלה בדיוק כך, בחישוב.)</li>
-</ul>
+<h3 id="galois"><span class="sec">5.11</span>שדות גלואה — מבוא ברמה גבוהה</h3>
+<div class="box warn"><div class="box-head">⚠️ המרצה: לא לבחינה · בשקפים: ארבעה שקפי מבוא</div><div class="box-body"><p>בשיעור המרצה אמר במפורש שהמתמטיקה של שדות גלואה <strong>לא נדרשת לבחינה</strong>, וויתר על חצי השיעור שתכנן להקדיש לה. בכל זאת במצגת יש ארבעה שקפי מבוא (כאן למטה, עם הדוגמאות מהשקפים). מומלץ להכיר ברמת הרעיון.</p></div></div>
+<div class="tbl-wrap"><table>
+<tr><th>מושג</th><th>משמעות</th></tr>
+<tr><td class="num">GF(pⁿ)</td><td>שדה סופי עם בדיוק <span class="ltr">pⁿ</span> איברים; <bdi dir="ltr">p</bdi> ראשוני, <bdi dir="ltr">n</bdi> שלם חיובי.</td></tr>
+<tr><td class="num">GF(p)</td><td>המקרה <span class="ltr">n = 1</span>: פשוט השלמים מודולו <bdi dir="ltr">p</bdi> (כמו בפרקים 2–3).</td></tr>
+<tr><td class="num">GF(2ⁿ)</td><td>נפוץ מאוד בקריפטוגרפיה, כי מחשבים עובדים בביטים. כל איבר הוא פולינום שהמקדמים שלו הם ביטים.</td></tr>
+<tr><td>חיבור</td><td>XOR</td></tr>
+<tr><td>כפל</td><td>כפל פולינומים, ואז שארית מחלוקה בפולינום "אי־פריק" קבוע (המקבילה של ראשוני).</td></tr>
+<tr><td>שימושים</td><td><bdi dir="ltr">AES</bdi>, עקומים אליפטיים, קודים לתיקון שגיאות.</td></tr>
+</table></div>
+<div class="box example"><div class="box-head">✏️ מהשקף: 8 האיברים של <span class="ltr">GF(2³)</span></div><div class="box-body">
+<div class="tbl-wrap"><table dir="ltr" class="ltr-table" style="max-width:420px">
+<tr><th>polynomial</th><th>bits</th><th>value</th></tr>
+<tr><td class="num">0</td><td class="num">000</td><td class="num">0</td></tr>
+<tr><td class="num">1</td><td class="num">001</td><td class="num">1</td></tr>
+<tr><td class="num">x</td><td class="num">010</td><td class="num">2</td></tr>
+<tr><td class="num">x + 1</td><td class="num">011</td><td class="num">3</td></tr>
+<tr><td class="num">x²</td><td class="num">100</td><td class="num">4</td></tr>
+<tr><td class="num">x² + 1</td><td class="num">101</td><td class="num">5</td></tr>
+<tr><td class="num">x² + x</td><td class="num">110</td><td class="num">6</td></tr>
+<tr><td class="num">x² + x + 1</td><td class="num">111</td><td class="num">7</td></tr>
+</table></div>
+<p>כל ביט הוא המקדם של חזקה אחת של <bdi dir="ltr">x</bdi>. למשל:</p>
+<p class="mathline"><span class="ltr">x² + 1 = 1·x² + 0·x + 1 = 101</span></p>
+<p>ב־<bdi dir="ltr">AES</bdi> כל <strong>בית</strong> הוא איבר של <span class="ltr">GF(2⁸)</span>:</p>
+<p class="mathline"><span class="ltr">0x57 = 0101 0111 = x⁶ + x⁴ + x² + x + 1</span></p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ מהשקף: חיבור = <bdi dir="ltr">XOR</bdi> (וגם חיסור)</div><div class="box-body">
+<p>מקדמים מחברים מודולו 2, וזה בדיוק <bdi dir="ltr">XOR</bdi>. ובמודולו 2 מתקיים <span class="ltr">−1 = +1</span>, ולכן <strong>חיסור זהה לחיבור:</strong></p>
+<p class="mathline"><span class="ltr">110 ⊕ 011 = 101      110 − 011 = 101</span></p>
+<p class="mathline"><span class="ltr">(x² + x + 1) + (x + 1) = x²</span></p>
+<p>(כי <span class="ltr">x + x = 0</span> ו־<span class="ltr">1 + 1 = 0</span>.)</p>
+<p class="mathline"><span class="ltr">(x² + 1) − (x² + x) = (x² + 1) + (x² + x) = x + 1</span></p>
+</div></div>
+<div class="box example"><div class="box-head">✏️ מהשקף: כפל ב־<span class="ltr">GF(2³)</span> עם <span class="ltr">m(x) = x³ + x + 1</span></div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>שלב</th><th>חישוב</th></tr>
+<tr><td>1. כופלים כפולינומים</td><td class="num">(x² + 1)(x + 1) = x³ + x² + x + 1</td></tr>
+<tr><td>2. מצמצמים</td><td class="num">x³ + x + 1 ≡ 0  ⟹  x³ ≡ x + 1</td></tr>
+<tr><td>3. מציבים</td><td class="num">(x + 1) + x² + x + 1</td></tr>
+<tr class="hl"><td>4. תוצאה</td><td class="num">x² + (x + x) + (1 + 1) = x²</td></tr>
+</table></div>
+<p>בביטים:</p>
+<p class="mathline"><span class="ltr">101 · 011 = 100</span></p>
+<p>ב־<bdi dir="ltr">AES</bdi> משתמשים ב־<span class="ltr">GF(2⁸)</span> עם <span class="ltr">m(x) = x⁸ + x⁴ + x³ + x + 1</span> (בהקס <span class="ltr">0x11B</span>) — ומכאן ה־<span class="ltr">0x1B</span> בכלל של "כפל ב־2" ב־<bdi dir="ltr">MixColumns</bdi> (5.7): כשביט <span class="ltr">x⁸</span> "נופל", מחליפים אותו ב־<span class="ltr">x⁴ + x³ + x + 1 = 0x1B</span>.</p>
+</div></div>
+<p><strong>הקשר ל־<bdi dir="ltr">S-box</bdi>:</strong> ה־<bdi dir="ltr">S-box</bdi> של <bdi dir="ltr">AES</bdi> בנויה על ה<strong>הופכי</strong> של כל בית ב־<span class="ltr">GF(2⁸)</span>, ואחריו טרנספורמציה קבועה. לכן בחומרה אפשר <strong>לחשב</strong> את הטבלה במקום לשמור אותה בזיכרון (המרצה). המעבדות באתר בונות את הטבלה בדיוק כך, בחישוב.</p>
 
 <h3 id="ch5-sum"><span class="sec">5.12</span>סיכום ותרגול — פרק 5</h3>
 <div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
@@ -264,7 +352,8 @@ after AddRoundKey: a4 9c 7f f2 68 9f 35 2b 6b 5b ea 43 02 6a 50 49</pre>
 <li>סבב: <bdi dir="ltr">SubBytes</bdi> (בלבול) ← <bdi dir="ltr">ShiftRows</bdi> ← <bdi dir="ltr">MixColumns</bdi> (פיזור) ← <bdi dir="ltr">AddRoundKey</bdi> (מפתח).</li>
 <li>הסבב האחרון בלי <bdi dir="ltr">MixColumns</bdi>.</li>
 <li>כל השלבים הפיכים (בניגוד ל־<bdi dir="ltr">f</bdi> של <bdi dir="ltr">DES</bdi>), כולל ה־<bdi dir="ltr">S-box</bdi>.</li>
-<li>שדות גלואה — לא לבחינה.</li>
+<li>פענוח: השלבים ההופכיים בסדר הפוך (<bdi dir="ltr">AES</bdi> אינו פייסטל). בשקף מסומן כשיעורי בית.</li>
+<li>שדות גלואה — לפי המרצה לא לבחינה; בשקפים יש מבוא: חיבור = <bdi dir="ltr">XOR</bdi>, כפל = כפל פולינומים מודולו פולינום קבוע.</li>
 </ul>
 </div></div>
 <div class="box exercise"><div class="box-head">🏋️ תרגול</div><div class="box-body">
@@ -276,7 +365,13 @@ after AddRoundKey: a4 9c 7f f2 68 9f 35 2b 6b 5b ea 43 02 6a 50 49</pre>
 <details class="reveal"><summary>פתרון</summary><div><p><bdi dir="ltr">MixColumns</bdi> מערבב רק בתוך עמודה, ו־<bdi dir="ltr">SubBytes</bdi> ו־<bdi dir="ltr">AddRoundKey</bdi> עובדים בית־בית. בלי <bdi dir="ltr">ShiftRows</bdi> שום מידע לא עובר בין עמודות, וה־<bdi dir="ltr">AES</bdi> מתפרק לארבעה צפנים נפרדים של 32 ביט, שכל אחד מהם הרבה יותר קל לתקוף. זה בדיוק סוג השאלה "למה זה פגיע".</p></div></details>
 <p><strong>4.</strong> בצע <bdi dir="ltr">ShiftRows</bdi> על השורה השלישית (שורה 2) <span class="ltr">[a, b, c, d]</span>.</p>
 <details class="reveal"><summary>פתרון</summary><div><p>שורה 2 זזה שני מקומות שמאלה: <span class="ltr">[c, d, a, b]</span>.</p></div></details>
-<p><strong>5.</strong> למה אין <bdi dir="ltr">MixColumns</bdi> בסבב האחרון?</p>
+<p><strong>5.</strong> למה יש <bdi dir="ltr">AddRoundKey</bdi> <em>לפני</em> הסבב הראשון?</p>
+<details class="reveal"><summary>פתרון</summary><div><p>בלי מפתח בהתחלה, <bdi dir="ltr">SubBytes</bdi> ו־<bdi dir="ltr">ShiftRows</bdi> הראשונים פועלים על הטקסט הגלוי בלי שום סוד — כל אחד יכול לבטל אותם, והם לא מוסיפים ביטחון.</p></div></details>
+<p><strong>6.</strong> ב־<span class="ltr">GF(2³)</span> חשב <span class="ltr">101 + 111</span> ואת <span class="ltr">101 − 111</span>.</p>
+<details class="reveal"><summary>פתרון</summary><div><p>חיבור הוא <bdi dir="ltr">XOR</bdi>, וחיסור זהה לחיבור: שתי התשובות <span class="ltr">101 ⊕ 111 = 010</span>, כלומר <bdi dir="ltr">x</bdi>.</p></div></details>
+<p><strong>7.</strong> סדר את שלבי הפענוח של סבב מלא (לא האחרון) ב־<bdi dir="ltr">AES</bdi>.</p>
+<details class="reveal"><summary>פתרון</summary><div><p><bdi dir="ltr">AddRoundKey</bdi> ← <bdi dir="ltr">InvMixColumns</bdi> ← <bdi dir="ltr">InvShiftRows</bdi> ← <bdi dir="ltr">InvSubBytes</bdi> — ההפך המדויק מ־<bdi dir="ltr">SubBytes</bdi> ← <bdi dir="ltr">ShiftRows</bdi> ← <bdi dir="ltr">MixColumns</bdi> ← <bdi dir="ltr">AddRoundKey</bdi>.</p></div></details>
+<p><strong>8.</strong> למה אין <bdi dir="ltr">MixColumns</bdi> בסבב האחרון?</p>
 <details class="reveal"><summary>פתרון</summary><div><p>כי היא ליניארית וידועה ובאה אחרי המפתח האחרון — תוקף יכול לבטל אותה בעצמו, ולכן היא לא מוסיפה ביטחון (המרצה: "היא מיותרת בסוף").</p></div></details>
 </div></div>
 

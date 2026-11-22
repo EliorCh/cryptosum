@@ -371,7 +371,22 @@ const AES = (() => {
     }
     return {out: s, outHex: s.map(hex2).join(''), trace, rk};
   }
-  return {SBOX, INV, gmul, parse, hex2, sub, shift, mix, add, expand, encrypt};
+  const isub = s => s.map(b => INV[b]);
+  const ishift = s => { const o = s.slice(); for(let r = 1; r < 4; r++) for(let c = 0; c < 4; c++) o[r + 4 * ((c + r) % 4)] = s[r + 4 * c]; return o; };
+  const imix = s => { const o = s.slice(); for(let c = 0; c < 4; c++){ const a = s.slice(4 * c, 4 * c + 4);
+      o[4*c]   = gmul(a[0],14) ^ gmul(a[1],11) ^ gmul(a[2],13) ^ gmul(a[3],9);
+      o[4*c+1] = gmul(a[0],9)  ^ gmul(a[1],14) ^ gmul(a[2],11) ^ gmul(a[3],13);
+      o[4*c+2] = gmul(a[0],13) ^ gmul(a[1],9)  ^ gmul(a[2],14) ^ gmul(a[3],11);
+      o[4*c+3] = gmul(a[0],11) ^ gmul(a[1],13) ^ gmul(a[2],9)  ^ gmul(a[3],14); } return o; };
+  function decrypt(ctHex, keyHex){
+    const rk = expand(parse(keyHex)); let s = add(parse(ctHex), rk[10]); const trace = [{r: 10, ark: s, key: rk[10]}];
+    for(let r = 9; r >= 0; r--){
+      const st = {r, start: s}; st.isr = ishift(s); st.isb = isub(st.isr); st.key = rk[r];
+      st.ark = add(st.isb, rk[r]); st.imc = r > 0 ? imix(st.ark) : null; s = st.imc || st.ark; trace.push(st);
+    }
+    return {out: s, outHex: s.map(hex2).join(''), trace};
+  }
+  return {SBOX, INV, gmul, parse, hex2, sub, shift, mix, add, expand, encrypt, isub, ishift, imix, decrypt};
 })();
 
 /* ---------------- chapter 5 labs (AES) ---------------- */
@@ -421,6 +436,15 @@ function aesAvalancheRun(){
     h += '<div class="out rtl">בפלט השתנו <b>' + per[10] + ' מתוך 128</b> ביטים. המטרה: בערך חצי (64).</div>';
     $('aav-out').innerHTML = h;
   } catch(e){ fail('aav-out', e); }
+}
+function aesDecRun(){
+  try{
+    const r = AES.decrypt($('aesd-x').value, $('aesd-k').value), H = b => b.map(AES.hex2).join('');
+    const rows = r.trace.map(t => t.r === 10 ? ['start', '—', '—', 'K10: ' + H(t.key), H(t.ark), '—'] : [t.r === 0 ? 'last (undo round 1)' : 'undo round ' + (t.r + 1), H(t.isr), H(t.isb), 'K' + t.r + ': ' + H(t.key), H(t.ark), t.imc ? H(t.imc) : '(none)']);
+    let h = table(['step', 'InvShiftRows', 'InvSubBytes', 'round key', 'after AddRoundKey', 'InvMixColumns'], rows, true);
+    h += '<div class="out">plaintext = <b>' + r.outHex + '</b></div>';
+    $('aesd-out').innerHTML = h;
+  } catch(e){ fail('aesd-out', e); }
 }
 /* ---------------- chapter 6 labs (signatures) ---------------- */
 function sigKeys(){
@@ -483,4 +507,4 @@ function padRun(){
     box.appendChild(d);
   });
 })();
-[aesSboxRun, shiftRowsRun, aesRun, aesAvalancheRun, sigRun, forgeRun, padRun].forEach(f => { try { f(); } catch(e) {} });
+[aesSboxRun, shiftRowsRun, aesRun, aesDecRun, aesAvalancheRun, sigRun, forgeRun, padRun].forEach(f => { try { f(); } catch(e) {} });

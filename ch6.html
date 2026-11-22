@@ -45,6 +45,7 @@ window.MathJax = {
 <a class="sub" href="#forgery-dos">למה זיוף של ג'יבריש מסוכן: DoS</a>
 <a class="sub" href="#padding">התיקון: ריפוד</a>
 <a class="sub" href="#hash-sign">הבא: Hash לפני חתימה</a>
+<a class="sub" href="#sig-practice">העשרה: חתימות בעולם האמיתי — Stuxnet ו־Flame</a>
 <a class="sub" href="#ch6-sum">סיכום ותרגול — פרק 6</a>
 </nav>
 <main id="top">
@@ -54,6 +55,7 @@ window.MathJax = {
 <p class="hook">עד עכשיו עסקנו בסודיות — שאיב לא תוכל <em>לקרוא</em>. חתימה דיגיטלית פותרת בעיה אחרת: להוכיח <strong>מי</strong> שלח הודעה ושהיא <strong>לא שונתה</strong>. המרצה ציין את הנושא הזה, ובמיוחד את התקפת הזיוף (6.8), כחומר טיפוסי לשאלות בסגנון "למה זה פגיע?".</p>
 
 <h3 id="sig-why"><span class="sec">6.1</span>מחתימה בכתב יד לחתימה דיגיטלית</h3>
+<p><strong>"איפה אנחנו?" (שקף הפתיחה):</strong> השקף מציג ערימה של לבני לגו מול בניין לגו גמור. עד עכשיו למדנו אבני בניין — <bdi dir="ltr">RSA, Diffie-Hellman, DES, AES</bdi>. מכאן מתחילים לחבר אותן למערכות שעושות משהו שלם, וחתימה דיגיטלית היא הראשונה.</p>
 <div class="box lecture"><div class="box-head">🎙️ מהשיעור — תעודת התואר כקובץ <bdi dir="ltr">PDF</bdi></div><div class="box-body">
 <p>המרצה פתח בשאלה: בסוף התואר תקבלו תעודה כקובץ <bdi dir="ltr">PDF</bdi>. מעסיק מקבל אותה ממכם — איך הוא יודע שהיא אמיתית ושלא שיניתם בה את הממוצע? על נייר יש חתימה וחותמת. מה המקבילה בקובץ?</p>
 <p>ודוגמה שנייה: הודעת <bdi dir="ltr">WhatsApp</bdi> "לא אהיה בשיעור כי אני במילואים" שמישהו משנה בדרך ל"אני חושב שאני צריך לקבל 30 במבחן". צריך דרך לגלות שינוי כזה.</p>
@@ -62,7 +64,7 @@ window.MathJax = {
 <div class="tbl-wrap"><table>
 <tr><th>רעיון</th><th>למה הוא נכשל</th><th>הלקח</th></tr>
 <tr><td><strong>1. רצף ביטים קבוע</strong> בסוף כל מסמך ("החתימה של המכללה")</td><td>גרוע אפילו מחתימה בכתב יד: מעתיקים את אותו רצף ומדביקים אותו על כל מסמך אחר.</td><td>החתימה חייבת להיות <strong>תלויה בתוכן</strong> המסמך.</td></tr>
-<tr><td><strong>2. קידוד</strong> (למשל <span class="term">Base64</span>)</td><td>קידוד הוא לא הצפנה — אין בו שום סוד. כל אחד מקודד ומפענח.</td><td>חייב להיות מעורב <strong>סוד</strong>.</td></tr>
+<tr><td><strong>2. קידוד</strong> (למשל <span class="term">Base64</span>)</td><td>קידוד הוא לא הצפנה — אין בו שום סוד. הדוגמה מהשקף: <span class="ltr">"Yotam Ashkenazi" → WW90YW0gQXNoa2VuYXpp</span>, וכל אחד מחזיר את זה אחורה. גם ייצוג הביטים של השם (<span class="ltr">01011001 01101111 …</span>) מופיע בשקף עם איקס אדום — ביטים גולמיים הם לא חתימה.</td><td>חייב להיות מעורב <strong>סוד</strong>.</td></tr>
 <tr><td><strong>3. פונקציה ציבורית <bdi dir="ltr">F</bdi> על התוכן</strong></td><td>תלויה בתוכן, אבל אם כולם יודעים את <bdi dir="ltr">F</bdi> — כולם יכולים לחשב "חתימה" על כל מסמך. אין קשר לחותם.</td><td>החתימה חייבת לכלול <strong>מפתח</strong> שרק לחותם יש.</td></tr>
 </table></div>
 
@@ -74,18 +76,21 @@ window.MathJax = {
 <tr><td><strong>Verify</strong></td><td>הודעה <bdi dir="ltr">x</bdi>, חתימה <bdi dir="ltr">s</bdi> ומפתח <strong>ציבורי</strong> של החותם</td><td>1 (תקין) או 0 (לא תקין)</td><td>כל אחד</td></tr>
 </table></div>
 <p>שימו לב: <bdi dir="ltr">Verify</bdi> <strong>לא מפענח</strong> שום דבר — הוא רק עונה כן/לא.</p>
+<p><strong>הסימון בשקפים:</strong> <bdi dir="ltr">x</bdi> היא ההודעה ו־<bdi dir="ltr">y</bdi> החתימה (ב־<bdi dir="ltr">RSA</bdi> החתימה מסומנת σ, "סיגמא"):</p>
+<p class="mathline"><span class="ltr">Sig(k, x) = y          Verify(k, x, y) → {0, 1}</span></p>
 </div></div>
 
 <h3 id="sig-props"><span class="sec">6.3</span>מה חתימה נותנת — ומה לא</h3>
 <div class="tbl-wrap"><table>
 <tr><th>תכונה</th><th>יש?</th><th>הסבר</th></tr>
+<tr class="good"><td><strong>אי־זיוף</strong> (<span class="term">unforgeability</span>) — בשקף ראשון ברשימה</td><td>✅</td><td>גם אחרי שראה חתימות על הודעות <strong>שהוא בחר</strong>, התוקף לא יכול לייצר חתימה תקפה על הודעה <strong>חדשה</strong>. (ב־<bdi dir="ltr">RSA</bdi> "של ספר לימוד" התכונה הזו נשברת — 6.8.)</td></tr>
 <tr class="bad"><td><strong>סודיות</strong></td><td>❌ לא</td><td>ההודעה נשלחת <strong>גלויה</strong> — המטרה היא שכולם יוכלו לקרוא ולאמת. רוצים גם סודיות? מצפינים בנוסף.</td></tr>
 <tr class="good"><td><strong>שלמות</strong> (<span class="term">integrity</span>)</td><td>✅</td><td>כל שינוי בהודעה גורם לאימות להיכשל.</td></tr>
 <tr class="good"><td><strong>אימות מקור</strong> (<span class="term">authentication</span>)</td><td>✅</td><td>מי שחתם הוא מי שמחזיק במפתח הפרטי.</td></tr>
-<tr class="good"><td><strong>אי־הכחשה</strong> (<span class="term">non-repudiation</span>)</td><td>✅</td><td>החותם לא יכול לטעון אחר כך "לא אני חתמתי" (6.4).</td></tr>
+<tr class="good"><td><strong>אי־הכחשה</strong> (<span class="term">non-repudiation</span>)</td><td>✅</td><td>החותם לא יכול לטעון אחר כך "לא אני חתמתי" (6.4) — בהנחה שהמפתח שלו לא דלף או נוצל לרעה (השקף).</td></tr>
 <tr class="good"><td><strong>אימות פומבי</strong></td><td>✅</td><td>כל אחד יכול לאמת עם המפתח הציבורי.</td></tr>
-<tr><td><strong>גודל קלט</strong></td><td>כל גודל</td><td>אין הגבלה על אורך ההודעה — בפועל עושים את זה בעזרת פונקציית <bdi dir="ltr">Hash</bdi> (6.11).</td></tr>
-<tr><td><strong>עמידות ל־<bdi dir="ltr">Replay</bdi></strong></td><td>—</td><td>רצוי שלא אפשר יהיה פשוט לשלוח שוב הודעה חתומה ישנה. המרצה הזכיר את זה ואמר שלא ייכנס לנושא.</td></tr>
+<tr><td><strong>גודל קלט</strong></td><td>כל גודל</td><td>חותמים על קלט בכל אורך: לפי השקף, קודם מפעילים <bdi dir="ltr">Hash</bdi> ומקבלים ערך באורך קבוע, וחותמים עליו (6.11).</td></tr>
+<tr><td><strong>עמידות ל־<bdi dir="ltr">Replay</bdi> / החלפה</strong></td><td>✅</td><td>לפי השקף: חתימה על <bdi dir="ltr">x</bdi> לא יכולה לשמש כחתימה תקפה על <strong>הודעה אחרת</strong>. (המרצה הזכיר את הנושא ואמר שלא ייכנס אליו; למניעת שליחה חוזרת של אותה הודעה בדיוק מוסיפים בפועל מונה או חותמת זמן להודעה.)</td></tr>
 </table></div>
 <div class="keypoint">💡 <b>חשוב (המרצה הדגיש):</b> בחתימה דיגיטלית <strong>אין סודיות</strong>. שאלה טיפוסית: "אליס חתמה על הודעה — האם איב יכולה לקרוא אותה?" כן.</div>
 
@@ -111,7 +116,7 @@ window.MathJax = {
 </div></div>
 
 <h3 id="rsa-sig"><span class="sec">6.6</span>חתימת <bdi dir="ltr">RSA</bdi></h3>
-<p>אותם מפתחות של <bdi dir="ltr">RSA</bdi> מפרק 2 — ציבורי <span class="ltr">(n, e)</span>, פרטי <span class="ltr">(n, d)</span> — רק שמשתמשים בהם "הפוך":</p>
+<p>אותם מפתחות של <bdi dir="ltr">RSA</bdi> מפרק 2 — ציבורי <span class="ltr">(n, e)</span>, סודי <bdi dir="ltr">d</bdi> — רק שמשתמשים בהם "הפוך". לפי השקף מתייחסים להודעה כמספר שלם בטווח <span class="ltr">0 ≤ m &lt; n</span> (אותה מגבלה כמו בהצפנה — ראו שאלה 2 בתרגיל בית 1). בשקפים החתימה מסומנת σ; כאן נכתוב <bdi dir="ltr">s</bdi>.</p>
 <div class="box formula"><div class="box-head">📐 חתימה ואימות</div><div class="box-body">
 <p><strong>חתימה</strong> — אליס מעלה את ההודעה בחזקת המעריך הפרטי שלה:</p>
 $$s = m^{d} \bmod n$$
@@ -161,11 +166,25 @@ $$m' \overset{?}{=} m$$
 <tr><td class="num">65537</td><td class="num">10000000000000001</td><td class="num">16 + 1 = 17</td></tr>
 <tr><td><bdi dir="ltr">d</bdi> טיפוסי (2,048 ביט)</td><td>—</td><td class="num">≈ 2048 + 1024 ≈ 3000</td></tr>
 </table></div>
-<p>כך האימות מהיר כמעט כמו <bdi dir="ltr">AES</bdi>, והחתימה (עם <bdi dir="ltr">d</bdi> הגדול) איטית — וזה בדיוק המצב הרצוי. כל ה־<bdi dir="ltr">e</bdi> האלה ראשוניים עם מעט ביטים דולקים. צריך רק לבדוק ש־<span class="ltr">gcd(e, φ(n)) = 1</span>; למשל עם <span class="ltr">φ(n) = 160</span> מקבלים <span class="ltr">e = 3 → d = 107</span> ו־<span class="ltr">e = 17 → d = 113</span>.</p>
+<div class="box formula"><div class="box-head">📐 זמני חישוב (מהשקף)</div><div class="box-body">
+<div class="tbl-wrap"><table>
+<tr><th>פעולה</th><th>חישוב</th><th>סיבוכיות</th><th>בפועל</th></tr>
+<tr><td>חתימה</td><td class="num">σ = m^d mod n</td><td class="num">O(log d)</td><td><bdi dir="ltr">d</bdi> גדול (בערך כגודל <bdi dir="ltr">n</bdi>, למשל 2,048 ביט) ← <strong>החתימה היא השלב האיטי</strong>.</td></tr>
+<tr><td>אימות</td><td class="num">m′ = σ^e mod n</td><td class="num">O(log e)</td><td>עם <bdi dir="ltr">e</bdi> קטן (3, 17, <span class="ltr">2^16+1</span>) ← <strong>האימות הרבה יותר מהיר</strong>.</td></tr>
+</table></div>
+</div></div>
+<p>כך האימות מהיר כמעט כמו <bdi dir="ltr">AES</bdi> (לפי המרצה), והחתימה (עם <bdi dir="ltr">d</bdi> הגדול) איטית — וזה בדיוק המצב הרצוי. כל ה־<bdi dir="ltr">e</bdi> האלה ראשוניים עם מעט ביטים דולקים. צריך רק לבדוק ש־<span class="ltr">gcd(e, φ(n)) = 1</span>; למשל עם <span class="ltr">φ(n) = 160</span> מקבלים <span class="ltr">e = 3 → d = 107</span> ו־<span class="ltr">e = 17 → d = 113</span>.</p>
 
 <h3 id="forgery"><span class="sec">6.8</span>התקפת הזיוף: להריץ את התהליך הפוך</h3>
 <div class="box theory"><div class="box-head">📘 הרעיון ("קונספט שונה", כלשון המרצה)</div><div class="box-body">
-<p>איב לא יכולה לחתום על הודעה <em>שהיא בוחרת</em> — לשם כך צריך את <bdi dir="ltr">d</bdi>. אבל מה אם היא מתחילה מהסוף? היא בוחרת <strong>חתימה</strong> <bdi dir="ltr">s</bdi> כלשהי, ומחשבת עם המפתח <strong>הציבורי</strong> איזו הודעה מתאימה לה:</p>
+<p>איב לא יכולה לחתום על הודעה <em>שהיא בוחרת</em> — לשם כך צריך את <bdi dir="ltr">d</bdi>. אבל מה אם היא מתחילה מהסוף? השקף מתאר שלושה צעדים:</p>
+<ol>
+<li>בוחרים σ אקראי עם <span class="ltr">gcd(σ, n) = 1</span>.</li>
+<li>מחשבים <span class="ltr">m = σ^e mod n</span>.</li>
+<li>מוציאים את הזוג המזויף <span class="ltr">(m, σ)</span>.</li>
+</ol>
+<p>(התנאי <span class="ltr">gcd(σ, n) = 1</span> כמעט תמיד מתקיים מעצמו. אילו איב הייתה מוצאת σ עם מחלק משותף ל־<bdi dir="ltr">n</bdi>, היא כבר הייתה מפרקת את <bdi dir="ltr">n</bdi> ושוברת את <bdi dir="ltr">RSA</bdi> לגמרי.)</p>
+<p>במילים: איב בוחרת <strong>חתימה</strong> <bdi dir="ltr">s</bdi> כלשהי, ומחשבת עם המפתח <strong>הציבורי</strong> איזו הודעה מתאימה לה:</p>
 $$m = s^{e} \bmod n$$
 <p>עכשיו היא שולחת <span class="ltr">(m, s)</span>. האימות מחשב <span class="ltr">s^e mod n</span> — ומקבל בדיוק את <bdi dir="ltr">m</bdi>. <strong>האימות עובר.</strong></p>
 <p>זה נקרא <strong>זיוף קיומי</strong> (<span class="term">existential forgery</span>): קיימת הודעה עם חתימה תקפה שאליס מעולם לא חתמה עליה.</p>
@@ -210,11 +229,19 @@ $$P(\text{forgery passes}) = 2^{-128}$$
 <h3 id="hash-sign"><span class="sec">6.11</span>הבא: <bdi dir="ltr">Hash</bdi> לפני חתימה</h3>
 <p>בשיעור הבא: במקום לחתום על ההודעה עצמה, מפעילים עליה קודם <strong>פונקציית <bdi dir="ltr">Hash</bdi></strong> וחותמים על התוצאה (<span class="term">hash-then-sign</span>). זה פותר שתי בעיות בבת אחת: הודעה ארוכה מכל גודל הופכת לערך קצר שנכנס ב־<bdi dir="ltr">n</bdi>, והזיוף של 6.8 כבר לא עובד — איב תצטרך למצוא הודעה שה־<bdi dir="ltr">Hash</bdi> שלה יוצא בדיוק <bdi dir="ltr">m</bdi>, וזה קשה.</p>
 
-<h3 id="ch6-sum"><span class="sec">6.12</span>סיכום ותרגול — פרק 6</h3>
+<h3 id="sig-practice"><span class="sec">6.12</span>העשרה: חתימות בעולם האמיתי — <bdi dir="ltr">Stuxnet</bdi> ו־<bdi dir="ltr">Flame</bdi></h3>
+<p>בסדר היום של המצגת מופיעים גם "<bdi dir="ltr">Stuxnet", "Signatures in Practice</bdi>" ו־"<bdi dir="ltr">Flame</bdi>", אבל בקובץ שקיבלתי אין שקפים לנושאים האלה (את <bdi dir="ltr">Stuxnet</bdi> המרצה הציג בחלק האבטחה של השיעור — ראו <a href="ch1.html#security-basics">1.14</a>). מה שהקשר שלהם לחתימות, בקצרה:</p>
+<ul>
+<li><strong>חתימת קוד:</strong> מערכות הפעלה סומכות על תוכנה ועל דרייברים <strong>חתומים</strong> על ידי יצרן מוכר. זה בדיוק אימות מקור ושלמות (6.3).</li>
+<li><strong>Stuxnet:</strong> הדרייברים שלו היו חתומים בחתימה תקפה — במפתחות פרטיים שנגנבו משתי חברות חומרה. החתימה עצמה לא נשברה; המפתח דלף. לכן "אי־הכחשה בהנחה שהמפתח לא נוצל לרעה".</li>
+<li><strong>Flame (2012):</strong> כלי ריגול שהתחזה לעדכון של <bdi dir="ltr">Windows</bdi>. הוא השתמש בתעודה מזויפת של מיקרוסופט, שנוצרה בעזרת התנגשות בפונקציית ה־<bdi dir="ltr">Hash</bdi> הישנה <bdi dir="ltr">MD5</bdi>. זה מקשר לשיעור הבא: אם ה־<bdi dir="ltr">Hash</bdi> שחותמים עליו שבור, גם החתימה שבורה.</li>
+</ul>
+
+<h3 id="ch6-sum"><span class="sec">6.13</span>סיכום ותרגול — פרק 6</h3>
 <div class="box summary"><div class="box-head">📌 מה חייבים לדעת</div><div class="box-body">
 <ul>
 <li><bdi dir="ltr">Sign</bdi> עם <strong>הפרטי של החותם</strong>, <bdi dir="ltr">Verify</bdi> עם <strong>הציבורי של החותם</strong> — הפוך מהצפנה.</li>
-<li>חתימה נותנת שלמות, אימות מקור ואי־הכחשה — <strong>לא סודיות</strong>.</li>
+<li>חתימה נותנת אי־זיוף, שלמות, אימות מקור ואי־הכחשה — <strong>לא סודיות</strong>.</li>
 <li>מפתח סימטרי משותף לא נותן אי־הכחשה.</li>
 <li>חתימת <bdi dir="ltr">RSA</bdi>: <span class="ltr">s = m^d mod n</span>; אימות: <span class="ltr">s^e mod n = m ?</span> — וההשוואה היא העיקר.</li>
 <li><bdi dir="ltr">e</bdi> קטן (3, 17, 65537) ← אימות מהיר.</li>
